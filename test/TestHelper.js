@@ -100,7 +100,5 @@ export function insertCoreStyles() {
 }
 
 export function bootstrapModeler(diagram, options, locals) {
-  console.log('bootstrapModeler');
-
   return bootstrapBpmnJS(Modeler, diagram, options, locals);
 }
