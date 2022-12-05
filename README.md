@@ -1,0 +1,1 @@
+# @bpmn-io/variable-resolver
