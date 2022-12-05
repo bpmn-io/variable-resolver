@@ -17,8 +17,8 @@
     "min-dash": "^4.0.0"
   },
   "devDependencies": {
-    "@bpmn-io/properties-panel": "^0.25.0",
-    "bpmn-js-properties-panel": "^1.11.2",
+    "@bpmn-io/properties-panel": "^1.0.1",
+    "bpmn-js-properties-panel": "github:bpmn-io/bpmn-js-properties-panel#variable-handling",
     "camunda-bpmn-js-behaviors": "^0.4.0",
     "chai": "^4.3.7",
     "cross-env": "^7.0.3",
