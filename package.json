@@ -12,12 +12,12 @@
   "license": "MIT",
   "dependencies": {
     "@bpmn-io/extract-process-variables": "^0.7.0",
-    "bpmn-js": "^10.3.0",
     "lezer-feel": "^0.15.0",
     "min-dash": "^4.0.0"
   },
   "devDependencies": {
     "@bpmn-io/properties-panel": "^1.0.1",
+    "bpmn-js": "11.1.0",
     "bpmn-js-properties-panel": "github:bpmn-io/bpmn-js-properties-panel#variable-handling",
     "camunda-bpmn-js-behaviors": "^0.4.0",
     "chai": "^4.3.7",
@@ -38,5 +38,8 @@
     "raw-loader": "^4.0.2",
     "webpack": "^5.75.0",
     "zeebe-bpmn-moddle": "^0.16.0"
+  },
+  "peerDependencies": {
+    "bpmn-js": "*"
   }
 }
