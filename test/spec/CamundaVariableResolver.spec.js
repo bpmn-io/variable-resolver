@@ -1,20 +1,20 @@
 import TestContainer from 'mocha-test-container-support';
 
-import ZeebeModdle from 'zeebe-bpmn-moddle/resources/zeebe';
+import CamundaModdle from 'camunda-bpmn-moddle/resources/camunda.json';
 
 import { is } from 'bpmn-js/lib/util/ModelUtil';
 
 import { bootstrapModeler, inject } from '../TestHelper';
 
-import VariablesModule from 'lib/';
+import { CamundaVariableResolverModule } from 'lib/';
 
-import simpleXML from '../fixtures/simple.bpmn';
-import emptyXML from '../fixtures/empty.bpmn';
-import complexXML from '../fixtures/complex.bpmn';
+import simpleXML from '../fixtures/camunda/simple.bpmn';
+import emptyXML from '../fixtures/camunda/empty.bpmn';
+import complexXML from '../fixtures/camunda/complex.bpmn';
 
 import VariableProvider from '../../lib/VariableProvider';
 
-describe('VariableResolver', function() {
+describe('CamundaVariableResolver', function() {
 
   let container;
 
@@ -65,7 +65,7 @@ describe('VariableResolver', function() {
       bootstrapModeler(emptyXML, {
         container,
         additionalModules: [
-          VariablesModule
+          CamundaVariableResolverModule
         ]
       })
     );
@@ -153,7 +153,7 @@ describe('VariableResolver', function() {
       bootstrapModeler(emptyXML, {
         container,
         additionalModules: [
-          VariablesModule
+          CamundaVariableResolverModule
         ]
       })
     );
@@ -274,7 +274,7 @@ describe('VariableResolver', function() {
       bootstrapModeler(simpleXML, {
         container,
         additionalModules: [
-          VariablesModule
+          CamundaVariableResolverModule
         ]
       })
     );
@@ -437,7 +437,7 @@ describe('VariableResolver', function() {
       bootstrapModeler(simpleXML, {
         container,
         additionalModules: [
-          VariablesModule
+          CamundaVariableResolverModule
         ]
       })
     );
@@ -481,10 +481,10 @@ describe('VariableResolver', function() {
       bootstrapModeler(complexXML, {
         container,
         additionalModules: [
-          VariablesModule
+          CamundaVariableResolverModule
         ],
         moddleExtensions: {
-          zeebe: ZeebeModdle
+          camunda: CamundaModdle
         }
       })
     );
@@ -520,7 +520,7 @@ describe('VariableResolver', function() {
       expectVariables(variables, [
         { name: 'variable1', origin: [ 'Task_1' ], scope: 'Process_1' },
         { name: 'variable2', origin: [ 'Task_1' ], scope: 'Process_1' },
-        { name: 'variable3', origin: [ 'SubProcess_1', 'Task_2' ], scope: 'SubProcess_1' }
+        { name: 'variable3', origin: [ 'Task_2' ], scope: 'SubProcess_1' }
       ]);
     }));
 
@@ -544,7 +544,7 @@ describe('VariableResolver', function() {
       expectVariables(variables, [
         { name: 'variable1', origin: [ 'Task_1' ], scope: 'Process_1' },
         { name: 'variable2', origin: [ 'Task_1' ], scope: 'Process_1' },
-        { name: 'variable3', origin: [ 'SubProcess_1', 'Task_2' ], scope: 'SubProcess_1' },
+        { name: 'variable3', origin: [ 'Task_2' ], scope: 'SubProcess_1' },
         { name: 'foo', origin: [ 'Task_2' ], scope: 'Task_2' }
       ]);
     }));
@@ -569,7 +569,7 @@ describe('VariableResolver', function() {
       expectVariables(variables, [
         { name: 'variable1', origin: [ 'Task_1' ], scope: 'Process_1' },
         { name: 'variable2', origin: [ 'Task_1' ], scope: 'Process_1' },
-        { name: 'variable3', origin: [ 'SubProcess_1', 'Task_2', 'Task_3' ], scope: 'SubProcess_1' },
+        { name: 'variable3', origin: [ 'Task_2', 'Task_3' ], scope: 'SubProcess_1' },
       ]);
     }));
 

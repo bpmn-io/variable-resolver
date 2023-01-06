@@ -5,13 +5,13 @@ import { BpmnPropertiesPanelModule, BpmnPropertiesProviderModule, ZeebePropertie
 import ZeebeBehaviorsModule from 'camunda-bpmn-js-behaviors/lib/camunda-cloud';
 import ZeebeModdle from 'zeebe-bpmn-moddle/resources/zeebe';
 
-import VariablesModule from 'lib/';
+import { ZeebeVariableResolverModule } from 'lib/';
 import VariableProvider from 'lib/VariableProvider';
 
 import Modeler from 'bpmn-js/lib/Modeler';
 import { is } from 'bpmn-js/lib/util/ModelUtil';
 
-import simpleXML from '../fixtures/simple.bpmn';
+import simpleXML from '../fixtures/zeebe/simple.bpmn';
 import { setBpmnJS, clearBpmnJS, insertCoreStyles } from '../TestHelper';
 
 const singleStart = window.__env__ && window.__env__.SINGLE_START;
@@ -97,7 +97,7 @@ describe('Example', function() {
           BpmnPropertiesPanelModule,
           BpmnPropertiesProviderModule,
           ZeebePropertiesProviderModule,
-          VariablesModule,
+          ZeebeVariableResolverModule,
           AdditionalVariableModule
         ],
         moddleExtensions: {
