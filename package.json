@@ -1,17 +1,46 @@
 {
   "name": "@bpmn-io/variable-resolver",
   "version": "0.0.0",
-  "description": "",
+  "description": "bpmn-js plugin for handling external variable providers",
   "main": "lib/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "npm test -- --auto-watch --no-single-run",
+    "start": "cross-env SINGLE_START=true npm run dev",
+    "test": "karma start"
   },
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "@bpmn-io/extract-process-variables": "^0.7.0",
+    "lezer-feel": "^0.15.0",
+    "min-dash": "^4.0.0"
   },
   "devDependencies": {
+    "@bpmn-io/properties-panel": "^1.0.1",
+    "bpmn-js": "11.1.0",
+    "bpmn-js-properties-panel": "github:bpmn-io/bpmn-js-properties-panel#variable-handling",
+    "camunda-bpmn-js-behaviors": "^0.4.0",
+    "camunda-bpmn-moddle": "^7.0.1",
+    "chai": "^4.3.7",
+    "cross-env": "^7.0.3",
     "eslint": "^8.28.0",
-    "eslint-plugin-bpmn-io": "^0.16.0"
+    "eslint-plugin-bpmn-io": "^0.16.0",
+    "karma": "^6.4.1",
+    "karma-chrome-launcher": "^3.1.1",
+    "karma-coverage": "^2.2.0",
+    "karma-debug-launcher": "^0.0.5",
+    "karma-env-preprocessor": "^0.1.1",
+    "karma-mocha": "^2.0.1",
+    "karma-sinon-chai": "^2.0.2",
+    "karma-webpack": "^5.0.0",
+    "mocha": "^10.1.0",
+    "mocha-test-container-support": "^0.2.0",
+    "puppeteer": "^19.3.0",
+    "raw-loader": "^4.0.2",
+    "webpack": "^5.75.0",
+    "zeebe-bpmn-moddle": "^0.16.0"
+  },
+  "peerDependencies": {
+    "bpmn-js": "*"
   }
 }
