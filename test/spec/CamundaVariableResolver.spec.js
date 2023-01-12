@@ -84,7 +84,7 @@ describe('CamundaVariableResolver', function() {
       await variableResolver.getVariables();
 
       // then
-      expect(spy).to.have.been.called;
+      expect(spy).to.have.been.calledOnce;
     }));
 
 
