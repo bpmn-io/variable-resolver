@@ -4,15 +4,15 @@ import ZeebeModdle from 'zeebe-bpmn-moddle/resources/zeebe';
 
 import { is } from 'bpmn-js/lib/util/ModelUtil';
 
-import { bootstrapModeler, inject } from '../TestHelper';
+import { bootstrapModeler, inject } from 'test/TestHelper';
 
 import { ZeebeVariableResolverModule } from 'lib/';
 
-import simpleXML from '../fixtures/zeebe/simple.bpmn';
-import emptyXML from '../fixtures/zeebe/empty.bpmn';
-import complexXML from '../fixtures/zeebe/complex.bpmn';
+import simpleXML from 'test/fixtures/zeebe/simple.bpmn';
+import emptyXML from 'test/fixtures/zeebe/empty.bpmn';
+import complexXML from 'test/fixtures/zeebe/complex.bpmn';
 
-import VariableProvider from '../../lib/VariableProvider';
+import VariableProvider from 'lib/VariableProvider';
 
 describe('ZeebeVariableResolver', function() {
 
