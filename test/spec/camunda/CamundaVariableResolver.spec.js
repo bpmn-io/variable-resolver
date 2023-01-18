@@ -4,15 +4,15 @@ import CamundaModdle from 'camunda-bpmn-moddle/resources/camunda.json';
 
 import { is } from 'bpmn-js/lib/util/ModelUtil';
 
-import { bootstrapModeler, inject } from '../TestHelper';
+import { bootstrapModeler, inject } from 'test/TestHelper';
 
 import { CamundaVariableResolverModule } from 'lib/';
 
-import simpleXML from '../fixtures/camunda/simple.bpmn';
-import emptyXML from '../fixtures/camunda/empty.bpmn';
-import complexXML from '../fixtures/camunda/complex.bpmn';
+import simpleXML from 'test/fixtures/camunda/simple.bpmn';
+import emptyXML from 'test/fixtures/camunda/empty.bpmn';
+import complexXML from 'test/fixtures/camunda/complex.bpmn';
 
-import VariableProvider from '../../lib/VariableProvider';
+import VariableProvider from 'lib/VariableProvider';
 
 describe('CamundaVariableResolver', function() {
 
