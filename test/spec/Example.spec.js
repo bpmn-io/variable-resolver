@@ -123,8 +123,15 @@ class AdditionalVariableProvider extends VariableProvider {
     return [
       {
         name: 'additionalGlobalVariable',
-        type: 'String',
-        info: 'Info String'
+        type: 'Context',
+        info: 'My Custom Info',
+        entries: [
+          {
+            name: 'foo',
+            type: 'String',
+            info: 'My Custom String'
+          }
+        ]
       }
     ];
 
