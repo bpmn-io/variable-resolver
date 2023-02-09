@@ -122,6 +122,37 @@ describe('CamundaVariableResolver', function() {
     }));
 
 
+    it('should be side-effect free', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const root = elementRegistry.get('Process_1');
+
+      const variable = {
+        name: 'foo',
+        type: 'String',
+        entries: [
+          {
+            name: 'bar'
+          }
+        ]
+      };
+
+      createProvider({
+        variables: [ variable ],
+        variableResolver
+      });
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(root);
+
+      // then
+      expect(variables[0].scope).to.exist;
+      expect(variable.scope).not.to.exist;
+      expect(Object.keys(variable)).to.have.length(3);
+      expect(Object.keys(variable.entries[0])).to.have.length(1);
+    }));
+
+
     it('should allow multiple providers', inject(async function(variableResolver, elementRegistry) {
 
       // given
