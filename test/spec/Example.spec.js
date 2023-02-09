@@ -122,14 +122,46 @@ class AdditionalVariableProvider extends VariableProvider {
 
     return [
       {
-        name: 'additionalGlobalVariable',
+        name: 'response',
         type: 'Context',
-        info: 'My Custom Info',
+        info: 'Response from the API',
         entries: [
           {
-            name: 'foo',
+            name: 'id',
+            type: 'Number',
+            info: 'The customer ID'
+          },
+          {
+            name: 'name',
             type: 'String',
-            info: 'My Custom String'
+            info: '"Jon Doe"'
+          },
+          {
+            name: 'dob',
+            type: 'String',
+            info: 'Date of Birth'
+          },
+          {
+            name: 'contact',
+            type: 'Context',
+            info: 'Contact information',
+            entries: [
+              {
+                name: 'email',
+                type: 'String',
+                info: 'john.doe@company.tld'
+              },
+              {
+                name: 'Phone',
+                type: 'String',
+                info: '+1 555 123 4567'
+              },
+              {
+                name: 'Address',
+                type: 'String',
+                info: '123 Main Street, Anytown, USA'
+              }
+            ]
           }
         ]
       }
