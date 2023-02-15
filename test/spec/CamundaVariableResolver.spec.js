@@ -236,6 +236,27 @@ describe('CamundaVariableResolver', function() {
       expect(spy).to.have.been.calledTwice;
     }));
 
+
+    it('should refresh on variables.changed', inject(async function(variableResolver, eventBus) {
+
+      // given
+      const spy = sinon.spy();
+      const resolver = {
+        getVariables: spy
+      };
+
+      variableResolver.registerProvider(resolver);
+
+      // when
+      await variableResolver.getVariables();
+      eventBus.fire('variables.changed');
+      await variableResolver.getVariables();
+
+      // then
+      expect(spy).to.have.been.calledTwice;
+    }));
+
+
     it('should refresh on new resolver', inject(async function(variableResolver, eventBus) {
 
       // given
