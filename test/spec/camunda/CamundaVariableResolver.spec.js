@@ -22,43 +22,6 @@ describe('CamundaVariableResolver', function() {
     container = TestContainer.get(this);
   });
 
-  const expectVariables = (variables, expectedVariables) => {
-
-    expect(variables.length).to.eql(expectedVariables.length);
-
-    expectedVariables.forEach((expectedVariable) => {
-      const {
-        name,
-        type,
-        detail,
-        info,
-        scope,
-        isList,
-        origin,
-        entries
-      } = expectedVariable;
-
-
-      const actualVariable = variables.find(v => v.name === name);
-      expect(actualVariable).to.exist;
-
-      type && expect(actualVariable.type).to.eql(type);
-      info && expect(actualVariable.info).to.eql(info);
-      detail && expect(actualVariable.info).to.eql(info);
-      scope && expect(actualVariable.scope.id).to.eql(scope);
-      isList && expect(actualVariable.isList).to.eql(isList);
-      entries && expectVariables(actualVariable.entries, entries);
-
-      origin && expect(actualVariable.origin.length).to.eql(origin.length);
-      origin && origin.forEach((expectedOrigin) => {
-        const foundOrigin = actualVariable.origin.find(o => o.id === expectedOrigin);
-        expect(foundOrigin).to.exist;
-      });
-    });
-
-  };
-
-
   describe('#registerProvider', function() {
 
     beforeEach(
@@ -118,7 +81,7 @@ describe('CamundaVariableResolver', function() {
       const variables = await variableResolver.getVariablesForElement(root);
 
       // then
-      expectVariables(variables, [ { name: 'foo', type: 'String', scope: 'Process_1' } ]);
+      expect(variables).to.variableEqual([ { name: 'foo', type: 'String', scope: 'Process_1' } ]);
     }));
 
 
@@ -171,7 +134,7 @@ describe('CamundaVariableResolver', function() {
       const variables = await variableResolver.getVariablesForElement(root);
 
       // then
-      expectVariables(variables, [ { name: 'foo', type: 'String', scope: 'Process_1' }, { name: 'bar', type: 'String', scope: 'Process_1' } ]);
+      expect(variables).to.variableEqual([ { name: 'foo', type: 'String', scope: 'Process_1' }, { name: 'bar', type: 'String', scope: 'Process_1' } ]);
 
     }));
 
@@ -352,7 +315,7 @@ describe('CamundaVariableResolver', function() {
       const variables = await variableResolver.getVariablesForElement(root);
 
       // then
-      expectVariables(variables, [ { name: 'foo', type: 'String', scope: 'Process_1', origin: [ 'ServiceTask_1', 'Process_1' ] } ]);
+      expect(variables).to.variableEqual([ { name: 'foo', type: 'String', scope: 'Process_1', origin: [ 'ServiceTask_1', 'Process_1' ] } ]);
     }));
 
 
@@ -374,7 +337,7 @@ describe('CamundaVariableResolver', function() {
       const variables = await variableResolver.getVariablesForElement(root);
 
       // then
-      expectVariables(variables, [ { name: 'foo', type: 'String|Number' } ]);
+      expect(variables).to.variableEqual([ { name: 'foo', type: 'String|Number' } ]);
     }));
 
 
@@ -404,7 +367,7 @@ describe('CamundaVariableResolver', function() {
       const variables = await variableResolver.getVariablesForElement(root);
 
       // then
-      expectVariables(variables, [
+      expect(variables).to.variableEqual([
         { name: 'noList', type: 'String', isList: false },
         { name: 'optionalList', type: 'String', isList: 'optional' },
         { name: 'allList', type: 'String', isList: true }
@@ -458,7 +421,7 @@ describe('CamundaVariableResolver', function() {
       const variables = await variableResolver.getVariablesForElement(root);
 
       // then
-      expectVariables(variables, [ {
+      expect(variables).to.variableEqual([ {
         name: 'foo', entries: [
           {
             name: 'bar',
@@ -517,7 +480,7 @@ describe('CamundaVariableResolver', function() {
       const variables = await variableResolver.getVariablesForElement(root);
 
       // then
-      expectVariables(variables, [
+      expect(variables).to.variableEqual([
         { name: 'a', detail: 'String', entries: [
           { name: 'b', detail: 'Number' }
         ] },
@@ -552,7 +515,7 @@ describe('CamundaVariableResolver', function() {
 
       // then
       // own variables
-      expectVariables(variables, [
+      expect(variables).to.variableEqual([
         { name: 'variable1', origin: [ 'Task_1' ], scope: 'Process_1' },
         { name: 'variable2', origin: [ 'Task_1' ], scope: 'Process_1' },
       ]);
@@ -569,7 +532,7 @@ describe('CamundaVariableResolver', function() {
 
       // then
       // own + all variables from parent scope
-      expectVariables(variables, [
+      expect(variables).to.variableEqual([
         { name: 'variable1', origin: [ 'Task_1' ], scope: 'Process_1' },
         { name: 'variable2', origin: [ 'Task_1' ], scope: 'Process_1' },
         { name: 'variable3', origin: [ 'Task_2' ], scope: 'SubProcess_1' }
@@ -593,7 +556,7 @@ describe('CamundaVariableResolver', function() {
 
       // then
       // own + all variables from parent scope
-      expectVariables(variables, [
+      expect(variables).to.variableEqual([
         { name: 'variable1', origin: [ 'Task_1' ], scope: 'Process_1' },
         { name: 'variable2', origin: [ 'Task_1' ], scope: 'Process_1' },
         { name: 'variable3', origin: [ 'Task_2' ], scope: 'SubProcess_1' },
@@ -618,7 +581,7 @@ describe('CamundaVariableResolver', function() {
 
       // then
       // own + all variables from parent scope
-      expectVariables(variables, [
+      expect(variables).to.variableEqual([
         { name: 'variable1', origin: [ 'Task_1' ], scope: 'Process_1' },
         { name: 'variable2', origin: [ 'Task_1' ], scope: 'Process_1' },
         { name: 'variable3', origin: [ 'Task_2', 'Task_3' ], scope: 'SubProcess_1' },
