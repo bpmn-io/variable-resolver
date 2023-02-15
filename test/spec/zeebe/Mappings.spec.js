@@ -26,44 +26,6 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
     container = TestContainer.get(this);
   });
 
-  const expectVariables = (variables, expectedVariables) => {
-
-    expect(variables.length).to.eql(expectedVariables.length);
-
-    expectedVariables.forEach((expectedVariable) => {
-      const {
-        name,
-        type,
-        detail,
-        info,
-        scope,
-        isList,
-        origin,
-        entries
-      } = expectedVariable;
-
-
-      const actualVariable = variables.find(v => v.name === name);
-      expect(actualVariable).to.exist;
-
-      shouldTest(type) && expect(actualVariable.type).to.eql(type);
-      shouldTest(info) && expect(actualVariable.info).to.eql(info);
-      shouldTest(detail) && expect(actualVariable.info).to.eql(info);
-      shouldTest(scope) && expect(actualVariable.scope.id).to.eql(scope);
-      shouldTest(isList) && expect(actualVariable.isList).to.eql(isList);
-      shouldTest(entries) && expectVariables(actualVariable.entries, entries);
-
-      shouldTest(origin) && expect(actualVariable.origin.length).to.eql(origin.length);
-      shouldTest(origin) && origin.forEach((expectedOrigin) => {
-        const foundOrigin = actualVariable.origin.find(o => o.id === expectedOrigin);
-        expect(foundOrigin).to.exist;
-      });
-    });
-
-  };
-
-
-
 
   const bootstrap = (xml) => {
     return bootstrapModeler(xml, {
@@ -77,12 +39,9 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
     });
   };
 
-  chainedMappingsXML;
-
   describe('Mappings', function() {
 
     beforeEach(bootstrap(chainedMappingsXML));
-
 
     it('should keep schema through multiple mappings', inject(async function(variableResolver, elementRegistry) {
 
@@ -98,7 +57,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       const variables = await variableResolver.getVariablesForElement(root.businessObject);
 
       // then
-      expectVariables(variables, [
+      expect(variables).to.variableEqual([
         ...toVariableFormat({ globalVariable: { foo: { bar: { baz: {} } } } }),
         { name: 'variable1', type: 'fooType', info: 'fooInfo', entries: toVariableFormat({ bar: { baz: {} } }) },
         { name: 'variable2', type: 'barType', info: 'barInfo', entries: toVariableFormat({ baz: {} }) },
@@ -125,7 +84,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
 
 
       // then
-      expectVariables(variables, [
+      expect(variables).to.variableEqual([
         {
           name: 'genericTypes',
           type: 'Context',
@@ -171,7 +130,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       const variables = await variableResolver.getVariablesForElement(root.businessObject);
 
       // then
-      expectVariables(variables, [
+      expect(variables).to.variableEqual([
         ...initialVariables,
         {
           name: 'mergedContext',
@@ -213,7 +172,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       const variables = await variableResolver.getVariablesForElement(root.businessObject);
 
       // then
-      expectVariables(variables, [
+      expect(variables).to.variableEqual([
         ...initialVariables,
         {
           name: 'validMapping',
@@ -257,9 +216,4 @@ function toVariableFormat(variables) {
       entries: toVariableFormat(variables[v])
     };
   });
-}
-
-
-function shouldTest(value) {
-  return typeof value !== 'undefined';
 }
