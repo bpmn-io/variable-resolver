@@ -35,7 +35,7 @@ global.chai.use(function(chai, utils) {
 
       isDefined(type) && expect(actualVariable.type).to.eql(type);
       isDefined(info) && expect(actualVariable.info).to.eql(info);
-      isDefined(detail) && expect(actualVariable.info).to.eql(info);
+      isDefined(detail) && expect(actualVariable.detail).to.eql(detail);
       isDefined(scope) && expect(actualVariable.scope.id).to.eql(scope);
       isDefined(isList) && expect(!!actualVariable.isList).to.eql(!!isList);
       isDefined(entries) && expect(actualVariable.entries).to.variableEqual(entries);
