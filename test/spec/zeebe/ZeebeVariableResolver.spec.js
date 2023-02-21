@@ -138,6 +138,49 @@ describe('ZeebeVariableResolver', function() {
 
     }));
 
+
+    describe('async', function() {
+
+      beforeEach(
+        bootstrapModeler(simpleXML, {
+          container,
+          additionalModules: [
+            ZeebeVariableResolverModule
+          ]
+        })
+      );
+
+
+      it('should allow multiple async providers', inject(async function(variableResolver, elementRegistry) {
+
+        // given
+        const root = elementRegistry.get('Process_1');
+
+        createProvider({
+          variables: [ { name: 'foo', type: 'String', scope: root } ],
+          variableResolver,
+          delay: 1
+        });
+        createProvider({
+          variables: [ { name: 'bar', type: 'String', scope: root } ],
+          variableResolver,
+          delay: 1
+        });
+
+        // when
+        const variables = await variableResolver.getVariablesForElement(root);
+
+        // then
+        expect(variables).to.variableEqual(
+          [
+            { name: 'foo', type: 'String', scope: 'Process_1' },
+            { name: 'bar', type: 'String', scope: 'Process_1' }
+          ]);
+
+      }));
+
+    });
+
   });
 
 
@@ -594,16 +637,26 @@ describe('ZeebeVariableResolver', function() {
 
 // helpers //////////////////////
 
-const createProvider = function({ variables, variableResolver, origin }) {
+const createProvider = function({ variables, variableResolver, origin, delay = 0 }) {
   return new class TestProvider extends VariableProvider {
     getVariables(element) {
       if (origin) {
-        return origin === element.id ? variables : [];
+        return origin === element.id ? this.returnVariables() : [];
       }
 
       if (is(element, 'bpmn:Process')) {
-        return variables;
+        return this.returnVariables();
       }
+    }
+
+    returnVariables() {
+      if (delay) {
+        return new Promise(resolve => {
+          setTimeout(() => resolve(variables), delay);
+        });
+      }
+
+      return variables;
     }
   }(variableResolver);
 };
