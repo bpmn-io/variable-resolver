@@ -8,6 +8,9 @@
     "start": "cross-env SINGLE_START=true npm run dev",
     "test": "karma start"
   },
+  "files": [
+    "lib"
+  ],
   "author": "",
   "license": "MIT",
   "dependencies": {
