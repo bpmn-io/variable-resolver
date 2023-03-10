@@ -6,6 +6,10 @@ All notable changes to [@bpmn-io/variable-resolver](https://github.com/bpmn-io/v
 
 ___Note:__ Yet to be released changes appear here._
 
+## 0.1.2
+
+* `FIX`: map FEEL variable types to editor format ([#9](https://github.com/bpmn-io/variable-resolver/pull/9))
+
 ## 0.1.1
 
 * `DEPS`: update to `@bpmn-io/extract-process-variables@0.8.0`
