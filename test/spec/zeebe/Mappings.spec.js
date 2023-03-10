@@ -99,6 +99,31 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       ]);
     }));
 
+
+    it('should map to editor format (detail, info, entries)', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const root = elementRegistry.get('Process_1');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(root.businessObject);
+
+      // then
+      expect(variables).to.variableEqual([
+        {
+          name: 'genericTypes',
+          detail: 'Context',
+          info: '',
+          entries: [
+            { name: 'string', detail: 'String', info: 'foo', entries: [] },
+            { name: 'number', detail: 'Number', info: '1', entries: [] },
+            { name: 'boolean', detail: 'Boolean', info: 'true', entries: [] },
+            { name: 'null', detail: 'Null', entries: [] },
+          ]
+        }
+      ]);
+    }));
+
   });
 
 
