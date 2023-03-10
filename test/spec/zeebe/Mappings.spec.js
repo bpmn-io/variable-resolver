@@ -168,6 +168,61 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       ]);
     }));
 
+
+    it('should merge variables with global context', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const root = elementRegistry.get('Process_1');
+
+      const initialVariables = [
+        {
+          name: 'globalVariable',
+          type: 'TestVariable',
+          info: 'TestInfo',
+          entries: [
+            { name: 'foo' },
+          ]
+        },
+        {
+          name: 'mergedContext',
+          type: 'globalType',
+          info: 'globalInfo',
+          entries: [
+            { name: 'bar' },
+          ]
+        }
+      ];
+
+      createProvider({
+        variables: initialVariables,
+        variableResolver
+      });
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(root.businessObject);
+
+      // then
+      expect(variables).to.variableEqual([
+        {
+          name: 'globalVariable',
+          type: 'TestVariable',
+          info: 'TestInfo',
+          entries: [
+            { name: 'foo' },
+          ]
+        },
+        {
+          name: 'mergedContext',
+          type: 'globalType|Context',
+          entries: [
+            { name: 'a', type: 'TestVariable', info: 'TestInfo', entries: [ { name: 'foo' } ] },
+            { name: 'b', type: 'TestVariable', info: 'TestInfo', entries: [ { name: 'foo' } ] },
+            { name: 'bar' }
+          ]
+        }
+      ]);
+    }));
+
   });
 
 
