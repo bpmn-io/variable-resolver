@@ -8,8 +8,6 @@ import { bootstrapModeler, inject } from 'test/TestHelper';
 
 import { ZeebeVariableResolverModule } from 'lib/';
 
-// import simpleXML from '../fixtures/zeebe/simple.bpmn';
-
 import chainedMappingsXML from 'test/fixtures/zeebe/mappings/chained-mappings.bpmn';
 import primitivesXML from 'test/fixtures/zeebe/mappings/primitives.bpmn';
 import mergingXML from 'test/fixtures/zeebe/mappings/merging.bpmn';
@@ -93,7 +91,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
             { name: 'string', type: 'String', info: 'foo', entries: [] },
             { name: 'number', type: 'Number', info: '1', entries: [] },
             { name: 'boolean', type: 'Boolean', info: 'true', entries: [] },
-            { name: 'null', type: 'Null', entries: [] },
+            { name: 'null', type: '', entries: [] },
           ]
         }
       ]);
@@ -118,7 +116,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
             { name: 'string', detail: 'String', info: 'foo', entries: [] },
             { name: 'number', detail: 'Number', info: '1', entries: [] },
             { name: 'boolean', detail: 'Boolean', info: 'true', entries: [] },
-            { name: 'null', detail: 'Null', entries: [] },
+            { name: 'null', detail: '', entries: [] },
           ]
         }
       ]);
@@ -261,7 +259,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
         },
         {
           name: 'invalidMapping',
-          type: 'Null',
+          type: '',
           info: ''
         }
       ]);
