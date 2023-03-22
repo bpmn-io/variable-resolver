@@ -16,7 +16,7 @@
   "dependencies": {
     "@bpmn-io/extract-process-variables": "^0.8.0",
     "@lezer/common": "^1.0.2",
-    "lezer-feel": "github:marstamm/lezer-feel#decouple-context-format",
+    "lezer-feel": "github:marstamm/lezer-feel#decouple-context-format-build",
     "min-dash": "^4.0.0"
   },
   "devDependencies": {
