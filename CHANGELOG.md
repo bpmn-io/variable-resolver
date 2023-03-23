@@ -6,6 +6,11 @@ All notable changes to [@bpmn-io/variable-resolver](https://github.com/bpmn-io/v
 
 ___Note:__ Yet to be released changes appear here._
 
+## 0.1.3
+
+* `FIX`: don't show unknown types as `null` ([#12](https://github.com/bpmn-io/variable-resolver/pull/12))
+* `FIX`: support install using `yarn@1` ([#13](https://github.com/bpmn-io/variable-resolver/pull/13))
+
 ## 0.1.2
 
 * `FIX`: map FEEL variable types to editor format ([#9](https://github.com/bpmn-io/variable-resolver/pull/9))
