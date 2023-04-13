@@ -11,6 +11,7 @@ import { ZeebeVariableResolverModule } from 'lib/';
 import simpleXML from 'test/fixtures/zeebe/simple.bpmn';
 import emptyXML from 'test/fixtures/zeebe/empty.bpmn';
 import complexXML from 'test/fixtures/zeebe/complex.bpmn';
+import connectorsXML from 'test/fixtures/zeebe/connectors.bpmn';
 
 import VariableProvider from 'lib/VariableProvider';
 
@@ -184,7 +185,7 @@ describe('ZeebeVariableResolver', function() {
   });
 
 
-  describe('cacheing', function() {
+  describe('caching', function() {
 
     beforeEach(
       bootstrapModeler(emptyXML, {
@@ -629,6 +630,85 @@ describe('ZeebeVariableResolver', function() {
         { name: 'variable2', origin: [ 'Task_1' ], scope: 'Process_1' },
         { name: 'variable3', origin: [ 'SubProcess_1', 'Task_2', 'Task_3' ], scope: 'SubProcess_1' },
       ]);
+    }));
+
+  });
+
+
+  describe('connectors', function() {
+    beforeEach(
+      bootstrapModeler(connectorsXML, {
+        container,
+        additionalModules: [
+          ZeebeVariableResolverModule
+        ],
+        moddleExtensions: {
+          zeebe: ZeebeModdle
+        }
+      })
+    );
+
+
+    it('should NOT add variables on missing headers', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const task = elementRegistry.get('empty');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(task.businessObject);
+
+      // then
+      expect(variables).to.variableEqual([ ]);
+    }));
+
+
+    it('should add variables from resultVariable header', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const task = elementRegistry.get('resultVariable');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(task.businessObject);
+
+      // then
+      expect(variables).to.variableEqual([
+        { name: 'resultVariable', origin: [ 'resultVariable' ] },
+      ]);
+    }));
+
+
+    it('should add variables from resultExpression header', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const task = elementRegistry.get('resultExpression');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(task.businessObject);
+
+      // then
+      expect(variables).to.variableEqual([
+        { name: 'expressionVariable', origin: [ 'resultExpression' ] },
+        { name: 'anotherExpressionVariable', origin: [ 'resultExpression' ] },
+      ]);
+
+    }));
+
+
+    it('should add variables from both headers', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const task = elementRegistry.get('both');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(task.businessObject);
+
+      // then
+      expect(variables).to.variableEqual([
+        { name: 'resultVariable', origin: [ 'both' ] },
+        { name: 'expressionVariable', origin: [ 'both' ] },
+        { name: 'anotherExpressionVariable', origin: [ 'both' ] },
+      ]);
+
     }));
 
   });

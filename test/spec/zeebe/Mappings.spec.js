@@ -13,7 +13,6 @@ import primitivesXML from 'test/fixtures/zeebe/mappings/primitives.bpmn';
 import mergingXML from 'test/fixtures/zeebe/mappings/merging.bpmn';
 import scopeXML from 'test/fixtures/zeebe/mappings/scope.bpmn';
 
-
 import VariableProvider from 'lib/VariableProvider';
 
 describe('ZeebeVariableResolver - Variable Mappings', function() {
