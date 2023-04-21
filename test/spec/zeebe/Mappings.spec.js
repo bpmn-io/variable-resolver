@@ -133,7 +133,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
     it('should merge multiple variables (if-else)', inject(async function(variableResolver, elementRegistry) {
 
       // given
-      const root = elementRegistry.get('Process_1');
+      const root = elementRegistry.get('Participant_1');
 
       const initialVariables = [ {
         name: 'globalVariable',
@@ -150,7 +150,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       });
 
       // when
-      const variables = await variableResolver.getVariablesForElement(root.businessObject);
+      const variables = await variableResolver.getVariablesForElement(root.businessObject.processRef);
 
       // then
       expect(variables).to.variableEqual([
@@ -170,7 +170,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
     it('should merge variables with global context', inject(async function(variableResolver, elementRegistry) {
 
       // given
-      const root = elementRegistry.get('Process_1');
+      const root = elementRegistry.get('Participant_1');
 
       const initialVariables = [
         {
@@ -197,7 +197,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       });
 
       // when
-      const variables = await variableResolver.getVariablesForElement(root.businessObject);
+      const variables = await variableResolver.getVariablesForElement(root.businessObject.processRef);
 
       // then
       expect(variables).to.variableEqual([
@@ -216,6 +216,33 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
             { name: 'a', type: 'TestVariable', info: 'TestInfo', entries: [ { name: 'foo' } ] },
             { name: 'b', type: 'TestVariable', info: 'TestInfo', entries: [ { name: 'foo' } ] },
             { name: 'bar' }
+          ]
+        }
+      ]);
+    }));
+
+
+    it('should merge multiple variables', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const root = elementRegistry.get('Participant_2');
+
+      createProvider({
+        variables: [],
+        variableResolver
+      });
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(root.businessObject.processRef);
+
+      // then
+      expect(variables).to.variableEqual([
+        {
+          name: 'multipleSources',
+          type: 'Context|String',
+          entries: [
+            { name: 'a' },
+            { name: 'b' },
           ]
         }
       ]);
