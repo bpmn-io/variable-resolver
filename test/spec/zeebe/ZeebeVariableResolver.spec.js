@@ -652,7 +652,7 @@ describe('ZeebeVariableResolver', function() {
     it('should NOT add variables on missing headers', inject(async function(variableResolver, elementRegistry) {
 
       // given
-      const task = elementRegistry.get('empty');
+      const task = elementRegistry.get('emptyTask');
 
       // when
       const variables = await variableResolver.getVariablesForElement(task.businessObject);
@@ -665,14 +665,14 @@ describe('ZeebeVariableResolver', function() {
     it('should add variables from resultVariable header', inject(async function(variableResolver, elementRegistry) {
 
       // given
-      const task = elementRegistry.get('resultVariable');
+      const task = elementRegistry.get('resultVariableTask');
 
       // when
       const variables = await variableResolver.getVariablesForElement(task.businessObject);
 
       // then
       expect(variables).to.variableEqual([
-        { name: 'resultVariable', origin: [ 'resultVariable' ] },
+        { name: 'resultVariable', origin: [ 'resultVariableTask' ] },
       ]);
     }));
 
@@ -680,15 +680,15 @@ describe('ZeebeVariableResolver', function() {
     it('should add variables from resultExpression header', inject(async function(variableResolver, elementRegistry) {
 
       // given
-      const task = elementRegistry.get('resultExpression');
+      const task = elementRegistry.get('resultExpressionTask');
 
       // when
       const variables = await variableResolver.getVariablesForElement(task.businessObject);
 
       // then
       expect(variables).to.variableEqual([
-        { name: 'expressionVariable', origin: [ 'resultExpression' ] },
-        { name: 'anotherExpressionVariable', origin: [ 'resultExpression' ] },
+        { name: 'expressionVariable', origin: [ 'resultExpressionTask' ] },
+        { name: 'anotherExpressionVariable', origin: [ 'resultExpressionTask' ] },
       ]);
 
     }));
@@ -697,16 +697,16 @@ describe('ZeebeVariableResolver', function() {
     it('should add variables from both headers', inject(async function(variableResolver, elementRegistry) {
 
       // given
-      const task = elementRegistry.get('both');
+      const task = elementRegistry.get('variableAndExpressionTask');
 
       // when
       const variables = await variableResolver.getVariablesForElement(task.businessObject);
 
       // then
       expect(variables).to.variableEqual([
-        { name: 'resultVariable', origin: [ 'both' ] },
-        { name: 'expressionVariable', origin: [ 'both' ] },
-        { name: 'anotherExpressionVariable', origin: [ 'both' ] },
+        { name: 'resultVariable', origin: [ 'variableAndExpressionTask' ] },
+        { name: 'expressionVariable', origin: [ 'variableAndExpressionTask' ] },
+        { name: 'anotherExpressionVariable', origin: [ 'variableAndExpressionTask' ] },
       ]);
 
     }));
