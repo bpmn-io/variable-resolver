@@ -1,5 +1,3 @@
-> 🏗 This project is in WIP stage.
-
 # @bpmn-io/variable-resolver
 
 A bpmn-js extension to add and manage additional variable extractors in bpmn diagrams.

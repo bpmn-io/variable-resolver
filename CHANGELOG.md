@@ -6,6 +6,12 @@ All notable changes to [@bpmn-io/variable-resolver](https://github.com/bpmn-io/v
 
 ___Note:__ Yet to be released changes appear here._
 
+## 1.0.0
+
+* `FEAT`: extract connector variables ([#14](https://github.com/bpmn-io/variable-resolver/pull/14))
+* `FEAT`: handle multiple zeebe mappings ([#15](https://github.com/bpmn-io/variable-resolver/pull/15))
+* `DEPS`: bump to `lezer-feel@0.17.1` ([#17](https://github.com/bpmn-io/variable-resolver/pull/17))
+
 ## 0.1.3
 
 * `FIX`: don't show unknown types as `null` ([#12](https://github.com/bpmn-io/variable-resolver/pull/12))
