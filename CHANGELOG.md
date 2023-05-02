@@ -6,6 +6,10 @@ All notable changes to [@bpmn-io/variable-resolver](https://github.com/bpmn-io/v
 
 ___Note:__ Yet to be released changes appear here._
 
+## 1.0.1
+
+* `FIX`: support empty variables in connector mappings ([#18](https://github.com/bpmn-io/variable-resolver/pull/18))
+
 ## 1.0.0
 
 * `FEAT`: extract connector variables ([#14](https://github.com/bpmn-io/variable-resolver/pull/14))
