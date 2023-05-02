@@ -636,6 +636,7 @@ describe('ZeebeVariableResolver', function() {
 
 
   describe('connectors', function() {
+
     beforeEach(
       bootstrapModeler(connectorsXML, {
         container,
@@ -708,6 +709,20 @@ describe('ZeebeVariableResolver', function() {
         { name: 'expressionVariable', origin: [ 'variableAndExpressionTask' ] },
         { name: 'anotherExpressionVariable', origin: [ 'variableAndExpressionTask' ] },
       ]);
+
+    }));
+
+
+    it('should not blow up on empty mapping', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const task = elementRegistry.get('brokenMappingTask');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(task.businessObject);
+
+      // then
+      expect(variables).to.variableEqual([]);
 
     }));
 
