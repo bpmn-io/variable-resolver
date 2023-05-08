@@ -2,7 +2,7 @@ import TestContainer from 'mocha-test-container-support';
 
 import ZeebeModdle from 'zeebe-bpmn-moddle/resources/zeebe';
 
-import { is } from 'bpmn-js/lib/util/ModelUtil';
+import { getBusinessObject, is } from 'bpmn-js/lib/util/ModelUtil';
 
 import { bootstrapModeler, inject } from 'test/TestHelper';
 
@@ -12,8 +12,10 @@ import simpleXML from 'test/fixtures/zeebe/simple.bpmn';
 import emptyXML from 'test/fixtures/zeebe/empty.bpmn';
 import complexXML from 'test/fixtures/zeebe/complex.bpmn';
 import connectorsXML from 'test/fixtures/zeebe/connectors.bpmn';
+import ioMappingsXML from 'test/fixtures/zeebe/ioMappings.bpmn';
 
 import VariableProvider from 'lib/VariableProvider';
+import { getInputOutput } from '../../../lib/base/util/ExtensionElementsUtil';
 
 describe('ZeebeVariableResolver', function() {
 
@@ -762,6 +764,217 @@ describe('ZeebeVariableResolver', function() {
       expect(variables).to.variableEqual([]);
 
     }));
+
+  });
+
+
+  describe('io mappings', function() {
+
+    beforeEach(
+      bootstrapModeler(ioMappingsXML, {
+        container,
+        additionalModules: [
+          ZeebeVariableResolverModule
+        ],
+        moddleExtensions: {
+          zeebe: ZeebeModdle
+        }
+      })
+    );
+
+
+    describe('single origin', function() {
+
+      it('should filter for inputs', inject(async function(elementRegistry, variableResolver) {
+
+        // given
+        const task = elementRegistry.get('singleOriginTask');
+        const bo = getBusinessObject(task);
+        const input = getInputOutput(bo).inputParameters[1];
+
+        // when
+        const variables = await variableResolver.getVariablesForElement(bo, input);
+
+        // then
+        // filter own name, later input mappings + all output mappings
+        expect(variables).to.variableEqual([
+          { name: 'input1' }
+        ]);
+
+      }));
+
+
+      it('should filter for outputs', inject(async function(elementRegistry, variableResolver) {
+
+        // given
+        const task = elementRegistry.get('singleOriginTask');
+        const bo = getBusinessObject(task);
+        const output = getInputOutput(bo).outputParameters[1];
+
+        // when
+        const variables = await variableResolver.getVariablesForElement(bo, output);
+
+        // then
+        // filter own name, later output mappings
+        expect(variables).to.variableEqual([
+          { name: 'input1' },
+          { name: 'input2' },
+          { name: 'input3' },
+          { name: 'output1' }
+        ]);
+
+      }));
+
+
+      it('should filter for task', inject(async function(elementRegistry, variableResolver) {
+
+        // given
+        const task = elementRegistry.get('singleOriginTask');
+        const bo = getBusinessObject(task);
+
+        // when
+        const variables = await variableResolver.getVariablesForElement(bo, task);
+
+        // then
+        // filter own name, later output mappings
+        expect(variables).to.variableEqual([
+          { name: 'input1' },
+          { name: 'input2' },
+          { name: 'input3' }
+        ]);
+
+      }));
+
+    });
+
+
+    describe('multi origin', function() {
+
+      it('should filter for inputs', inject(async function(elementRegistry, variableResolver) {
+
+        // given
+        const task = elementRegistry.get('multiOriginTask');
+        const bo = getBusinessObject(task);
+        const input = getInputOutput(bo).inputParameters[1];
+
+        // when
+        const variables = await variableResolver.getVariablesForElement(bo, input);
+
+        // then
+        // filter own name, later input mappings + all output mappings
+        expect(variables).to.variableEqual([
+          { name: 'input1' },
+          { name: 'output2' }
+        ]);
+
+      }));
+
+
+      it('should filter for outputs', inject(async function(elementRegistry, variableResolver) {
+
+        // given
+        const task = elementRegistry.get('multiOriginTask');
+        const bo = getBusinessObject(task);
+        const input = getInputOutput(bo).outputParameters[1];
+
+        // when
+        const variables = await variableResolver.getVariablesForElement(bo, input);
+
+        console.log(variables.map(v => v.name));
+
+        // then
+        // filter own name, later output mappings
+        expect(variables).to.variableEqual([
+          { name: 'input1' },
+          { name: 'input2' },
+          { name: 'input3' },
+          { name: 'output1' },
+          { name: 'output2' }
+        ]);
+
+      }));
+
+
+      it('should filter for task', inject(async function(elementRegistry, variableResolver) {
+
+        // given
+        const task = elementRegistry.get('multiOriginTask');
+        const bo = getBusinessObject(task);
+
+        // when
+        const variables = await variableResolver.getVariablesForElement(bo, task);
+
+        // then
+        // filter own name, later output mappings
+        expect(variables).to.variableEqual([
+          { name: 'input1' },
+          { name: 'input2' },
+          { name: 'input3' },
+          { name: 'output2' },
+        ]);
+
+      }));
+
+    });
+
+
+    describe('additional extractors', function() {
+
+
+      it('should suggest additional variables (output)', inject(async function(variableResolver, elementRegistry) {
+
+        // given
+        const task = elementRegistry.get('singleOriginTask');
+        const bo = getBusinessObject(task);
+        const output = getInputOutput(bo).outputParameters[1];
+
+        createProvider({
+          variables: [
+            { name: 'output2' }
+          ],
+          origin: 'singleOriginTask',
+          variableResolver
+        });
+
+        // when
+        const variables = await variableResolver.getVariablesForElement(bo, output);
+
+        // then
+        expect(variables).to.variableEqual([
+          { name: 'input1' },
+          { name: 'input2' },
+          { name: 'input3' },
+          { name: 'output1' },
+          { name: 'output2' }
+        ]);
+      }));
+
+
+      it('should NOT suggest additional variables (input)', inject(async function(variableResolver, elementRegistry) {
+
+        // given
+        const task = elementRegistry.get('singleOriginTask');
+        const bo = getBusinessObject(task);
+        const output = getInputOutput(bo).inputParameters[1];
+
+        createProvider({
+          variables: [
+            { name: 'output2' }
+          ],
+          origin: 'singleOriginTask',
+          variableResolver
+        });
+
+        // when
+        const variables = await variableResolver.getVariablesForElement(bo, output);
+
+        // then
+        expect(variables).to.variableEqual([
+          { name: 'input1' }
+        ]);
+      }));
+
+    });
 
   });
 
