@@ -866,8 +866,6 @@ describe('ZeebeVariableResolver', function() {
         // when
         const variables = await variableResolver.getVariablesForElement(bo, input);
 
-        console.log(variables.map(v => v.name));
-
         // then
         // filter own name, later output mappings
         expect(variables).to.variableEqual([
