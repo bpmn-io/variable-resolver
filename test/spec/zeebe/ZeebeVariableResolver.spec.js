@@ -140,6 +140,29 @@ describe('ZeebeVariableResolver', function() {
     }));
 
 
+    it('should add provider meta-data', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const root = elementRegistry.get('Process_1');
+
+      const variableProvider = createProvider({
+        variables: [ { name: 'foo', type: 'String', scope: root } ],
+        variableResolver
+      });
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(root);
+
+      const provider = variables[0].provider;
+
+      // then
+      expect(provider).to.exist;
+      expect(provider).to.have.length(1);
+      expect(provider[0]).to.equal(variableProvider);
+
+    }));
+
+
     describe('async', function() {
 
       beforeEach(
