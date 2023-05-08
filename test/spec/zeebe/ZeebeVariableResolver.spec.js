@@ -716,7 +716,21 @@ describe('ZeebeVariableResolver', function() {
     it('should not blow up on empty mapping', inject(async function(variableResolver, elementRegistry) {
 
       // given
-      const task = elementRegistry.get('brokenMappingTask');
+      const task = elementRegistry.get('emptyMappingTask');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(task.businessObject);
+
+      // then
+      expect(variables).to.variableEqual([]);
+
+    }));
+
+
+    it('should not blow up on missing mapping', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const task = elementRegistry.get('missingMappingTask');
 
       // when
       const variables = await variableResolver.getVariablesForElement(task.businessObject);
