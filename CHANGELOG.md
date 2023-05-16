@@ -6,6 +6,11 @@ All notable changes to [@bpmn-io/variable-resolver](https://github.com/bpmn-io/v
 
 ___Note:__ Yet to be released changes appear here._
 
+## 1.1.0
+
+* `FEAT`: filter variables depending on their order ([#19](https://github.com/bpmn-io/variable-resolver/pull/19))
+* `FIX`: handle missing resultExpression value ([#20](https://github.com/bpmn-io/variable-resolver/pull/20))
+
 ## 1.0.1
 
 * `FIX`: support empty variables in connector mappings ([#18](https://github.com/bpmn-io/variable-resolver/pull/18))
