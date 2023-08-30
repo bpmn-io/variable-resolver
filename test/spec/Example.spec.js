@@ -3,9 +3,12 @@ import TestContainer from 'mocha-test-container-support';
 import {
   BpmnPropertiesPanelModule,
   BpmnPropertiesProviderModule,
-  ZeebePropertiesProviderModule,
-  CloudElementTemplatesPropertiesProviderModule
+  ZeebePropertiesProviderModule
 } from 'bpmn-js-properties-panel';
+
+import {
+  CloudElementTemplatesPropertiesProviderModule
+} from 'bpmn-js-element-templates';
 
 import ElementTemplateChooserModule from '@bpmn-io/element-template-chooser';
 
