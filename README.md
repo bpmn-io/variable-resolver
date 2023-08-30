@@ -1,5 +1,7 @@
 # @bpmn-io/variable-resolver
 
+[![CI](https://github.com/bpmn-io/variable-resolver/actions/workflows/CI.yml/badge.svg)](https://github.com/bpmn-io/variable-resolver/actions/workflows/CI.yml)
+
 A bpmn-js extension to add and manage additional variable extractors in bpmn diagrams.
 
 ## Usage
