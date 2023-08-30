@@ -6,6 +6,10 @@ All notable changes to [@bpmn-io/variable-resolver](https://github.com/bpmn-io/v
 
 ___Note:__ Yet to be released changes appear here._
 
+## 1.2.0
+
+* `DEPS`: update to `lezer-feel@1`
+
 ## 1.1.0
 
 * `FEAT`: filter variables depending on their order ([#19](https://github.com/bpmn-io/variable-resolver/pull/19))
