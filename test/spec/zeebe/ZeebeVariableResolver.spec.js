@@ -16,6 +16,7 @@ import ioMappingsXML from 'test/fixtures/zeebe/ioMappings.bpmn';
 
 import VariableProvider from 'lib/VariableProvider';
 import { getInputOutput } from '../../../lib/base/util/ExtensionElementsUtil';
+import { mergeEntries } from '../../../lib/base/VariableResolver';
 
 describe('ZeebeVariableResolver', function() {
 
@@ -511,6 +512,31 @@ describe('ZeebeVariableResolver', function() {
       }
       ]);
     }));
+
+
+    it('should not fail on infinite loop', function() {
+
+      // given
+      const source = {
+        name: 'foo',
+        entries: []
+      };
+
+      source.entries.push(source);
+
+      const target = {
+        name: 'foo',
+        entries: []
+      };
+
+      target.entries.push(target);
+
+      // when
+      mergeEntries(source, target);
+
+      // then
+      expect([ target ]).to.variableEqual([ { name: 'foo' } ]);
+    });
 
   });
 
