@@ -28,6 +28,9 @@ import { setBpmnJS, clearBpmnJS, insertCoreStyles } from '../TestHelper';
 
 const singleStart = window.__env__ && window.__env__.SINGLE_START;
 
+
+insertCoreStyles();
+
 describe('Example', function() {
 
   let container;
@@ -39,7 +42,6 @@ describe('Example', function() {
   let modelerContainer, propertiesContainer;
 
   beforeEach(function() {
-    insertCoreStyles();
     modelerContainer = document.createElement('div');
     modelerContainer.classList.add('modeler-container');
 

@@ -60,8 +60,6 @@ export function bootstrapPropertiesPanel(diagram, options, locals) {
   return async function() {
     const container = TestContainer.get(this);
 
-    insertCoreStyles();
-
     // (1) create modeler + import diagram
     await bootstrapBpmnJS(Modeler, diagram, options, locals);
 
