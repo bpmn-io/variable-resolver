@@ -247,6 +247,29 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       ]);
     }));
 
+
+    it('should handle many merge operations', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const root = elementRegistry.get('Participant_3');
+
+      createProvider({
+        variables: [],
+        variableResolver
+      });
+
+      // when
+      // this failed previously in an infinite loop, cf. https://github.com/camunda/camunda-modeler/issues/4139
+      const variables = await variableResolver.getVariablesForElement(root.businessObject.processRef);
+
+      // then
+      expect(variables).to.variableEqual([
+        {
+          name: 'foo'
+        }
+      ]);
+    }));
+
   });
 
 
