@@ -6,6 +6,10 @@ All notable changes to [@bpmn-io/variable-resolver](https://github.com/bpmn-io/v
 
 ___Note:__ Yet to be released changes appear here._
 
+## 1.2.2
+
+* `FIX`: prevent `Maximum call stack size exceeded` on variable merge ([#30](https://github.com/bpmn-io/variable-resolver/pull/30))
+
 ## 1.2.1
 
 * `FIX`: prevent loops for cyclic variables ([#23](https://github.com/bpmn-io/variable-resolver/pull/23))
