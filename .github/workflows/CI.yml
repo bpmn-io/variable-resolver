@@ -24,12 +24,12 @@ jobs:
         env:
           COVERAGE: 1
           TEST_BROWSERS: ChromeHeadless
-        run: xvfb-run npm run test
+        run: xvfb-run npm run all
       - name: Build
         if: matrix.os != 'ubuntu-latest'
         env:
           TEST_BROWSERS: ChromeHeadless
-        run: npm run test
+        run: npm run all
       - name: Upload Coverage
         if: runner.os == 'Linux'
         uses: codecov/codecov-action@v4
