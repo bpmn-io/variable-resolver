@@ -22,9 +22,9 @@ export default [
       globals: {
         sinon: true
       },
-      files: [
-        '**/test/**/*.js'
-      ]
-    }
+    },
+    files: [
+      '**/test/**/*.js'
+    ]
   }
 ];
