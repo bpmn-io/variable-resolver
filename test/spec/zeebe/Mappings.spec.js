@@ -12,6 +12,7 @@ import chainedMappingsXML from 'test/fixtures/zeebe/mappings/chained-mappings.bp
 import primitivesXML from 'test/fixtures/zeebe/mappings/primitives.bpmn';
 import mergingXML from 'test/fixtures/zeebe/mappings/merging.bpmn';
 import scopeXML from 'test/fixtures/zeebe/mappings/scope.bpmn';
+import scriptTaskXML from 'test/fixtures/zeebe/mappings/script-task.bpmn';
 
 import VariableProvider from 'lib/VariableProvider';
 
@@ -310,6 +311,34 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
           name: 'invalidMapping',
           type: '',
           info: ''
+        }
+      ]);
+    }));
+
+  });
+
+
+  describe('Script Task', function() {
+
+    beforeEach(bootstrap(scriptTaskXML));
+
+    it('should add type annotation for script tasks', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const root = elementRegistry.get('Process_1');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(root.businessObject);
+
+      // then
+      expect(variables).to.variableEqual([
+        {
+          name: 'scriptResult',
+          type: 'Context',
+          info: '',
+          entries: [
+            { name: 'foo', type: 'Number', info: '123', entries: [] },
+          ]
         }
       ]);
     }));
