@@ -45,7 +45,7 @@
     "karma-webpack": "^5.0.1",
     "mocha": "^10.8.2",
     "mocha-test-container-support": "^0.2.0",
-    "npm-run-all2": "^7.0.0",
+    "npm-run-all2": "^7.0.1",
     "puppeteer": "^23.7.0",
     "webpack": "^5.96.1",
     "zeebe-bpmn-moddle": "^1.6.0"
