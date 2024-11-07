@@ -26,7 +26,7 @@
     "@bpmn-io/properties-panel": "^3.24.1",
     "babel-loader": "^9.2.1",
     "babel-plugin-istanbul": "^7.0.0",
-    "bpmn-js": "^17.11.1",
+    "bpmn-js": "^18.0.0",
     "bpmn-js-element-templates": "^2.2.1",
     "bpmn-js-properties-panel": "^5.24.0",
     "camunda-bpmn-js-behaviors": "^1.6.1",
