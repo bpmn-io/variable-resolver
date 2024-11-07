@@ -17,8 +17,8 @@
   "license": "MIT",
   "dependencies": {
     "@bpmn-io/extract-process-variables": "^1.0.0",
-    "@lezer/common": "^1.2.1",
-    "lezer-feel": "^1.2.4",
+    "@lezer/common": "^1.2.3",
+    "lezer-feel": "^1.4.0",
     "min-dash": "^4.2.1"
   },
   "devDependencies": {
