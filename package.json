@@ -13,7 +13,7 @@
   "files": [
     "lib"
   ],
-  "author": "",
+  "author": "bpmn.io contributors",
   "license": "MIT",
   "dependencies": {
     "@bpmn-io/extract-process-variables": "^1.0.0",
