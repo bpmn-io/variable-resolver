@@ -7,6 +7,7 @@ import { is } from 'bpmn-js/lib/util/ModelUtil';
 import { bootstrapModeler, inject } from 'test/TestHelper';
 
 import { ZeebeVariableResolverModule } from 'lib/';
+import { getInputOutput } from '../../../lib/base/util/ExtensionElementsUtil';
 
 import chainedMappingsXML from 'test/fixtures/zeebe/mappings/chained-mappings.bpmn';
 import primitivesXML from 'test/fixtures/zeebe/mappings/primitives.bpmn';
@@ -283,7 +284,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
     it('should only resolve variables in scope', inject(async function(variableResolver, elementRegistry) {
 
       // given
-      const root = elementRegistry.get('Process_1');
+      const root = elementRegistry.get('Participant_1');
 
       const initialVariables = [ {
         name: 'globalVariable',
@@ -298,7 +299,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       });
 
       // when
-      const variables = await variableResolver.getVariablesForElement(root.businessObject);
+      const variables = await variableResolver.getVariablesForElement(root.businessObject.processRef);
 
       // then
       expect(variables).to.variableEqual([
@@ -312,6 +313,27 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
           name: 'invalidMapping',
           type: '',
           info: ''
+        }
+      ]);
+    }));
+
+
+    it('should only resolve the script result variable if input and result variable names conflict', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const root = elementRegistry.get('Activity_1');
+      const bo = root.businessObject;
+      const output = getInputOutput(bo).outputParameters[0];
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(root.businessObject, output);
+
+      // then
+      expect(variables).to.variableEqual([
+        {
+          name: 'foo',
+          type: '',
+          info: '',
         }
       ]);
     }));
