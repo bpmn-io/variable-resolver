@@ -282,7 +282,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
     it('should only resolve variables in scope', inject(async function(variableResolver, elementRegistry) {
 
       // given
-      const root = elementRegistry.get('Process_1');
+      const root = elementRegistry.get('Participant_1');
 
       const initialVariables = [ {
         name: 'globalVariable',
@@ -297,7 +297,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       });
 
       // when
-      const variables = await variableResolver.getVariablesForElement(root.businessObject);
+      const variables = await variableResolver.getVariablesForElement(root.businessObject.processRef);
 
       // then
       expect(variables).to.variableEqual([
@@ -315,6 +315,61 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       ]);
     }));
 
+
+    it('should only resolve the script result variable if input and result variable names conflict', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const root = elementRegistry.get('Activity_1');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(root.businessObject);
+
+      // then
+      expect(variables).to.variableEqual([
+        {
+          name: 'foo',
+          type: 'Context',
+          info: '',
+        }
+      ]);
+    }));
+
+
+    it('should only resolve output mapping if exists', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const root = elementRegistry.get('Participant_3');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(root.businessObject.processRef);
+
+      // then
+      expect(variables).to.variableEqual([
+        {
+          name: 'output',
+          type: 'Context',
+          info: '',
+        }
+      ]);
+    }));
+
+    it('should only resolve resultVariable if no output mapping exists', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const root = elementRegistry.get('Participant_4');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(root.businessObject.processRef);
+
+      // then
+      expect(variables).to.variableEqual([
+        {
+          name: 'resultVariable',
+          type: 'Context',
+          info: '',
+        }
+      ]);
+    }));
   });
 
 
