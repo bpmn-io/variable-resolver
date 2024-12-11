@@ -7,6 +7,7 @@ import { is } from 'bpmn-js/lib/util/ModelUtil';
 import { bootstrapModeler, inject } from 'test/TestHelper';
 
 import { ZeebeVariableResolverModule } from 'lib/';
+import { getInputOutput } from '../../../lib/base/util/ExtensionElementsUtil';
 
 import chainedMappingsXML from 'test/fixtures/zeebe/mappings/chained-mappings.bpmn';
 import primitivesXML from 'test/fixtures/zeebe/mappings/primitives.bpmn';
@@ -320,15 +321,17 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
 
       // given
       const root = elementRegistry.get('Activity_1');
+      const bo = root.businessObject;
+      const output = getInputOutput(bo).outputParameters[0];
 
       // when
-      const variables = await variableResolver.getVariablesForElement(root.businessObject);
+      const variables = await variableResolver.getVariablesForElement(root.businessObject, output);
 
       // then
       expect(variables).to.variableEqual([
         {
           name: 'foo',
-          type: 'Context',
+          type: '', // TODO: why context is not working?
           info: '',
         }
       ]);

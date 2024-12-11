@@ -29,6 +29,7 @@
         <zeebe:script expression="={}" resultVariable="foo" />
         <zeebe:ioMapping>
           <zeebe:input source="=123" target="foo" />
+          <zeebe:output target="output" />
         </zeebe:ioMapping>
       </bpmn:extensionElements>
     </bpmn:scriptTask>
