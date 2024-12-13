@@ -3,7 +3,7 @@
   <bpmn:process id="Process_1" isExecutable="true">
     <bpmn:scriptTask id="ScriptTask" name="Script Task">
       <bpmn:extensionElements>
-        <zeebe:script expression="={&#10;  foo: 123&#10;}" resultVariable="scriptResult" />
+        <zeebe:script resultVariable="scriptResult" />
       </bpmn:extensionElements>
     </bpmn:scriptTask>
   </bpmn:process>
