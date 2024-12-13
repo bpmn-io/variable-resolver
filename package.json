@@ -19,17 +19,17 @@
     "@bpmn-io/extract-process-variables": "^1.0.0",
     "@lezer/common": "^1.2.3",
     "lezer-feel": "^1.4.0",
-    "min-dash": "^4.2.1"
+    "min-dash": "^4.2.2"
   },
   "devDependencies": {
     "@bpmn-io/element-template-chooser": "^1.0.0",
-    "@bpmn-io/properties-panel": "^3.24.1",
+    "@bpmn-io/properties-panel": "^3.25.1",
     "babel-loader": "^9.2.1",
     "babel-plugin-istanbul": "^7.0.0",
-    "bpmn-js": "^18.0.0",
-    "bpmn-js-element-templates": "^2.2.1",
-    "bpmn-js-properties-panel": "^5.24.0",
-    "camunda-bpmn-js-behaviors": "^1.6.1",
+    "bpmn-js": "^18.1.1",
+    "bpmn-js-element-templates": "^2.4.0",
+    "bpmn-js-properties-panel": "^5.30.0",
+    "camunda-bpmn-js-behaviors": "^1.9.0",
     "camunda-bpmn-moddle": "^7.0.1",
     "chai": "^4.5.0",
     "cross-env": "^7.0.3",
@@ -48,7 +48,7 @@
     "npm-run-all2": "^7.0.1",
     "puppeteer": "^23.7.0",
     "webpack": "^5.96.1",
-    "zeebe-bpmn-moddle": "^1.6.0"
+    "zeebe-bpmn-moddle": "^1.7.0"
   },
   "peerDependencies": {
     "bpmn-js": "*"
