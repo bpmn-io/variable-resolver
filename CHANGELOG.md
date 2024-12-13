@@ -6,6 +6,10 @@ All notable changes to [@bpmn-io/variable-resolver](https://github.com/bpmn-io/v
 
 ___Note:__ Yet to be released changes appear here._
 
+## 1.3.1
+
+* `FIX`: parse script task result as FEEL context ([#41](https://github.com/bpmn-io/variable-resolver/pull/41))
+
 ## 1.3.0
 
 _No feature changes._
