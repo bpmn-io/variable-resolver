@@ -2,8 +2,11 @@
 <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_1noegy9" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.28.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.1.0">
   <bpmn:collaboration id="Collaboration_0e60zir">
     <bpmn:participant id="Participant_1" processRef="Process_1" />
+    <bpmn:participant id="Participant_2" processRef="Process_2" />
     <bpmn:participant id="Participant_3" processRef="Process_3" />
     <bpmn:participant id="Participant_4" processRef="Process_4" />
+    <bpmn:participant id="Participant_5" processRef="Process_5" />
+    <bpmn:participant id="Participant_6" processRef="Process_6" />
   </bpmn:collaboration>
   <bpmn:process id="Process_1" isExecutable="true">
     <bpmn:serviceTask id="scopedContext" name="Scoped Context">
@@ -22,6 +25,17 @@
       </bpmn:extensionElements>
     </bpmn:serviceTask>
   </bpmn:process>
+  <bpmn:process id="Process_2" isExecutable="false">
+    <bpmn:scriptTask id="Activity_1" name="Script Task">
+      <bpmn:extensionElements>
+        <zeebe:script expression="={}" resultVariable="foo" />
+        <zeebe:ioMapping>
+          <zeebe:input source="=123" target="foo" />
+          <zeebe:output target="output" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+    </bpmn:scriptTask>
+  </bpmn:process>
   <bpmn:process id="Process_3" isExecutable="false">
     <bpmn:scriptTask id="Activity_2" name="Script Task">
       <bpmn:extensionElements>
@@ -39,6 +53,29 @@
       </bpmn:extensionElements>
     </bpmn:scriptTask>
   </bpmn:process>
+  <bpmn:process id="Process_5" isExecutable="false">
+    <bpmn:scriptTask id="Activity_5" name="Script Task">
+      <bpmn:extensionElements>
+        <zeebe:script expression="={}" resultVariable="foo" />
+        <zeebe:ioMapping>
+          <zeebe:input source="=123" target="foo" />
+          <zeebe:output source="=&#34;bar&#34;" target="foo" />
+          <zeebe:output target="output" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+    </bpmn:scriptTask>
+  </bpmn:process>
+  <bpmn:process id="Process_6" isExecutable="false">
+    <bpmn:userTask id="Activity_6" name="User Task">
+      <bpmn:extensionElements>
+        <zeebe:ioMapping>
+          <zeebe:input source="=123" target="foo" />
+          <zeebe:output source="={}" target="foo" />
+          <zeebe:output target="output" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+    </bpmn:userTask>
+  </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_0e60zir">
       <bpmndi:BPMNShape id="Participant_10jajek_di" bpmnElement="Participant_1" isHorizontal="true">
@@ -50,6 +87,13 @@
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1hlau9e_di" bpmnElement="Activity_0kafybg">
         <dc:Bounds x="480" y="170" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Participant_0o4apj6_di" bpmnElement="Participant_2" isHorizontal="true">
+        <dc:Bounds x="160" y="380" width="600" height="250" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_06g1sod_di" bpmnElement="Activity_1">
+        <dc:Bounds x="290" y="460" width="100" height="80" />
+        <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Participant_13eqjzi_di" bpmnElement="Participant_3" isHorizontal="true">
         <dc:Bounds x="160" y="690" width="600" height="250" />
@@ -63,6 +107,20 @@
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="BPMNShape_1wqur3c" bpmnElement="Activity_4">
         <dc:Bounds x="280" y="1100" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Participant_08w9t3p_di" bpmnElement="Participant_5" isHorizontal="true">
+        <dc:Bounds x="160" y="1330" width="600" height="250" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0jkek8a_di" bpmnElement="Activity_5">
+        <dc:Bounds x="280" y="1410" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Participant_1cpioa5_di" bpmnElement="Participant_6" isHorizontal="true">
+        <dc:Bounds x="160" y="1660" width="600" height="250" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0gwc003_di" bpmnElement="Activity_6">
+        <dc:Bounds x="310" y="1740" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
     </bpmndi:BPMNPlane>
