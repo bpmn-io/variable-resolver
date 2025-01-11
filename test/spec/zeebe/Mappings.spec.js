@@ -3,6 +3,7 @@ import TestContainer from 'mocha-test-container-support';
 import ZeebeModdle from 'zeebe-bpmn-moddle/resources/zeebe';
 
 import { is } from 'bpmn-js/lib/util/ModelUtil';
+import { getInputOutput } from '../../../lib/base/util/ExtensionElementsUtil';
 
 import { bootstrapModeler, inject } from 'test/TestHelper';
 
@@ -348,6 +349,69 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       expect(variables).to.variableEqual([
         {
           name: 'output',
+          type: '',
+          info: '',
+        }
+      ]);
+    }));
+
+
+    it('should only resolve the result variable if input and result variable names conflict', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const root = elementRegistry.get('Activity_1');
+      const bo = root.businessObject;
+      const output = getInputOutput(bo).outputParameters[0];
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(root.businessObject, output);
+
+      // then
+      expect(variables).to.variableEqual([
+        {
+          name: 'foo',
+          type: '',
+          info: '',
+        }
+      ]);
+    }));
+
+
+    it('should only resolve the output variable if result variable and output names conflict', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const root = elementRegistry.get('Activity_5');
+      const bo = root.businessObject;
+      const output = getInputOutput(bo).outputParameters[1];
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(root.businessObject, output);
+
+      // then
+      expect(variables).to.variableEqual([
+        {
+          name: 'foo',
+          type: 'String',
+          info: 'bar',
+        }
+      ]);
+    }));
+
+
+    it('should only resolve the output variable if input and output names conflict', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const root = elementRegistry.get('Activity_6');
+      const bo = root.businessObject;
+      const output = getInputOutput(bo).outputParameters[1];
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(root.businessObject, output);
+
+      // then
+      expect(variables).to.variableEqual([
+        {
+          name: 'foo',
           type: '',
           info: '',
         }
