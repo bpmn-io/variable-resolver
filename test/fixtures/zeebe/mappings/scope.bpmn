@@ -7,6 +7,7 @@
     <bpmn:participant id="Participant_4" processRef="Process_4" />
     <bpmn:participant id="Participant_5" processRef="Process_5" />
     <bpmn:participant id="Participant_6" processRef="Process_6" />
+    <bpmn:participant id="Participant_7" processRef="Process_7" />
   </bpmn:collaboration>
   <bpmn:process id="Process_1" isExecutable="true">
     <bpmn:serviceTask id="scopedContext" name="Scoped Context">
@@ -76,6 +77,17 @@
       </bpmn:extensionElements>
     </bpmn:userTask>
   </bpmn:process>
+  <bpmn:process id="Process_7" isExecutable="false">
+    <bpmn:userTask id="Activity_7" name="User Task">
+      <bpmn:extensionElements>
+        <zeebe:ioMapping>
+          <zeebe:input source="={}" target="foo" />
+          <zeebe:input source="=&#34;abc&#34;" target="foo" />
+          <zeebe:input source="=123" target="foo" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+    </bpmn:userTask>
+  </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_0e60zir">
       <bpmndi:BPMNShape id="Participant_10jajek_di" bpmnElement="Participant_1" isHorizontal="true">
@@ -121,6 +133,13 @@
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0gwc003_di" bpmnElement="Activity_6">
         <dc:Bounds x="310" y="1740" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Participant_0hcijo0_di" bpmnElement="Participant_7" isHorizontal="true">
+        <dc:Bounds x="160" y="1980" width="600" height="250" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1aor9g3_di" bpmnElement="Activity_7">
+        <dc:Bounds x="310" y="2060" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
     </bpmndi:BPMNPlane>
