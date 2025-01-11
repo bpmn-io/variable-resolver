@@ -316,6 +316,44 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       ]);
     }));
 
+
+    it('should only resolve the result variable globally given no output exists', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const root = elementRegistry.get('Participant_4');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(root.businessObject.processRef);
+
+      // then
+      expect(variables).to.variableEqual([
+        {
+          name: 'resultVariable',
+          type: '',
+          info: '',
+        }
+      ]);
+    }));
+
+
+    it('should only resolve the result variable locally if output exists', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const root = elementRegistry.get('Participant_3');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(root.businessObject.processRef);
+
+      // then
+      expect(variables).to.variableEqual([
+        {
+          name: 'output',
+          type: '',
+          info: '',
+        }
+      ]);
+    }));
+
   });
 
 
