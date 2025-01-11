@@ -418,6 +418,25 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       ]);
     }));
 
+
+    it('should only resolve the latest variable if same name input/output exists', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const root = elementRegistry.get('Activity_7');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(root.businessObject);
+
+      // then
+      expect(variables).to.variableEqual([
+        {
+          name: 'foo',
+          type: 'Number',
+          info: '123',
+        }
+      ]);
+    }));
+
   });
 
 
