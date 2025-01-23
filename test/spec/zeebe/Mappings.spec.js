@@ -288,8 +288,8 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
 
       const initialVariables = [ {
         name: 'globalVariable',
-        type: 'TestVariable',
-        info: 'TestInfo',
+        type: 'String',
+        info: '1',
         entries: [ ]
       } ];
 
@@ -305,12 +305,12 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       expect(variables).to.variableEqual([
         ...initialVariables,
         {
-          name: 'validMapping',
-          type: 'TestVariable',
-          info: 'TestInfo'
+          name: 'fooOutputVariable',
+          type: 'String',
+          info: '1'
         },
         {
-          name: 'invalidMapping',
+          name: 'barOutputVariable',
           type: '',
           info: ''
         }
@@ -318,7 +318,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
     }));
 
 
-    it('should only resolve the result variable globally given no output exists', inject(async function(variableResolver, elementRegistry) {
+    it('should resolve result variable if no outputs exist', inject(async function(variableResolver, elementRegistry) {
 
       // given
       const root = elementRegistry.get('Participant_4');
@@ -330,14 +330,14 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       expect(variables).to.variableEqual([
         {
           name: 'resultVariable',
-          type: '',
-          info: '',
+          type: 'String',
+          info: '1'
         }
       ]);
     }));
 
 
-    it('should only resolve the result variable locally if output exists', inject(async function(variableResolver, elementRegistry) {
+    it('should resolve output instead of result variable if outputs exist', inject(async function(variableResolver, elementRegistry) {
 
       // given
       const root = elementRegistry.get('Participant_3');
@@ -349,17 +349,17 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       expect(variables).to.variableEqual([
         {
           name: 'output',
-          type: '',
-          info: '',
+          type: 'String',
+          info: '2'
         }
       ]);
     }));
 
 
-    it('should only resolve the result variable if input and result variable names conflict', inject(async function(variableResolver, elementRegistry) {
+    it('should only resolve result variable if input and result variable with same name exist', inject(async function(variableResolver, elementRegistry) {
 
       // given
-      const root = elementRegistry.get('Activity_1');
+      const root = elementRegistry.get('ScriptTask_1');
       const bo = root.businessObject;
       const output = getInputOutput(bo).outputParameters[0];
 
@@ -370,17 +370,17 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       expect(variables).to.variableEqual([
         {
           name: 'foo',
-          type: '',
-          info: '',
+          type: 'String',
+          info: '1'
         }
       ]);
     }));
 
 
-    it('should only resolve the output variable if result variable and output names conflict', inject(async function(variableResolver, elementRegistry) {
+    it('should only resolve the output variable if result variable and output with same name exist', inject(async function(variableResolver, elementRegistry) {
 
       // given
-      const root = elementRegistry.get('Activity_5');
+      const root = elementRegistry.get('ScriptTask_4');
       const bo = root.businessObject;
       const output = getInputOutput(bo).outputParameters[1];
 
@@ -392,16 +392,16 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
         {
           name: 'foo',
           type: 'String',
-          info: 'bar',
+          info: '2'
         }
       ]);
     }));
 
 
-    it('should only resolve the output variable if input and output names conflict', inject(async function(variableResolver, elementRegistry) {
+    it('should only resolve the output variable if input and output with same name exist', inject(async function(variableResolver, elementRegistry) {
 
       // given
-      const root = elementRegistry.get('Activity_6');
+      const root = elementRegistry.get('ServiceTask_3');
       const bo = root.businessObject;
       const output = getInputOutput(bo).outputParameters[1];
 
@@ -412,17 +412,17 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       expect(variables).to.variableEqual([
         {
           name: 'foo',
-          type: '',
-          info: '',
+          type: 'String',
+          info: '2'
         }
       ]);
     }));
 
 
-    it('should only resolve the latest variable if same name input/output exists', inject(async function(variableResolver, elementRegistry) {
+    it('should only resolve the latest variable if inputs with same name exist', inject(async function(variableResolver, elementRegistry) {
 
       // given
-      const root = elementRegistry.get('Activity_7');
+      const root = elementRegistry.get('ServiceTask_4');
 
       // when
       const variables = await variableResolver.getVariablesForElement(root.businessObject);
@@ -431,8 +431,8 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       expect(variables).to.variableEqual([
         {
           name: 'foo',
-          type: 'Number',
-          info: '123',
+          type: 'String',
+          info: '2'
         }
       ]);
     }));
