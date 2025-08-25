@@ -365,7 +365,7 @@ describe('ZeebeVariableResolver', function() {
     );
 
 
-    it('should merge variables of same scope', inject(async function(variableResolver, elementRegistry) {
+    it('should merge variables of same scope and same name', inject(async function(variableResolver, elementRegistry) {
 
       // given
       const root = elementRegistry.get('Process_1');
@@ -385,7 +385,44 @@ describe('ZeebeVariableResolver', function() {
       const variables = await variableResolver.getVariablesForElement(root);
 
       // then
-      expect(variables).to.variableEqual([ { name: 'foo', type: 'String', scope: 'Process_1', origin: [ 'ServiceTask_1', 'Process_1' ] } ]);
+      expect(variables).to.variableEqual([
+        { name: 'foo', type: 'String', scope: 'Process_1', origin: [ 'ServiceTask_1', 'Process_1' ] }
+      ]);
+    }));
+
+
+    it('should not merge variables of different scopes and same name', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const serviceTask1 = elementRegistry.get('ServiceTask_1'),
+            serviceTask2 = elementRegistry.get('ServiceTask_2');
+
+      createProvider({
+        variables: [ { name: 'foo', type: 'String', scope: serviceTask1 } ],
+        variableResolver,
+        origin: 'ServiceTask_1'
+      });
+      createProvider({
+        variables: [ { name: 'foo', type: 'String', scope: serviceTask2 } ],
+        variableResolver,
+        origin: 'ServiceTask_2'
+      });
+
+      // when
+      let variables = await variableResolver.getVariablesForElement(serviceTask1);
+
+      // then
+      expect(variables).to.variableEqual([
+        { name: 'foo', type: 'String', scope: 'ServiceTask_1', origin: [ 'ServiceTask_1' ] },
+      ]);
+
+      // when
+      variables = await variableResolver.getVariablesForElement(serviceTask2);
+
+      // then
+      expect(variables).to.variableEqual([
+        { name: 'foo', type: 'String', scope: 'ServiceTask_2', origin: [ 'ServiceTask_2' ] },
+      ]);
     }));
 
 
