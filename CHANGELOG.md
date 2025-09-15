@@ -6,6 +6,10 @@ All notable changes to [@bpmn-io/variable-resolver](https://github.com/bpmn-io/v
 
 ___Note:__ Yet to be released changes appear here._
 
+## 1.3.4
+
+* `FIX`: preserve variables with same name but different scopes ([#56](https://github.com/bpmn-io/variable-resolver/pull/56))
+
 ## 1.3.3
 
 * `FIX`: take scope into account when resolving variables ([#43](https://github.com/bpmn-io/variable-resolver/pull/43))
