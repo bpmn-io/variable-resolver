@@ -13,6 +13,7 @@ import emptyXML from 'test/fixtures/zeebe/empty.bpmn';
 import complexXML from 'test/fixtures/zeebe/complex.bpmn';
 import connectorsXML from 'test/fixtures/zeebe/connectors.bpmn';
 import ioMappingsXML from 'test/fixtures/zeebe/ioMappings.bpmn';
+import longBrokenExpressionXML from 'test/fixtures/zeebe/long-broken-expression.bpmn';
 
 import VariableProvider from 'lib/VariableProvider';
 import { getInputOutput } from '../../../lib/base/util/ExtensionElementsUtil';
@@ -1037,6 +1038,37 @@ describe('ZeebeVariableResolver', function() {
 
     });
 
+  });
+
+
+  describe('parsing', function() {
+
+    beforeEach(bootstrapModeler(longBrokenExpressionXML, {
+      container,
+      additionalModules: [
+        ZeebeVariableResolverModule
+      ],
+      moddleExtensions: {
+        zeebe: ZeebeModdle
+      }
+    }));
+
+
+    it('should NOT error on a long broken expression', inject(async function(elementRegistry, variableResolver) {
+
+      // given
+      const task = elementRegistry.get('Task_1');
+      const bo = getBusinessObject(task);
+      const input = getInputOutput(bo).inputParameters[1];
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(bo, input);
+
+      // then
+      expect(variables).to.variableEqual([
+        { name: 'target' }
+      ]);
+    }));
   });
 
 });
