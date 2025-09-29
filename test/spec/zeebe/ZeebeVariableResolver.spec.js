@@ -14,6 +14,7 @@ import complexXML from 'test/fixtures/zeebe/complex.bpmn';
 import connectorsXML from 'test/fixtures/zeebe/connectors.bpmn';
 import ioMappingsXML from 'test/fixtures/zeebe/ioMappings.bpmn';
 import longBrokenExpressionXML from 'test/fixtures/zeebe/long-broken-expression.bpmn';
+import immediatelyBrokenExpressionXML from 'test/fixtures/zeebe/immediately-broken-expression.bpmn';
 
 import VariableProvider from 'lib/VariableProvider';
 import { getInputOutput } from '../../../lib/base/util/ExtensionElementsUtil';
@@ -1043,32 +1044,65 @@ describe('ZeebeVariableResolver', function() {
 
   describe('parsing', function() {
 
-    beforeEach(bootstrapModeler(longBrokenExpressionXML, {
-      container,
-      additionalModules: [
-        ZeebeVariableResolverModule
-      ],
-      moddleExtensions: {
-        zeebe: ZeebeModdle
-      }
-    }));
+    describe('long broken expression', function() {
+
+      beforeEach(bootstrapModeler(longBrokenExpressionXML, {
+        container,
+        additionalModules: [
+          ZeebeVariableResolverModule
+        ],
+        moddleExtensions: {
+          zeebe: ZeebeModdle
+        }
+      }));
 
 
-    it('should NOT error on a long broken expression', inject(async function(elementRegistry, variableResolver) {
+      it('should NOT error on a long broken expression', inject(async function(elementRegistry, variableResolver) {
 
-      // given
-      const task = elementRegistry.get('Task_1');
-      const bo = getBusinessObject(task);
-      const input = getInputOutput(bo).inputParameters[1];
+        // given
+        const task = elementRegistry.get('TASK_WITH_LONG_BROKEN_EXPRESSION');
+        const bo = getBusinessObject(task);
 
-      // when
-      const variables = await variableResolver.getVariablesForElement(bo, input);
+        // when
+        const variables = await variableResolver.getVariablesForElement(bo);
 
-      // then
-      expect(variables).to.variableEqual([
-        { name: 'target' }
-      ]);
-    }));
+        // then
+        expect(variables).to.variableEqual([
+          { name: 'target' }
+        ]);
+      }));
+
+    });
+
+
+    describe('immediately broken expression', function() {
+
+      beforeEach(bootstrapModeler(immediatelyBrokenExpressionXML, {
+        container,
+        additionalModules: [
+          ZeebeVariableResolverModule
+        ],
+        moddleExtensions: {
+          zeebe: ZeebeModdle
+        }
+      }));
+
+
+      it('should NOT error on an immediate syntax error', inject(async function(elementRegistry, variableResolver) {
+
+        // given
+        const task = elementRegistry.get('TASK_WITH_IMMEDIATELY_BROKEN_EXPRESSION');
+        const bo = getBusinessObject(task);
+
+        // when
+        const variables = await variableResolver.getVariablesForElement(bo);
+
+        // then
+        expect(variables).to.variableEqual([
+          { name: 'target' }
+        ]);
+      }));
+    });
   });
 
 });
