@@ -6,6 +6,10 @@ All notable changes to [@bpmn-io/variable-resolver](https://github.com/bpmn-io/v
 
 ___Note:__ Yet to be released changes appear here._
 
+## 1.3.6
+
+* `FIX`: always return an instance of variables context in `getResultContext` ([#58](https://github.com/bpmn-io/variable-resolver/pull/58))
+
 ## 1.3.5
 
 * `FIX`: do not try to find unresolved variables of a broken expression ([#50](https://github.com/bpmn-io/variable-resolver/issues/50))
