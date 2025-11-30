@@ -18,7 +18,7 @@
   "dependencies": {
     "@bpmn-io/extract-process-variables": "^1.0.1",
     "@lezer/common": "^1.2.3",
-    "lezer-feel": "^1.4.0",
+    "lezer-feel": "^2.0.0",
     "min-dash": "^4.2.3"
   },
   "devDependencies": {
