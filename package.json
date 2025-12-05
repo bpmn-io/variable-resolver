@@ -32,7 +32,7 @@
     "camunda-bpmn-js-behaviors": "^1.9.1",
     "camunda-bpmn-moddle": "^7.0.1",
     "chai": "^4.5.0",
-    "cross-env": "^10.0.0",
+    "cross-env": "^10.1.0",
     "eslint": "^9.25.1",
     "eslint-plugin-bpmn-io": "^2.2.0",
     "karma": "^6.4.4",
