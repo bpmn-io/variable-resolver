@@ -6,6 +6,11 @@ All notable changes to [@bpmn-io/variable-resolver](https://github.com/bpmn-io/v
 
 ___Note:__ Yet to be released changes appear here._
 
+## 1.3.7
+
+* `FIX`: adjust variable context to pass lezer-feel custom context tests ([#62](https://github.com/bpmn-io/variable-resolver/pull/62))
+* `DEPS`: replace `lezer-feel` with `@bpmn-io/lezer-feel`
+
 ## 1.3.6
 
 * `FIX`: always return an instance of variables context in `getResultContext` ([#58](https://github.com/bpmn-io/variable-resolver/pull/58))
