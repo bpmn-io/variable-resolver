@@ -45,9 +45,9 @@
     "mocha": "^11.7.5",
     "mocha-test-container-support": "^0.2.0",
     "npm-run-all2": "^8.0.4",
-    "puppeteer": "^24.32.0",
+    "puppeteer": "^24.36.1",
     "sinon-chai": "^4.0.1",
-    "webpack": "^5.103.0",
+    "webpack": "^5.105.0",
     "zeebe-bpmn-moddle": "^1.9.0"
   },
   "peerDependencies": {
