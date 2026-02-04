@@ -1,3 +1,7 @@
+import { expect } from 'chai';
+
+import sinon from 'sinon';
+
 import TestContainer from 'mocha-test-container-support';
 
 import CamundaModdle from 'camunda-bpmn-moddle/resources/camunda.json';
@@ -13,6 +17,7 @@ import emptyXML from 'test/fixtures/camunda/empty.bpmn';
 import complexXML from 'test/fixtures/camunda/complex.bpmn';
 
 import VariableProvider from 'lib/VariableProvider';
+
 
 describe('CamundaVariableResolver', function() {
 

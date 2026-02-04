@@ -1,3 +1,7 @@
+import { expect } from 'chai';
+
+import sinon from 'sinon';
+
 import TestContainer from 'mocha-test-container-support';
 
 import ZeebeModdle from 'zeebe-bpmn-moddle/resources/zeebe';
@@ -19,6 +23,7 @@ import immediatelyBrokenExpressionXML from 'test/fixtures/zeebe/immediately-brok
 import VariableProvider from 'lib/VariableProvider';
 import { getInputOutput } from '../../../lib/base/util/ExtensionElementsUtil';
 import { mergeEntries } from '../../../lib/base/VariableResolver';
+
 
 describe('ZeebeVariableResolver', function() {
 

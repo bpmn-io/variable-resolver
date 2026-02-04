@@ -25,15 +25,5 @@ export default [
         '**/test/**/*.js'
       ]
     };
-  }),
-  {
-    languageOptions: {
-      globals: {
-        sinon: true
-      },
-    },
-    files: [
-      '**/test/**/*.js'
-    ]
-  }
+  })
 ];
