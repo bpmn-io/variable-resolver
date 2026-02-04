@@ -1,3 +1,5 @@
+import { expect } from 'chai';
+
 import TestContainer from 'mocha-test-container-support';
 
 import ZeebeModdle from 'zeebe-bpmn-moddle/resources/zeebe';
@@ -17,6 +19,7 @@ import scriptTaskXML from 'test/fixtures/zeebe/mappings/script-task.bpmn';
 import scriptTaskEmptyExpressionXML from 'test/fixtures/zeebe/mappings/script-task-empty-expression.bpmn';
 
 import VariableProvider from 'lib/VariableProvider';
+
 
 describe('ZeebeVariableResolver - Variable Mappings', function() {
 
