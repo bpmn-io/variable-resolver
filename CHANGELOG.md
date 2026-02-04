@@ -6,6 +6,12 @@ All notable changes to [@bpmn-io/variable-resolver](https://github.com/bpmn-io/v
 
 ___Note:__ Yet to be released changes appear here._
 
+## 1.4.0
+
+* `DEPS`: update to `@bpmn-io/extract-process-variables@2.0.0`
+* `DEPS`: update to `@bpmn-io/lezer-feel@2.1.0`
+* `DEPS`: update to `min-dash@5.0.0`
+
 ## 1.3.7
 
 * `FIX`: adjust variable context to pass lezer-feel custom context tests ([#62](https://github.com/bpmn-io/variable-resolver/pull/62))
