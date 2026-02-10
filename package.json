@@ -1,6 +1,6 @@
 {
   "name": "@bpmn-io/variable-resolver",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "bpmn-js plugin for handling external variable providers",
   "main": "lib/index.js",
   "scripts": {
