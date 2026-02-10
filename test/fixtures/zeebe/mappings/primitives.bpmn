@@ -4,7 +4,7 @@
     <bpmn:serviceTask id="genericTypes" name="Gerneric Types">
       <bpmn:extensionElements>
         <zeebe:ioMapping>
-          <zeebe:output source="={&#10;  number: 1,&#10;  boolean: true,&#10;  string: &#34;foo&#34;,&#10;  null: null&#10;}" target="genericTypes" />
+          <zeebe:output source="={&#10;  number: 1,&#10;  booleanTrue: true,&#10;  booleanFalse: false,&#10;  string: &#34;foo&#34;,&#10;  null: null&#10;}" target="genericTypes" />
         </zeebe:ioMapping>
       </bpmn:extensionElements>
     </bpmn:serviceTask>
