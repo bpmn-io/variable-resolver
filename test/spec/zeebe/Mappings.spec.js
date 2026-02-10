@@ -85,7 +85,6 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       // when
       const variables = await variableResolver.getVariablesForElement(root.businessObject);
 
-
       // then
       expect(variables).to.variableEqual([
         {
@@ -95,7 +94,8 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
           entries: [
             { name: 'string', type: 'String', info: 'foo', entries: [] },
             { name: 'number', type: 'Number', info: '1', entries: [] },
-            { name: 'boolean', type: 'Boolean', info: 'true', entries: [] },
+            { name: 'booleanTrue', type: 'Boolean', info: 'true', entries: [] },
+            { name: 'booleanFalse', type: 'Boolean', info: 'false', entries: [] },
             { name: 'null', type: '', entries: [] },
           ]
         }
@@ -120,7 +120,8 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
           entries: [
             { name: 'string', detail: 'String', info: 'foo', entries: [] },
             { name: 'number', detail: 'Number', info: '1', entries: [] },
-            { name: 'boolean', detail: 'Boolean', info: 'true', entries: [] },
+            { name: 'booleanTrue', detail: 'Boolean', info: 'true', entries: [] },
+            { name: 'booleanFalse', detail: 'Boolean', info: 'false', entries: [] },
             { name: 'null', detail: '', entries: [] },
           ]
         }
