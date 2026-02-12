@@ -23,7 +23,7 @@
   },
   "devDependencies": {
     "@bpmn-io/element-template-chooser": "^2.1.0",
-    "@bpmn-io/properties-panel": "^3.38.0",
+    "@bpmn-io/properties-panel": "^3.39.0",
     "babel-loader": "^10.0.0",
     "babel-plugin-istanbul": "^7.0.1",
     "bpmn-js": "^18.12.0",
