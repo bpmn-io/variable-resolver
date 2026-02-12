@@ -636,7 +636,7 @@ describe('ZeebeVariableResolver', function() {
       const root = elementRegistry.get('Process_1');
 
       // when
-      const variables = await variableResolver.getVariablesForElement(root.businessObject);
+      const variables = await variableResolver.getVariablesForElement(root);
 
       // then
       // own variables
@@ -736,7 +736,7 @@ describe('ZeebeVariableResolver', function() {
       const task = elementRegistry.get('emptyTask');
 
       // when
-      const variables = await variableResolver.getVariablesForElement(task.businessObject);
+      const variables = await variableResolver.getVariablesForElement(task);
 
       // then
       expect(variables).to.variableEqual([ ]);
@@ -749,7 +749,7 @@ describe('ZeebeVariableResolver', function() {
       const task = elementRegistry.get('resultVariableTask');
 
       // when
-      const variables = await variableResolver.getVariablesForElement(task.businessObject);
+      const variables = await variableResolver.getVariablesForElement(task);
 
       // then
       expect(variables).to.variableEqual([
@@ -764,7 +764,7 @@ describe('ZeebeVariableResolver', function() {
       const task = elementRegistry.get('resultExpressionTask');
 
       // when
-      const variables = await variableResolver.getVariablesForElement(task.businessObject);
+      const variables = await variableResolver.getVariablesForElement(task);
 
       // then
       expect(variables).to.variableEqual([
@@ -781,7 +781,7 @@ describe('ZeebeVariableResolver', function() {
       const task = elementRegistry.get('variableAndExpressionTask');
 
       // when
-      const variables = await variableResolver.getVariablesForElement(task.businessObject);
+      const variables = await variableResolver.getVariablesForElement(task);
 
       // then
       expect(variables).to.variableEqual([
@@ -799,7 +799,7 @@ describe('ZeebeVariableResolver', function() {
       const task = elementRegistry.get('emptyMappingTask');
 
       // when
-      const variables = await variableResolver.getVariablesForElement(task.businessObject);
+      const variables = await variableResolver.getVariablesForElement(task);
 
       // then
       expect(variables).to.variableEqual([]);
@@ -813,7 +813,7 @@ describe('ZeebeVariableResolver', function() {
       const task = elementRegistry.get('missingMappingTask');
 
       // when
-      const variables = await variableResolver.getVariablesForElement(task.businessObject);
+      const variables = await variableResolver.getVariablesForElement(task);
 
       // then
       expect(variables).to.variableEqual([]);
