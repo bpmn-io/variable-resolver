@@ -2,8 +2,6 @@ import { expect } from 'chai';
 
 import sinon from 'sinon';
 
-import TestContainer from 'mocha-test-container-support';
-
 import ZeebeModdle from 'zeebe-bpmn-moddle/resources/zeebe';
 
 import { getBusinessObject, is } from 'bpmn-js/lib/util/ModelUtil';
@@ -27,17 +25,10 @@ import { mergeEntries } from '../../../lib/base/VariableResolver';
 
 describe('ZeebeVariableResolver', function() {
 
-  let container;
-
-  beforeEach(function() {
-    container = TestContainer.get(this);
-  });
-
   describe('#registerProvider', function() {
 
     beforeEach(
       bootstrapModeler(emptyXML, {
-        container,
         additionalModules: [
           ZeebeVariableResolverModule
         ]
@@ -177,7 +168,6 @@ describe('ZeebeVariableResolver', function() {
 
       beforeEach(
         bootstrapModeler(simpleXML, {
-          container,
           additionalModules: [
             ZeebeVariableResolverModule
           ]
@@ -222,7 +212,6 @@ describe('ZeebeVariableResolver', function() {
 
     beforeEach(
       bootstrapModeler(emptyXML, {
-        container,
         additionalModules: [
           ZeebeVariableResolverModule
         ]
@@ -364,7 +353,6 @@ describe('ZeebeVariableResolver', function() {
 
     beforeEach(
       bootstrapModeler(simpleXML, {
-        container,
         additionalModules: [
           ZeebeVariableResolverModule
         ]
@@ -589,7 +577,6 @@ describe('ZeebeVariableResolver', function() {
 
     beforeEach(
       bootstrapModeler(simpleXML, {
-        container,
         additionalModules: [
           ZeebeVariableResolverModule
         ]
@@ -633,7 +620,6 @@ describe('ZeebeVariableResolver', function() {
 
     beforeEach(
       bootstrapModeler(complexXML, {
-        container,
         additionalModules: [
           ZeebeVariableResolverModule
         ],
@@ -734,7 +720,6 @@ describe('ZeebeVariableResolver', function() {
 
     beforeEach(
       bootstrapModeler(connectorsXML, {
-        container,
         additionalModules: [
           ZeebeVariableResolverModule
         ],
@@ -842,7 +827,6 @@ describe('ZeebeVariableResolver', function() {
 
     beforeEach(
       bootstrapModeler(ioMappingsXML, {
-        container,
         additionalModules: [
           ZeebeVariableResolverModule
         ],
@@ -1052,7 +1036,6 @@ describe('ZeebeVariableResolver', function() {
     describe('long broken expression', function() {
 
       beforeEach(bootstrapModeler(longBrokenExpressionXML, {
-        container,
         additionalModules: [
           ZeebeVariableResolverModule
         ],
@@ -1083,7 +1066,6 @@ describe('ZeebeVariableResolver', function() {
     describe('immediately broken expression', function() {
 
       beforeEach(bootstrapModeler(immediatelyBrokenExpressionXML, {
-        container,
         additionalModules: [
           ZeebeVariableResolverModule
         ],
