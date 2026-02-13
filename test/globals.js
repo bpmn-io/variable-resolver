@@ -12,8 +12,6 @@ function VariableEqual(chai, utils) {
     var variables = this._obj;
     var expectedVariables = comparison;
 
-    expect(variables.length).to.eql(expectedVariables.length);
-
     expectedVariables.forEach((expectedVariable) => {
       const {
         name,
@@ -27,21 +25,24 @@ function VariableEqual(chai, utils) {
       } = expectedVariable;
 
       const actualVariable = variables.find(v => v.name === name);
-      expect(actualVariable).to.exist;
+      expect(actualVariable, `variable[name=${name}]`).to.exist;
 
-      isDefined(type) && expect(actualVariable.type).to.eql(type);
-      isDefined(info) && expect(actualVariable.info).to.eql(info);
-      isDefined(detail) && expect(actualVariable.detail).to.eql(detail);
-      isDefined(scope) && expect(actualVariable.scope.id).to.eql(scope);
-      isDefined(isList) && expect(!!actualVariable.isList).to.eql(!!isList);
-      isDefined(entries) && expect(actualVariable.entries).to.variableEqual(entries);
+      isDefined(type) && expect(actualVariable.type, `variable[name=${name}].type`).to.eql(type);
+      isDefined(info) && expect(actualVariable.info, `variable[name=${name}].info`).to.eql(info);
+      isDefined(detail) && expect(actualVariable.detail, `variable[name=${name}].detail`).to.eql(detail);
+      isDefined(scope) && expect(actualVariable.scope.id, `variable[name=${name}].scope.id`).to.eql(scope);
+      isDefined(isList) && expect(!!actualVariable.isList, `variable[name=${name}].isList`).to.eql(!!isList);
+      isDefined(entries) && expect(actualVariable.entries, `variable[name=${name}].entries`).to.variableEqual(entries);
 
-      isDefined(origin) && expect(actualVariable.origin.length).to.eql(origin.length);
       isDefined(origin) && origin.forEach((expectedOrigin) => {
         const foundOrigin = actualVariable.origin.find(o => o.id === expectedOrigin);
-        expect(foundOrigin).to.exist;
+        expect(foundOrigin, `origin[name=${expectedOrigin}]`).to.exist;
       });
+
+      isDefined(origin) && expect(actualVariable.origin.length, `variable[name=${name}].origin.length`).to.eql(origin.length);
     });
+
+    expect(variables.length, 'variables.length').to.eql(expectedVariables.length);
   });
 }
 
