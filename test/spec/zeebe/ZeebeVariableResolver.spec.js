@@ -13,8 +13,13 @@ import { ZeebeVariableResolverModule } from 'lib/';
 import simpleXML from 'test/fixtures/zeebe/simple.bpmn';
 import emptyXML from 'test/fixtures/zeebe/empty.bpmn';
 import complexXML from 'test/fixtures/zeebe/complex.bpmn';
+import complexSubProcessMappingConflictingXML from 'test/fixtures/zeebe/complex.sub-process-mapping-conflict.bpmn';
+import agenticAdHocSubProcessXML from 'test/fixtures/zeebe/ad-hoc-sub-process.agentic.bpmn';
 import connectorsXML from 'test/fixtures/zeebe/connectors.bpmn';
+import connectorsSubProcessXML from 'test/fixtures/zeebe/connectors.sub-process.bpmn';
+import connectorsOutputMappingXML from 'test/fixtures/zeebe/connectors.output-mapping.bpmn';
 import ioMappingsXML from 'test/fixtures/zeebe/ioMappings.bpmn';
+import subprocessNoOutputMappingXML from 'test/fixtures/zeebe/sub-process.no-output-mapping.bpmn';
 import longBrokenExpressionXML from 'test/fixtures/zeebe/long-broken-expression.bpmn';
 import immediatelyBrokenExpressionXML from 'test/fixtures/zeebe/immediately-broken-expression.bpmn';
 
@@ -716,6 +721,87 @@ describe('ZeebeVariableResolver', function() {
   });
 
 
+  describe('scope - sub-process without output mapping', function() {
+
+    beforeEach(
+      bootstrapModeler(subprocessNoOutputMappingXML, {
+        additionalModules: [
+          ZeebeVariableResolverModule
+        ],
+        moddleExtensions: {
+          zeebe: ZeebeModdle
+        }
+      })
+    );
+
+
+    it('should extract process variables - process', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const root = elementRegistry.get('Process_1');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(root);
+
+      // then
+      // own variables
+      expect(variables).to.variableEqual([
+        { name: 'variable4', origin: [ 'Task_3' ], scope: 'Process_1' }
+      ]);
+    }));
+
+
+    it('should extract process variables - sub-process', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const root = elementRegistry.get('SubProcess_1');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(root);
+
+      // then
+      // own variables
+      expect(variables).to.variableEqual([
+        { name: 'variable4', origin: [ 'Task_3' ], scope: 'Process_1' },
+        { name: 'variable3', origin: [ 'SubProcess_1' ], scope: 'SubProcess_1' }
+      ]);
+    }));
+
+  });
+
+
+  describe('scope - conflicting mapping', function() {
+
+    beforeEach(
+      bootstrapModeler(complexSubProcessMappingConflictingXML, {
+        additionalModules: [
+          ZeebeVariableResolverModule
+        ],
+        moddleExtensions: {
+          zeebe: ZeebeModdle
+        }
+      })
+    );
+
+
+    it('should extract process variables - process', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const root = elementRegistry.get('Process_1');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(root);
+
+      // then
+      // own variables
+      expect(variables).to.variableEqual([
+        { name: 'variable4', origin: [ 'Task_3', 'SubProcess_2' ], scope: 'Process_1' }
+      ]);
+    }));
+
+  });
+
+
   describe('connectors', function() {
 
     beforeEach(
@@ -818,6 +904,194 @@ describe('ZeebeVariableResolver', function() {
       // then
       expect(variables).to.variableEqual([]);
 
+    }));
+
+  });
+
+
+  describe('connectors - output mapping', function() {
+
+    beforeEach(
+      bootstrapModeler(connectorsOutputMappingXML, {
+        additionalModules: [
+          ZeebeVariableResolverModule
+        ],
+        moddleExtensions: {
+          zeebe: ZeebeModdle
+        }
+      })
+    );
+
+
+    it('should output map variables', inject(
+      async function(variableResolver, elementRegistry) {
+
+        // given
+        const rootElement = elementRegistry.get('Process_1');
+
+        // when
+        const variables = await variableResolver.getVariablesForElement(rootElement);
+
+        // then
+        expect(variables).to.variableEqual([
+          { name: 'resultVariableMapped', origin: [ 'resultVariableTask' ], scope: 'Process_1' },
+          { name: 'otherVariableMapped', origin: [ 'resultVariableNotMappedTask' ], scope: 'Process_1' },
+          { name: 'expressionVariableMapped', origin: [ 'resultExpressionTask' ], scope: 'Process_1' }
+        ]);
+      }
+    ));
+
+
+    it('should treat variables from resultVariable header as local', inject(
+      async function(variableResolver, elementRegistry) {
+
+        // given
+        const task = elementRegistry.get('resultVariableTask');
+
+        // when
+        const variables = await variableResolver.getVariablesForElement(task);
+
+        // then
+        expect(variables).to.variableEqual([
+          { name: 'resultVariableMapped', origin: [ 'resultVariableTask' ], scope: 'Process_1' },
+          { name: 'otherVariableMapped', origin: [ 'resultVariableNotMappedTask' ], scope: 'Process_1' },
+          { name: 'expressionVariableMapped', origin: [ 'resultExpressionTask' ], scope: 'Process_1' },
+          { name: 'resultVariable', origin: [ 'resultVariableTask' ], scope: 'resultVariableTask' }
+        ]);
+      }
+    ));
+
+
+    it('should treat variables from resultExpression header as local', inject(
+      async function(variableResolver, elementRegistry) {
+
+        // given
+        const task = elementRegistry.get('resultExpressionTask');
+
+        // when
+        const variables = await variableResolver.getVariablesForElement(task);
+
+        // then
+        expect(variables).to.variableEqual([
+          { name: 'resultVariableMapped', origin: [ 'resultVariableTask' ], scope: 'Process_1' },
+          { name: 'otherVariableMapped', origin: [ 'resultVariableNotMappedTask' ], scope: 'Process_1' },
+          { name: 'expressionVariableMapped', origin: [ 'resultExpressionTask' ], scope: 'Process_1' },
+          { name: 'expressionVariable', origin: [ 'resultExpressionTask' ], scope: 'resultExpressionTask' },
+          { name: 'anotherExpressionVariable', origin: [ 'resultExpressionTask' ], scope: 'resultExpressionTask' }
+        ]);
+      }
+    ));
+
+  });
+
+
+  describe('connectors - sub-process', function() {
+
+    beforeEach(
+      bootstrapModeler(connectorsSubProcessXML, {
+        additionalModules: [
+          ZeebeVariableResolverModule
+        ],
+        moddleExtensions: {
+          zeebe: ZeebeModdle
+        }
+      })
+    );
+
+
+    it('should expose sub-process scoped variables', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const subProcess = elementRegistry.get('SubProcess_1');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(subProcess);
+
+      // then
+      expect(variables).to.variableEqual([
+        { name: 'resultVariable', origin: [ 'Activity_10' ], scope: 'Process_1' },
+        { name: 'expressionVariable', origin: [ 'Activity_11' ], scope: 'Process_1' },
+        { name: 'anotherExpressionVariable', origin: [ 'Activity_11', 'SubProcess_1' ], scope: 'SubProcess_1' },
+      ]);
+    }));
+
+
+    it('should expose process scoped variables', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const task = elementRegistry.get('Process_1');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(task);
+
+      // then
+      expect(variables).to.variableEqual([
+        { name: 'resultVariable', origin: [ 'Activity_10' ], scope: 'Process_1' },
+        { name: 'expressionVariable', origin: [ 'Activity_11' ], scope: 'Process_1' }
+      ]);
+    }));
+
+  });
+
+
+  describe('agentic - ad-hoc sub-process', function() {
+
+    beforeEach(
+      bootstrapModeler(agenticAdHocSubProcessXML, {
+        additionalModules: [
+          ZeebeVariableResolverModule
+        ],
+        moddleExtensions: {
+          zeebe: ZeebeModdle
+        }
+      })
+    );
+
+
+    it('should expose agent scoped variables', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const subProcess = elementRegistry.get('AI_Agent');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(subProcess);
+
+      // then
+      expect(variables).to.variableEqual([
+        { name: 'agent', origin: [ 'AI_Agent' ], scope: 'ai-agent-chat-with-tools' },
+        { name: 'toolCallResult', origin: [ 'AI_Agent', 'GetDateAndTime', 'SuperfluxProduct' ], scope: 'AI_Agent' },
+        { name: 'toolCallResults', origin: [ 'AI_Agent' ], scope: 'AI_Agent' },
+        { name: 'data.response.includeAgentContext' },
+        { name: 'data.response.includeAssistantMessage' },
+        { name: 'data.response.format.parseJson' },
+        { name: 'data.response.format.type' },
+        { name: 'data.events.behavior' },
+        { name: 'data.limits.maxModelCalls' },
+        { name: 'data.memory.contextWindowSize' },
+        { name: 'data.memory.storage.type' },
+        { name: 'agentContext', origin: [ 'AI_Agent' ], scope: 'AI_Agent' },
+        { name: 'data.userPrompt.documents' },
+        { name: 'data.userPrompt.prompt' },
+        { name: 'data.systemPrompt.prompt' },
+        { name: 'provider.openai.model.model' },
+        { name: 'provider.openai.authentication.apiKey' },
+        { name: 'provider.type' }
+      ]);
+    }));
+
+
+    it('should expose process scoped variables', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const task = elementRegistry.get('ai-agent-chat-with-tools');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(task);
+
+      // then
+      expect(variables).to.variableEqual([
+        { name: 'agent', origin: [ 'AI_Agent' ], scope: 'ai-agent-chat-with-tools' }
+      ]);
     }));
 
   });
