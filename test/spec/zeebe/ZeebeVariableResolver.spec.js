@@ -576,6 +576,129 @@ describe('ZeebeVariableResolver', function() {
       expect([ target ]).to.variableEqual([ { name: 'foo' } ]);
     });
 
+
+    describe('hierarchical names', function() {
+
+      it('should expand name', inject(async function(variableResolver, elementRegistry) {
+
+        // given
+        const root = elementRegistry.get('Process_1');
+
+        createProvider({
+          variables: [ { name: 'foo.bar', type: 'String', scope: root } ],
+          variableResolver,
+          origin: 'Process_1'
+        });
+
+        // when
+        const variables = await variableResolver.getVariablesForElement(root);
+
+        // then
+        expect(variables).to.variableEqual([
+          {
+            name: 'foo',
+            type: 'Context',
+            scope: 'Process_1',
+            entries: [
+              { name: 'bar', type: 'String', scope: 'Process_1' }
+            ]
+          }
+        ]);
+      }));
+
+
+      it('should merge same prefix variables with same scope', inject(async function(variableResolver, elementRegistry) {
+
+        // given
+        const root = elementRegistry.get('Process_1');
+
+        createProvider({
+          variables: [ { name: 'foo.bar', type: 'String', scope: root } ],
+          variableResolver,
+          origin: 'Process_1'
+        });
+        createProvider({
+          variables: [ { name: 'foo.woop', type: 'String', scope: root } ],
+          variableResolver,
+          origin: 'ServiceTask_1'
+        });
+
+        // when
+        const variables = await variableResolver.getVariablesForElement(root);
+
+        // then
+        expect(variables).to.variableEqual([
+          {
+            name: 'foo',
+            type: 'Context',
+            scope: 'Process_1',
+            entries: [
+              { name: 'bar', type: 'String', scope: 'Process_1' },
+              { name: 'woop', type: 'String', scope: 'Process_1' }
+            ]
+          }
+        ]);
+      }));
+
+
+      it('should not merge same prefix variables with different scope', inject(async function(variableResolver, elementRegistry) {
+
+        // given
+        const root = elementRegistry.get('Process_1');
+        const serviceTask = elementRegistry.get('ServiceTask_1');
+
+        createProvider({
+          variables: [ { name: 'foo.bar', type: 'String', scope: root } ],
+          variableResolver,
+          origin: 'Process_1'
+        });
+        createProvider({
+          variables: [ { name: 'foo.woop', type: 'String', scope: serviceTask } ],
+          variableResolver,
+          origin: 'ServiceTask_1'
+        });
+
+        // when
+        const processVariables = await variableResolver.getVariablesForElement(root);
+
+        // then
+        expect(processVariables).to.variableEqual([
+          {
+            name: 'foo',
+            type: 'Context',
+            scope: 'Process_1',
+            entries: [
+              { name: 'bar', type: 'String', scope: 'Process_1' }
+            ]
+          }
+        ]);
+
+        // when
+        const serviceTaskVariables = await variableResolver.getVariablesForElement(serviceTask);
+
+        // then
+        expect(serviceTaskVariables).to.variableEqual([
+          {
+            name: 'foo',
+            type: 'Context',
+            scope: 'Process_1',
+            entries: [
+              { name: 'bar', type: 'String', scope: 'Process_1' }
+            ]
+          },
+          {
+            name: 'foo',
+            type: 'Context',
+            scope: 'ServiceTask_1',
+            entries: [
+              { name: 'woop', type: 'String', scope: 'ServiceTask_1' }
+            ]
+          }
+        ]);
+      }));
+
+    });
+
   });
 
 
@@ -1062,21 +1185,61 @@ describe('ZeebeVariableResolver', function() {
         { name: 'agent', origin: [ 'AI_Agent' ], scope: 'ai-agent-chat-with-tools' },
         { name: 'toolCallResult', origin: [ 'AI_Agent', 'GetDateAndTime', 'SuperfluxProduct' ], scope: 'AI_Agent' },
         { name: 'toolCallResults', origin: [ 'AI_Agent' ], scope: 'AI_Agent' },
-        { name: 'data.response.includeAgentContext' },
-        { name: 'data.response.includeAssistantMessage' },
-        { name: 'data.response.format.parseJson' },
-        { name: 'data.response.format.type' },
-        { name: 'data.events.behavior' },
-        { name: 'data.limits.maxModelCalls' },
-        { name: 'data.memory.contextWindowSize' },
-        { name: 'data.memory.storage.type' },
-        { name: 'agentContext', origin: [ 'AI_Agent' ], scope: 'AI_Agent' },
-        { name: 'data.userPrompt.documents' },
-        { name: 'data.userPrompt.prompt' },
-        { name: 'data.systemPrompt.prompt' },
-        { name: 'provider.openai.model.model' },
-        { name: 'provider.openai.authentication.apiKey' },
-        { name: 'provider.type' }
+        {
+          name: 'data',
+          scope: 'AI_Agent',
+          entries: [
+            {
+              name: 'response',
+              scope: 'AI_Agent',
+              entries: [
+                { name: 'includeAgentContext', scope: 'AI_Agent' },
+                { name: 'includeAssistantMessage' },
+                { name: 'format' }
+              ]
+            },
+            {
+              name: 'events',
+              entries: [
+                { name: 'behavior' }
+              ]
+            },
+            {
+              name: 'limits'
+            },
+            {
+              name: 'memory',
+              entries: [
+                { name: 'contextWindowSize' },
+                { name: 'storage' }
+              ]
+            },
+            {
+              name: 'userPrompt'
+            },
+            {
+              name: 'systemPrompt'
+            }
+          ]
+        },
+        {
+          name: 'provider',
+          scope: 'AI_Agent',
+          entries: [
+            {
+              name: 'type',
+              scope: 'AI_Agent'
+            },
+            {
+              name: 'openai',
+              entries: [
+                { name: 'model' },
+                { name: 'authentication' }
+              ]
+            }
+          ]
+        },
+        { name: 'agentContext', origin: [ 'AI_Agent' ], scope: 'AI_Agent' }
       ]);
     }));
 
