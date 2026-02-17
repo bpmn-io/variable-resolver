@@ -24,8 +24,11 @@ function VariableEqual(chai, utils) {
         entries
       } = expectedVariable;
 
-      const actualVariable = variables.find(v => v.name === name);
-      expect(actualVariable, `variable[name=${name}]`).to.exist;
+      const actualVariable = variables.find(
+        v => (!isDefined(name) || v.name === name) && (!isDefined(scope) || v.scope?.id === scope)
+      );
+
+      expect(actualVariable, `variable[name=${name}, scope=${scope}]`).to.exist;
 
       isDefined(type) && expect(actualVariable.type, `variable[name=${name}].type`).to.eql(type);
       isDefined(info) && expect(actualVariable.info, `variable[name=${name}].info`).to.eql(info);
