@@ -641,6 +641,51 @@ describe('ZeebeVariableResolver', function() {
       }));
 
 
+      it('should merge same prefix variables with different types', inject(async function(variableResolver, elementRegistry) {
+
+        // given
+        const root = elementRegistry.get('Process_1');
+
+        createProvider({
+          variables: [ { name: 'foo.bar', type: 'String', scope: root } ],
+          variableResolver,
+          origin: 'Process_1'
+        });
+        createProvider({
+          variables: [ { name: 'foo.bar', type: 'Boolean', scope: root } ],
+          variableResolver,
+          origin: 'Process_1'
+        });
+        createProvider({
+          variables: [ { name: 'foo.bar.woop', type: 'Number', scope: root } ],
+          variableResolver,
+          origin: 'Process_1'
+        });
+
+        // when
+        const variables = await variableResolver.getVariablesForElement(root);
+
+        // then
+        expect(variables).to.variableEqual([
+          {
+            name: 'foo',
+            type: 'Context',
+            scope: 'Process_1',
+            entries: [
+              {
+                name: 'bar',
+                type: 'String|Boolean|Context',
+                scope: 'Process_1',
+                entries: [
+                  { name: 'woop', type: 'Number', scope: 'Process_1' }
+                ]
+              }
+            ]
+          }
+        ]);
+      }));
+
+
       it('should not merge same prefix variables with different scope', inject(async function(variableResolver, elementRegistry) {
 
         // given
