@@ -12,6 +12,7 @@ import { bootstrapModeler, inject } from 'test/TestHelper';
 import { ZeebeVariableResolverModule } from 'lib/';
 
 import chainedMappingsXML from 'test/fixtures/zeebe/mappings/chained-mappings.bpmn';
+import chainedMappingsAnyXML from 'test/fixtures/zeebe/mappings/chained-mappings.any.bpmn';
 import primitivesXML from 'test/fixtures/zeebe/mappings/primitives.bpmn';
 import mergingXML from 'test/fixtures/zeebe/mappings/merging.bpmn';
 import scopeXML from 'test/fixtures/zeebe/mappings/scope.bpmn';
@@ -66,6 +67,67 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
         { name: 'variable2', type: 'barType', info: 'barInfo', entries: toVariableFormat({ baz: {} }) },
         { name: 'variable3', type: 'bazType', info: 'bazInfo', entries: [] },
         { name: 'variable4', type: 'bazType', info: 'bazInfo', entries: [] }
+      ]);
+    }));
+
+  });
+
+
+  describe('Mappings - any', function() {
+
+    beforeEach(bootstrap(chainedMappingsAnyXML));
+
+
+    it('should map <Any>', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const subProcess = elementRegistry.get('SubProcess_3');
+      const task = elementRegistry.get('Task_9');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(subProcess);
+
+      // then
+      expect(variables).to.variableEqual([
+        {
+          name: 'nonExisting_fromProcess',
+          type: 'Any',
+          scope: 'SubProcess_3'
+        },
+        {
+          name: 'result_fromSubProcess',
+          type: 'Any',
+          scope: 'Process_6'
+        },
+        {
+          name: 'result_fromProcess',
+          type: 'Any',
+          scope: 'Process_6'
+        }
+      ]);
+
+      // when
+      const taskVariables = await variableResolver.getVariablesForElement(task);
+
+      // then
+      expect(taskVariables).to.variableEqual([
+        {
+          name: 'nonExisting_fromProcess',
+          type: 'Any',
+          scope: 'SubProcess_3'
+        },
+        {
+          name: 'result_fromSubProcess',
+          type: 'Any',
+          scope: 'Process_6'
+        },
+        {
+          name: 'result_fromProcess',
+          type: 'Any',
+          scope: 'Process_6'
+        },
+        { name: 'taskVariable_fromSubProcess', scope: 'Task_9', type: 'Any' },
+        { name: 'taskVariable_fromProcess', scope: 'Task_9', type: 'Any' }
       ]);
     }));
 
@@ -315,7 +377,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
         },
         {
           name: 'barOutputVariable',
-          type: 'Null',
+          type: 'Any',
           info: ''
         }
       ]);
