@@ -20,6 +20,7 @@ import connectorsXML from 'test/fixtures/zeebe/connectors.bpmn';
 import connectorsSubProcessXML from 'test/fixtures/zeebe/connectors.sub-process.bpmn';
 import connectorsOutputMappingXML from 'test/fixtures/zeebe/connectors.output-mapping.bpmn';
 import ioMappingsXML from 'test/fixtures/zeebe/ioMappings.bpmn';
+import ioMappingsEmptyXML from 'test/fixtures/zeebe/ioMappings.empty.bpmn';
 import ioMappingsNullXML from 'test/fixtures/zeebe/ioMappings.null.bpmn';
 import subprocessNoOutputMappingXML from 'test/fixtures/zeebe/sub-process.no-output-mapping.bpmn';
 import longBrokenExpressionXML from 'test/fixtures/zeebe/long-broken-expression.bpmn';
@@ -1555,6 +1556,38 @@ describe('ZeebeVariableResolver', function() {
       }));
 
     });
+
+  });
+
+
+  describe('io mappings - empty', function() {
+
+    beforeEach(
+      bootstrapModeler(ioMappingsEmptyXML, {
+        additionalModules: [
+          ZeebeVariableResolverModule
+        ],
+        moddleExtensions: {
+          zeebe: ZeebeModdle
+        }
+      })
+    );
+
+
+    it('should map as <null>', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const task = elementRegistry.get('ServiceTask_1');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(task);
+
+      // then
+      expect(variables).to.variableEqual([
+        { name: 'emptyInput', type: 'Null', scope: 'ServiceTask_1' }
+      ]);
+
+    }));
 
   });
 
