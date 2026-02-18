@@ -17,7 +17,9 @@
   "license": "MIT",
   "dependencies": {
     "@bpmn-io/extract-process-variables": "^2.1.0",
+    "@bpmn-io/feel-analyzer": "^0.1.0",
     "@bpmn-io/lezer-feel": "^2.3.0",
+    "@camunda/feel-builtins": "^1.0.0",
     "@lezer/common": "^1.5.1",
     "min-dash": "^5.0.0"
   },
