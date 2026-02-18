@@ -315,7 +315,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
         },
         {
           name: 'barOutputVariable',
-          type: 'Null',
+          type: 'Any',
           info: ''
         }
       ]);
