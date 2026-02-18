@@ -20,6 +20,7 @@ import connectorsXML from 'test/fixtures/zeebe/connectors.bpmn';
 import connectorsSubProcessXML from 'test/fixtures/zeebe/connectors.sub-process.bpmn';
 import connectorsOutputMappingXML from 'test/fixtures/zeebe/connectors.output-mapping.bpmn';
 import ioMappingsXML from 'test/fixtures/zeebe/ioMappings.bpmn';
+import ioMappingsNullXML from 'test/fixtures/zeebe/ioMappings.null.bpmn';
 import subprocessNoOutputMappingXML from 'test/fixtures/zeebe/sub-process.no-output-mapping.bpmn';
 import longBrokenExpressionXML from 'test/fixtures/zeebe/long-broken-expression.bpmn';
 import immediatelyBrokenExpressionXML from 'test/fixtures/zeebe/immediately-broken-expression.bpmn';
@@ -1554,6 +1555,40 @@ describe('ZeebeVariableResolver', function() {
       }));
 
     });
+
+  });
+
+
+  describe('io mappings - null', function() {
+
+    beforeEach(
+      bootstrapModeler(ioMappingsNullXML, {
+        additionalModules: [
+          ZeebeVariableResolverModule
+        ],
+        moddleExtensions: {
+          zeebe: ZeebeModdle
+        }
+      })
+    );
+
+
+    it('should declare Null type', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const task = elementRegistry.get('ServiceTask_1');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(task);
+
+      // then
+      // filter own name, later input mappings + all output mappings
+      expect(variables).to.variableEqual([
+        { name: 'nullInput', type: 'Null', scope: 'ServiceTask_1' },
+        { name: 'nullOutput', type: 'Null', scope: 'Process_1' }
+      ]);
+
+    }));
 
   });
 
