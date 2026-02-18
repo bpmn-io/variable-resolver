@@ -6,6 +6,11 @@ All notable changes to [@bpmn-io/variable-resolver](https://github.com/bpmn-io/v
 
 ___Note:__ Yet to be released changes appear here._
 
+## 1.5.0
+
+* `FEAT`: resolve `zeebe:adHoc#outputCollection` ([#69](https://github.com/bpmn-io/variable-resolver/pull/69))
+* `DEPS`: update to `@bpmn-io/extract-process-variables@2.1.0`
+
 ## 1.4.1
 
 * `FIX`: correctly handle falsy variable `atomicValue` ([#68](https://github.com/bpmn-io/variable-resolver/pull/68))
