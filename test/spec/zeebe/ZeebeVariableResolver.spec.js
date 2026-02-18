@@ -666,7 +666,8 @@ describe('ZeebeVariableResolver', function() {
       expect(variables).to.variableEqual([
         { name: 'variable1', origin: [ 'Task_1' ], scope: 'Process_1' },
         { name: 'variable2', origin: [ 'Task_1' ], scope: 'Process_1' },
-        { name: 'variable3', origin: [ 'SubProcess_1', 'Task_2' ], scope: 'SubProcess_1' }
+        { name: 'variable3', origin: [ 'SubProcess_1', 'Task_2' ], scope: 'SubProcess_1' },
+        { name: 'source', origin: [ 'SubProcess_1' ], scope: 'SubProcess_1' },
       ]);
     }));
 
@@ -691,7 +692,8 @@ describe('ZeebeVariableResolver', function() {
         { name: 'variable1', origin: [ 'Task_1' ], scope: 'Process_1' },
         { name: 'variable2', origin: [ 'Task_1' ], scope: 'Process_1' },
         { name: 'variable3', origin: [ 'SubProcess_1', 'Task_2' ], scope: 'SubProcess_1' },
-        { name: 'foo', origin: [ 'Task_2' ], scope: 'Task_2' }
+        { name: 'foo', origin: [ 'Task_2' ], scope: 'Task_2' },
+        { name: 'source', origin: [ 'SubProcess_1' ], scope: 'SubProcess_1' },
       ]);
     }));
 
@@ -716,6 +718,7 @@ describe('ZeebeVariableResolver', function() {
         { name: 'variable1', origin: [ 'Task_1' ], scope: 'Process_1' },
         { name: 'variable2', origin: [ 'Task_1' ], scope: 'Process_1' },
         { name: 'variable3', origin: [ 'SubProcess_1', 'Task_2', 'Task_3' ], scope: 'SubProcess_1' },
+        { name: 'source', origin: [ 'SubProcess_1' ], scope: 'SubProcess_1' },
       ]);
     }));
 
