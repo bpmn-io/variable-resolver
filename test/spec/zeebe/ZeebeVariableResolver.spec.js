@@ -1332,6 +1332,19 @@ describe('ZeebeVariableResolver', function() {
       expect(variables).to.variableEqual([
         { name: 'outputCollection', origin: [ 'AdHocSubProcess_1' ], scope: 'Process_1' }
       ]);
+
+      // and given
+      const root = elementRegistry.get('Process_1');
+
+      // when
+      const rootVariables = await variableResolver.getVariablesForElement(root);
+
+      // then
+      expect(rootVariables).to.variableInclude({
+        name: 'outputCollection',
+        origin: [ 'AdHocSubProcess_1' ],
+        scope: 'Process_1'
+      });
     }));
 
   });
