@@ -761,9 +761,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       const withUsedBy = variables.filter(v => v.usedBy && v.usedBy.length > 0);
       const names = withUsedBy.map(v => v.name);
 
-      // then - input requirements should come from input mapping expressions only;
-      // localA and localB are provided by the input mappings, so the script's
-      // references to them should NOT produce input requirements
+      // then
       expect(names).to.include('processVar1');
       expect(names).to.include('processVar2');
       expect(names).to.not.include('localA');
@@ -778,9 +776,54 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       const withUsedBy = variables.filter(v => v.usedBy && v.usedBy.length > 0);
       const names = withUsedBy.map(v => v.name);
 
-      // then - the second script task has no input mappings, so its script variables should be extracted
+      // then
       expect(names).to.include('x');
       expect(names).to.include('y');
+    }));
+
+
+    it('should not require locally provided variable when chained input mapping references earlier target', inject(async function(variableResolver) {
+
+      // when
+      const variables = (await variableResolver.getVariables())['Process_1'];
+      const chainedReqs = variables.filter(v =>
+        v.usedBy && v.usedBy.length > 0 && v.origin[0].id === 'chainedInputMappings'
+      );
+      const names = chainedReqs.map(v => v.name);
+
+      // then
+      expect(names).to.include('processVar3');
+      expect(names).to.not.include('localC');
+      expect(names).to.not.include('localD');
+    }));
+
+
+    it('should keep shadowed variable as input requirement when mapping a to a', inject(async function(variableResolver) {
+
+      // when
+      const variables = (await variableResolver.getVariables())['Process_1'];
+      const shadowReqs = variables.filter(v =>
+        v.usedBy && v.usedBy.length > 0 && v.origin[0].id === 'shadowingTask'
+      );
+      const names = shadowReqs.map(v => v.name);
+
+      // then
+      expect(names).to.include('a');
+    }));
+
+
+    it('should handle shadowing with chaining correctly', inject(async function(variableResolver) {
+
+      // when
+      const variables = (await variableResolver.getVariables())['Process_1'];
+      const reqs = variables.filter(v =>
+        v.usedBy && v.usedBy.length > 0 && v.origin[0].id === 'shadowingChainedTask'
+      );
+      const names = reqs.map(v => v.name);
+
+      // then
+      expect(names).to.include('a');
+      expect(names).to.not.include('b');
     }));
 
   });
@@ -949,14 +992,12 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
 
       it('should only return process variables as input requirements, not locally mapped ones', inject(async function(variableResolver, elementRegistry) {
 
-        // given
-        const task = elementRegistry.get('scriptWithInputs');
-
         // when
-        const requirements = await variableResolver.getInputRequirementsForElement(task);
+        const requirements = await variableResolver.getInputRequirementsForElement(
+          elementRegistry.get('scriptWithInputs')
+        );
 
-        // then - only processVar1 and processVar2 (from input mapping sources) should
-        // be requirements, not localA and localB (input mapping targets used in the script)
+        // then
         const names = requirements.map(v => v.name);
         expect(names).to.include('processVar1');
         expect(names).to.include('processVar2');
@@ -968,17 +1009,61 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
 
       it('should return all script variables for task without input mappings', inject(async function(variableResolver, elementRegistry) {
 
-        // given
-        const task = elementRegistry.get('scriptWithoutInputs');
-
         // when
-        const requirements = await variableResolver.getInputRequirementsForElement(task);
+        const requirements = await variableResolver.getInputRequirementsForElement(
+          elementRegistry.get('scriptWithoutInputs')
+        );
 
         // then
         const names = requirements.map(v => v.name);
         expect(names).to.include('x');
         expect(names).to.include('y');
         expect(requirements).to.have.length(2);
+      }));
+
+
+      it('should handle chained input mappings respecting order', inject(async function(variableResolver, elementRegistry) {
+
+        // when
+        const requirements = await variableResolver.getInputRequirementsForElement(
+          elementRegistry.get('chainedInputMappings')
+        );
+
+        // then
+        const names = requirements.map(v => v.name);
+        expect(names).to.include('processVar3');
+        expect(names).to.not.include('localC');
+        expect(names).to.not.include('localD');
+        expect(requirements).to.have.length(1);
+      }));
+
+
+      it('should keep shadowed variable as requirement when mapping a to a', inject(async function(variableResolver, elementRegistry) {
+
+        // when
+        const requirements = await variableResolver.getInputRequirementsForElement(
+          elementRegistry.get('shadowingTask')
+        );
+
+        // then
+        const names = requirements.map(v => v.name);
+        expect(names).to.include('a');
+        expect(requirements).to.have.length(1);
+      }));
+
+
+      it('should handle shadowing with chained mappings', inject(async function(variableResolver, elementRegistry) {
+
+        // when
+        const requirements = await variableResolver.getInputRequirementsForElement(
+          elementRegistry.get('shadowingChainedTask')
+        );
+
+        // then
+        const names = requirements.map(v => v.name);
+        expect(names).to.include('a');
+        expect(names).to.not.include('b');
+        expect(requirements).to.have.length(1);
       }));
 
     });
