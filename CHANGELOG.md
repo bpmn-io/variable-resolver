@@ -6,6 +6,10 @@ All notable changes to [@bpmn-io/variable-resolver](https://github.com/bpmn-io/v
 
 ___Note:__ Yet to be released changes appear here._
 
+## 1.6.0
+
+* `FEAT`: expand + merge hierarchical names (Camunda 8) ([#70](https://github.com/bpmn-io/variable-resolver/pull/70))
+
 ## 1.5.0
 
 * `FEAT`: resolve `zeebe:adHoc#outputCollection` ([#69](https://github.com/bpmn-io/variable-resolver/pull/69))
