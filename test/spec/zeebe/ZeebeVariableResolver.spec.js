@@ -22,6 +22,7 @@ import connectorsOutputMappingXML from 'test/fixtures/zeebe/connectors.output-ma
 import ioMappingsXML from 'test/fixtures/zeebe/ioMappings.bpmn';
 import ioMappingsEmptyXML from 'test/fixtures/zeebe/ioMappings.empty.bpmn';
 import ioMappingsNullXML from 'test/fixtures/zeebe/ioMappings.null.bpmn';
+import ioMappingsStaticXML from 'test/fixtures/zeebe/ioMappings.static.bpmn';
 import subprocessNoOutputMappingXML from 'test/fixtures/zeebe/sub-process.no-output-mapping.bpmn';
 import longBrokenExpressionXML from 'test/fixtures/zeebe/long-broken-expression.bpmn';
 import immediatelyBrokenExpressionXML from 'test/fixtures/zeebe/immediately-broken-expression.bpmn';
@@ -1792,6 +1793,38 @@ describe('ZeebeVariableResolver', function() {
       expect(variables).to.variableEqual([
         { name: 'nullInput', type: 'Null', scope: 'ServiceTask_1' },
         { name: 'nullOutput', type: 'Null', scope: 'Process_1' }
+      ]);
+
+    }));
+
+  });
+
+
+  describe('io mappings - static', function() {
+
+    beforeEach(
+      bootstrapModeler(ioMappingsStaticXML, {
+        additionalModules: [
+          ZeebeVariableResolverModule
+        ],
+        moddleExtensions: {
+          zeebe: ZeebeModdle
+        }
+      })
+    );
+
+
+    it('should map as literal value', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const task = elementRegistry.get('ServiceTask_1');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(task);
+
+      // then
+      expect(variables).to.variableEqual([
+        { name: 'staticInput', type: 'String', scope: 'ServiceTask_1', info: '10' }
       ]);
 
     }));
