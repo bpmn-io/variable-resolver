@@ -1883,9 +1883,11 @@ describe('ZeebeVariableResolver', function() {
         const variables = await variableResolver.getVariablesForElement(task);
 
         // then
-        expect(variables).to.variableInclude([
-          { name: 'outNull', type: 'Null', scope: 'Process_varResolution' }
-        ]);
+        expect(variables).to.variableInclude({
+          name: 'outNull',
+          type: 'Null',
+          scope: 'Process_varResolution'
+        });
       }));
 
 
@@ -1898,9 +1900,11 @@ describe('ZeebeVariableResolver', function() {
         const variables = await variableResolver.getVariablesForElement(task);
 
         // then
-        expect(variables).to.variableInclude([
-          { name: 'outString', type: 'String', scope: 'Process_varResolution' }
-        ]);
+        expect(variables).to.variableInclude({
+          name: 'outString',
+          type: 'String',
+          scope: 'Process_varResolution'
+        });
       }));
 
 
@@ -1913,9 +1917,11 @@ describe('ZeebeVariableResolver', function() {
         const variables = await variableResolver.getVariablesForElement(task);
 
         // then
-        expect(variables).to.variableInclude([
-          { name: 'outNumber', type: 'Number', scope: 'Process_varResolution' }
-        ]);
+        expect(variables).to.variableInclude({
+          name: 'outNumber',
+          type: 'Number',
+          scope: 'Process_varResolution'
+        });
       }));
 
 
@@ -1928,9 +1934,11 @@ describe('ZeebeVariableResolver', function() {
         const variables = await variableResolver.getVariablesForElement(task);
 
         // then
-        expect(variables).to.variableInclude([
-          { name: 'outBoolean', type: 'Boolean', scope: 'Process_varResolution' }
-        ]);
+        expect(variables).to.variableInclude({
+          name: 'outBoolean',
+          type: 'Boolean',
+          scope: 'Process_varResolution'
+        });
       }));
 
 
@@ -1943,9 +1951,11 @@ describe('ZeebeVariableResolver', function() {
         const variables = await variableResolver.getVariablesForElement(task);
 
         // then
-        expect(variables).to.variableInclude([
-          { name: 'outContext', type: 'Context', scope: 'Process_varResolution' }
-        ]);
+        expect(variables).to.variableInclude({
+          name: 'outContext',
+          type: 'Context',
+          scope: 'Process_varResolution'
+        });
       }));
 
 
@@ -1958,9 +1968,11 @@ describe('ZeebeVariableResolver', function() {
         const variables = await variableResolver.getVariablesForElement(task);
 
         // then
-        expect(variables).to.variableInclude([
-          { name: 'outEmpty', type: 'Null', scope: 'Process_varResolution' }
-        ]);
+        expect(variables).to.variableInclude({
+          name: 'outEmpty',
+          type: 'Null',
+          scope: 'Process_varResolution'
+        });
       }));
 
     });
@@ -1977,9 +1989,11 @@ describe('ZeebeVariableResolver', function() {
         const variables = await variableResolver.getVariablesForElement(task);
 
         // then
-        expect(variables).to.variableInclude([
-          { name: 'pathString', type: 'String', scope: 'pathConsumerTask' }
-        ]);
+        expect(variables).to.variableInclude({
+          name: 'pathString',
+          type: 'String',
+          scope: 'pathConsumerTask'
+        });
       }));
 
 
@@ -1992,9 +2006,11 @@ describe('ZeebeVariableResolver', function() {
         const variables = await variableResolver.getVariablesForElement(task);
 
         // then
-        expect(variables).to.variableInclude([
-          { name: 'pathNumber', type: 'Number', scope: 'pathConsumerTask' }
-        ]);
+        expect(variables).to.variableInclude({
+          name: 'pathNumber',
+          type: 'Number',
+          scope: 'pathConsumerTask'
+        });
       }));
 
 
@@ -2007,9 +2023,11 @@ describe('ZeebeVariableResolver', function() {
         const variables = await variableResolver.getVariablesForElement(task);
 
         // then
-        expect(variables).to.variableInclude([
-          { name: 'pathBoolean', type: 'Boolean', scope: 'pathConsumerTask' }
-        ]);
+        expect(variables).to.variableInclude({
+          name: 'pathBoolean',
+          type: 'Boolean',
+          scope: 'pathConsumerTask'
+        });
       }));
 
 
@@ -2022,9 +2040,11 @@ describe('ZeebeVariableResolver', function() {
         const variables = await variableResolver.getVariablesForElement(task);
 
         // then
-        expect(variables).to.variableInclude([
-          { name: 'pathDeepNull', type: 'Null', scope: 'pathConsumerTask' }
-        ]);
+        expect(variables).to.variableInclude({
+          name: 'pathDeepNull',
+          type: 'Null',
+          scope: 'pathConsumerTask'
+        });
       }));
 
     });
@@ -2041,9 +2061,11 @@ describe('ZeebeVariableResolver', function() {
         const variables = await variableResolver.getVariablesForElement(task);
 
         // then
-        expect(variables).to.variableInclude([
-          { name: 'passedString', type: 'String', scope: 'passthroughConsumerTask' }
-        ]);
+        expect(variables).to.variableInclude({
+          name: 'passedString',
+          type: 'String',
+          scope: 'passthroughConsumerTask'
+        });
       }));
 
     });
@@ -2060,9 +2082,11 @@ describe('ZeebeVariableResolver', function() {
         const variables = await variableResolver.getVariablesForElement(task);
 
         // then
-        expect(variables).to.variableInclude([
-          { name: 'unresolvedInput', type: 'Any', scope: 'unresolvedConsumerTask' }
-        ]);
+        expect(variables).to.variableInclude({
+          name: 'unresolvedInput',
+          type: 'Any',
+          scope: 'unresolvedConsumerTask'
+        });
       }));
 
     });
@@ -2079,22 +2103,20 @@ describe('ZeebeVariableResolver', function() {
         const variables = await variableResolver.getVariablesForElement(task);
 
         // then
-        expect(variables).to.variableInclude([
-          {
-            name: 'nested',
-            type: 'Context',
-            scope: 'Process_varResolution',
-            entries: [
-              {
-                name: 'deep',
-                type: 'Context',
-                entries: [
-                  { name: 'leaf', type: 'String' }
-                ]
-              }
-            ]
-          }
-        ]);
+        expect(variables).to.variableInclude({
+          name: 'nested',
+          type: 'Context',
+          scope: 'Process_varResolution',
+          entries: [
+            {
+              name: 'deep',
+              type: 'Context',
+              entries: [
+                { name: 'leaf', type: 'String' }
+              ]
+            }
+          ]
+        });
       }));
 
     });
