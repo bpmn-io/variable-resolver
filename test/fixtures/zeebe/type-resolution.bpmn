@@ -104,6 +104,25 @@
         </zeebe:ioMapping>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_10</bpmn:incoming>
+      <bpmn:outgoing>Flow_10b</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <!-- Nested reference resolution (hierarchical names) -->
+    <bpmn:serviceTask id="nestedProducerTask" name="Nested Producer">
+      <bpmn:extensionElements>
+        <zeebe:ioMapping>
+          <zeebe:output source="=&quot;hello&quot;" target="nested.deep.leaf" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_10b</bpmn:incoming>
+      <bpmn:outgoing>Flow_11</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="nestedConsumerTask" name="Nested Consumer">
+      <bpmn:extensionElements>
+        <zeebe:ioMapping>
+          <zeebe:input source="=nested.deep.leaf" target="nestedResult" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_11</bpmn:incoming>
     </bpmn:serviceTask>
     <!-- Sequence Flows -->
     <bpmn:sequenceFlow id="Flow_1" sourceRef="literalNullTask" targetRef="literalStringTask" />
@@ -116,6 +135,8 @@
     <bpmn:sequenceFlow id="Flow_8" sourceRef="pathConsumerTask" targetRef="passthroughProducerTask" />
     <bpmn:sequenceFlow id="Flow_9" sourceRef="passthroughProducerTask" targetRef="passthroughConsumerTask" />
     <bpmn:sequenceFlow id="Flow_10" sourceRef="passthroughConsumerTask" targetRef="unresolvedConsumerTask" />
+    <bpmn:sequenceFlow id="Flow_11" sourceRef="nestedProducerTask" targetRef="nestedConsumerTask" />
+    <bpmn:sequenceFlow id="Flow_10b" sourceRef="unresolvedConsumerTask" targetRef="nestedProducerTask" />
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_varResolution">
@@ -202,6 +223,23 @@
       <bpmndi:BPMNEdge id="Flow_10_di" bpmnElement="Flow_10">
         <di:waypoint x="260" y="590" />
         <di:waypoint x="360" y="590" />
+      </bpmndi:BPMNEdge>
+      <!-- Nested reference resolution -->
+      <bpmndi:BPMNShape id="nestedProducerTask_di" bpmnElement="nestedProducerTask">
+        <dc:Bounds x="560" y="550" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="nestedConsumerTask_di" bpmnElement="nestedConsumerTask">
+        <dc:Bounds x="160" y="700" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_10b_di" bpmnElement="Flow_10b">
+        <di:waypoint x="460" y="590" />
+        <di:waypoint x="560" y="590" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_11_di" bpmnElement="Flow_11">
+        <di:waypoint x="610" y="630" />
+        <di:waypoint x="610" y="670" />
+        <di:waypoint x="210" y="670" />
+        <di:waypoint x="210" y="700" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

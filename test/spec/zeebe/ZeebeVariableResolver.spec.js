@@ -448,7 +448,7 @@ describe('ZeebeVariableResolver', function() {
       const variables = await variableResolver.getVariablesForElement(root);
 
       // then
-      expect(variables).to.variableEqual([ { name: 'foo', type: 'String|Number' } ]);
+      expect(variables).to.variableEqual([ { name: 'foo', type: 'Number|String' } ]);
     }));
 
 
@@ -552,6 +552,82 @@ describe('ZeebeVariableResolver', function() {
         ]
       }
       ]);
+    }));
+
+
+    it('should type nested entry with no value as Null', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const root = elementRegistry.get('Process_1');
+
+      createProvider({
+        variables: [ {
+          name: 'a',
+          entries: [
+            {
+              name: 'b',
+              entries: [
+                { name: 'c' }
+              ]
+            }
+          ]
+        } ],
+        variableResolver
+      });
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(root);
+
+      // then
+      expect(variables).to.variableEqual([ {
+        name: 'a',
+        entries: [
+          {
+            name: 'b',
+            entries: [
+              { name: 'c', type: 'Null' }
+            ]
+          }
+        ]
+      } ]);
+    }));
+
+
+    it('should not fail when merging entries with mixed type presence', inject(async function(variableResolver, elementRegistry) {
+
+      // given - one provider supplies a type, the other does not
+      const root = elementRegistry.get('Process_1');
+
+      createProvider({
+        variables: [ {
+          name: 'a',
+          type: 'String',
+          entries: [
+            { name: 'b', type: 'Number' }
+          ]
+        } ],
+        variableResolver
+      });
+      createProvider({
+        variables: [ {
+          name: 'a',
+          entries: [
+            { name: 'b' }
+          ]
+        } ],
+        variableResolver
+      });
+
+      // when / then - should not throw
+      const variables = await variableResolver.getVariablesForElement(root);
+
+      expect(variables).to.variableEqual([ {
+        name: 'a',
+        type: 'String',
+        entries: [
+          { name: 'b', type: 'Number' }
+        ]
+      } ]);
     }));
 
 
@@ -677,7 +753,7 @@ describe('ZeebeVariableResolver', function() {
             entries: [
               {
                 name: 'bar',
-                type: 'String|Boolean|Context',
+                type: 'Boolean|Context|String',
                 scope: 'Process_1',
                 entries: [
                   { name: 'woop', type: 'Number', scope: 'Process_1' }
@@ -1255,32 +1331,58 @@ describe('ZeebeVariableResolver', function() {
               name: 'response',
               scope: 'AI_Agent',
               entries: [
-                { name: 'includeAgentContext', scope: 'AI_Agent' },
-                { name: 'includeAssistantMessage' },
-                { name: 'format' }
+                { name: 'includeAgentContext', scope: 'AI_Agent', type: 'Boolean' },
+                { name: 'includeAssistantMessage', type: 'Boolean' },
+                {
+                  name: 'format',
+                  type: 'Context',
+                  entries: [
+                    { name: 'type', type: 'String' },
+                    { name: 'parseJson', type: 'Boolean' }
+                  ]
+                }
               ]
             },
             {
               name: 'events',
               entries: [
-                { name: 'behavior' }
+                { name: 'behavior', type: 'String' }
               ]
             },
             {
-              name: 'limits'
+              name: 'limits',
+              type: 'Context',
+              entries: [
+                { name: 'maxModelCalls', type: 'Number' }
+              ]
             },
             {
               name: 'memory',
               entries: [
-                { name: 'contextWindowSize' },
-                { name: 'storage' }
+                { name: 'contextWindowSize', type: 'Number' },
+                {
+                  name: 'storage',
+                  type: 'Context',
+                  entries: [
+                    { name: 'type', type: 'String' }
+                  ]
+                }
               ]
             },
             {
-              name: 'userPrompt'
+              name: 'userPrompt',
+              type: 'Context',
+              entries: [
+                { name: 'prompt', type: 'Any' },
+                { name: 'documents', type: 'Any' }
+              ]
             },
             {
-              name: 'systemPrompt'
+              name: 'systemPrompt',
+              type: 'Context',
+              entries: [
+                { name: 'prompt', type: 'Null' }
+              ]
             }
           ]
         },
@@ -1295,9 +1397,23 @@ describe('ZeebeVariableResolver', function() {
             {
               name: 'bedrock',
               entries: [
-                { name: 'region' },
-                { name: 'authentication' },
-                { name: 'model' }
+                { name: 'region', type: 'String' },
+                {
+                  name: 'authentication',
+                  type: 'Context',
+                  entries: [
+                    { name: 'type', type: 'String' },
+                    { name: 'accessKey', type: 'String' },
+                    { name: 'secretKey', type: 'String' }
+                  ]
+                },
+                {
+                  name: 'model',
+                  type: 'Context',
+                  entries: [
+                    { name: 'model', type: 'String' }
+                  ]
+                }
               ]
             }
           ]
@@ -1335,8 +1451,31 @@ describe('ZeebeVariableResolver', function() {
       // then
       expect(variables).to.variableInclude({
         name: 'toolCallResult',
-        type: 'Context|String|Null|Any'
+        type: 'Any|Context|Null|String'
       });
+    }));
+
+
+    it('should type nested entries of expanded hierarchical variables', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const subProcess = elementRegistry.get('AI_Agent');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(subProcess);
+      const dataVariable = variables.find(v => v.name === 'data');
+
+      // then
+      expect(dataVariable).to.exist;
+      expect(dataVariable.type).to.equal('Context');
+
+      const systemPrompt = dataVariable.entries.find(e => e.name === 'systemPrompt');
+      expect(systemPrompt).to.exist;
+      expect(systemPrompt.type).to.equal('Context');
+
+      const prompt = systemPrompt.entries.find(e => e.name === 'prompt');
+      expect(prompt).to.exist;
+      expect(prompt.type).to.equal('Null');
     }));
 
   });
@@ -1923,6 +2062,38 @@ describe('ZeebeVariableResolver', function() {
         // then
         expect(variables).to.variableInclude([
           { name: 'unresolvedInput', type: 'Any', scope: 'unresolvedConsumerTask' }
+        ]);
+      }));
+
+    });
+
+
+    describe('nested reference resolution', function() {
+
+      it('should resolve nested output to Context with Null-typed leaf', inject(async function(elementRegistry, variableResolver) {
+
+        // given
+        const task = elementRegistry.get('nestedConsumerTask');
+
+        // when
+        const variables = await variableResolver.getVariablesForElement(task);
+
+        // then
+        expect(variables).to.variableInclude([
+          {
+            name: 'nested',
+            type: 'Context',
+            scope: 'Process_varResolution',
+            entries: [
+              {
+                name: 'deep',
+                type: 'Context',
+                entries: [
+                  { name: 'leaf', type: 'String' }
+                ]
+              }
+            ]
+          }
         ]);
       }));
 

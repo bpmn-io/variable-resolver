@@ -282,7 +282,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
         },
         {
           name: 'mergedContext',
-          type: 'globalType|Context',
+          type: 'Context|globalType',
           entries: [
             { name: 'a', type: 'TestVariable', info: 'TestInfo', entries: [ { name: 'foo' } ] },
             { name: 'b', type: 'TestVariable', info: 'TestInfo', entries: [ { name: 'foo' } ] },
@@ -480,7 +480,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
         {
           name: 'barOutputVariable',
           type: 'Any',
-          info: ''
+          info: '=fooInputVariable'
         }
       ]);
     }));
