@@ -754,19 +754,20 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
     beforeEach(bootstrap(scriptTaskWithInputMappingsXML));
 
 
-    it('should extract input requirements from both input mappings and script expression', inject(async function(variableResolver) {
+    it('should extract input requirements from input mapping expressions but not from script for locally mapped variables', inject(async function(variableResolver) {
 
       // when
       const variables = (await variableResolver.getVariables())['Process_1'];
       const withUsedBy = variables.filter(v => v.usedBy && v.usedBy.length > 0);
       const names = withUsedBy.map(v => v.name);
 
-      // then - input requirements should come from both input mapping expressions
-      // and the script expression
+      // then - input requirements should come from input mapping expressions only;
+      // localA and localB are provided by the input mappings, so the script's
+      // references to them should NOT produce input requirements
       expect(names).to.include('processVar1');
       expect(names).to.include('processVar2');
-      expect(names).to.include('localA');
-      expect(names).to.include('localB');
+      expect(names).to.not.include('localA');
+      expect(names).to.not.include('localB');
     }));
 
 
@@ -936,6 +937,48 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
         expect(names).to.include('f');
         expect(names).to.not.include('a');
         expect(names).to.not.include('b');
+      }));
+
+    });
+
+
+    describe('with script tasks and input mappings', function() {
+
+      beforeEach(bootstrap(scriptTaskWithInputMappingsXML));
+
+
+      it('should only return process variables as input requirements, not locally mapped ones', inject(async function(variableResolver, elementRegistry) {
+
+        // given
+        const task = elementRegistry.get('scriptWithInputs');
+
+        // when
+        const requirements = await variableResolver.getInputRequirementsForElement(task);
+
+        // then - only processVar1 and processVar2 (from input mapping sources) should
+        // be requirements, not localA and localB (input mapping targets used in the script)
+        const names = requirements.map(v => v.name);
+        expect(names).to.include('processVar1');
+        expect(names).to.include('processVar2');
+        expect(names).to.not.include('localA');
+        expect(names).to.not.include('localB');
+        expect(requirements).to.have.length(2);
+      }));
+
+
+      it('should return all script variables for task without input mappings', inject(async function(variableResolver, elementRegistry) {
+
+        // given
+        const task = elementRegistry.get('scriptWithoutInputs');
+
+        // when
+        const requirements = await variableResolver.getInputRequirementsForElement(task);
+
+        // then
+        const names = requirements.map(v => v.name);
+        expect(names).to.include('x');
+        expect(names).to.include('y');
+        expect(requirements).to.have.length(2);
       }));
 
     });
