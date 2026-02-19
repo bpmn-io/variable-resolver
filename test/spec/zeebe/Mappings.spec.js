@@ -21,6 +21,7 @@ import scriptTaskEmptyExpressionXML from 'test/fixtures/zeebe/mappings/script-ta
 import inputRequirementsXML from 'test/fixtures/zeebe/mappings/input-requirements.bpmn';
 import scriptTaskInputsXML from 'test/fixtures/zeebe/mappings/script-task-inputs.bpmn';
 import scriptTaskWithInputMappingsXML from 'test/fixtures/zeebe/mappings/script-task-with-input-mappings.bpmn';
+import inputOutputConflictXML from 'test/fixtures/zeebe/mappings/input-output-conflict.bpmn';
 import emptyXML from 'test/fixtures/zeebe/empty.bpmn';
 
 import VariableProvider from 'lib/VariableProvider';
@@ -623,6 +624,62 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
   });
 
 
+  describe('Input Requirements - Input/Output Conflict', function() {
+
+    beforeEach(bootstrap(inputOutputConflictXML));
+
+
+    it('should extract input requirement from input mapping when another task has output mapping with same name', inject(async function(variableResolver) {
+
+      // when
+      const variables = (await variableResolver.getVariables())['Process_1'];
+
+      // then - foo is used in the input mapping of InputTask, so it should be an input requirement
+      const fooRequirements = variables.filter(v => v.name === 'foo' && v.usedBy && v.usedBy.length > 0);
+
+      // Both InputTask and OutputTask use `foo` in input expressions, so both should have
+      // separate input requirements (not merged into one with multiple origins)
+      expect(fooRequirements).to.have.length(2);
+
+      const inputTaskFoo = fooRequirements.find(v => v.origin[0].id === 'InputTask');
+      const outputTaskFoo = fooRequirements.find(v => v.origin[0].id === 'OutputTask');
+      expect(inputTaskFoo).to.exist;
+      expect(outputTaskFoo).to.exist;
+      expect(inputTaskFoo.origin).to.have.length(1);
+      expect(outputTaskFoo.origin).to.have.length(1);
+    }));
+
+
+    it('should return foo as input requirement for InputTask via getInputRequirementsForElement', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const task = elementRegistry.get('InputTask');
+
+      // when
+      const requirements = await variableResolver.getInputRequirementsForElement(task);
+
+      // then
+      const names = requirements.map(v => v.name);
+      expect(names).to.include('foo');
+    }));
+
+
+    it('should return foo as input requirement for OutputTask via getInputRequirementsForElement', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const task = elementRegistry.get('OutputTask');
+
+      // when
+      const requirements = await variableResolver.getInputRequirementsForElement(task);
+
+      // then
+      const names = requirements.map(v => v.name);
+      expect(names).to.include('foo');
+    }));
+
+  });
+
+
   describe('Input Requirements - Script Tasks', function() {
 
     beforeEach(bootstrap(scriptTaskInputsXML));
@@ -743,11 +800,11 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
         // when
         const requirements = await variableResolver.getInputRequirementsForElement(task);
 
-        // then - 'b' is unique to SimpleTask, 'a' is shared with MergedEntriesTask
-        // so 'a' has origin.length > 1 and is excluded
+        // then - both 'a' and 'b' are input requirements for SimpleTask
         const names = requirements.map(v => v.name);
+        expect(names).to.include('a');
         expect(names).to.include('b');
-        expect(requirements).to.have.length(1);
+        expect(requirements).to.have.length(2);
       }));
 
 
@@ -827,17 +884,19 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       }));
 
 
-      it('should not return variables with multiple origins', inject(async function(variableResolver, elementRegistry) {
+      it('should return input requirements even when other tasks use the same variable', inject(async function(variableResolver, elementRegistry) {
 
         // given - MergedEntriesTask uses 'a' which is also used by SimpleTask
-        // After merging, 'a' has origin.length > 1, so it is excluded
+        // Input requirements are per-task and should not be merged
         const task = elementRegistry.get('MergedEntriesTask');
 
         // when
         const requirements = await variableResolver.getInputRequirementsForElement(task);
 
         // then
-        expect(requirements).to.be.an('array').that.is.empty;
+        expect(requirements).to.have.length(1);
+        expect(requirements[0].name).to.eql('a');
+        expect(requirements[0].entries).to.have.length(2);
       }));
 
     });
