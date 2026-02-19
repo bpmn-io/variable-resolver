@@ -19,6 +19,7 @@ import mergingNullXML from 'test/fixtures/zeebe/mappings/merging.null.bpmn';
 import mergingAnyXML from 'test/fixtures/zeebe/mappings/merging.any.bpmn';
 import mergingChildrenXML from 'test/fixtures/zeebe/mappings/merging.children.bpmn';
 import scopeXML from 'test/fixtures/zeebe/mappings/scope.bpmn';
+import propagationXML from 'test/fixtures/zeebe/mappings/propagation.bpmn';
 import scriptTaskXML from 'test/fixtures/zeebe/mappings/script-task.bpmn';
 import scriptTaskEmptyExpressionXML from 'test/fixtures/zeebe/mappings/script-task-empty-expression.bpmn';
 
@@ -620,6 +621,147 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
           name: 'foo',
           type: 'Number',
           info: '10'
+        }
+      ]);
+    }));
+
+  });
+
+
+  describe('Propagation', function() {
+
+    beforeEach(bootstrap(propagationXML));
+
+
+    it('should input map <null> values', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const subProcess = elementRegistry.get('SubProcess_2');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(subProcess);
+
+      // then
+      expect(variables).to.variableEqual([
+        {
+          name: 'nonExistingProcessVariable',
+          type: 'Any',
+          origin: [ 'SubProcess_2' ]
+        }
+      ]);
+    }));
+
+
+    it('should input map <null> values / nested', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const task = elementRegistry.get('Task_2');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(task);
+
+      // then
+      expect(variables).to.variableEqual([
+        {
+          name: 'nonExistingProcessVariable',
+          type: 'Any',
+          origin: [ 'Task_2' ]
+        }
+      ]);
+    }));
+
+
+    it('should output map <null> values', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const subProcess = elementRegistry.get('SubProcess_3');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(subProcess);
+
+      // then
+      expect(variables).to.variableEqual([
+        {
+          name: 'nonExistingTaskVariable',
+          type: 'Any',
+          origin: [ 'Task_3' ]
+        }
+      ]);
+    }));
+
+
+    it('should output map <null> values / nested', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const root = elementRegistry.get('Participant_3');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(root.businessObject.processRef);
+
+
+      // then
+      expect(variables).to.variableEqual([
+        {
+          name: 'nonExistingTaskVariable',
+          type: 'Any',
+          origin: [ 'SubProcess_3' ]
+        }
+      ]);
+    }));
+
+
+    it('should roundtrip <null> values', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const subProcess = elementRegistry.get('SubProcess_1');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(subProcess);
+
+      // then
+      expect(variables).to.variableEqual([
+        {
+          name: 'nonExistingProcessVariable',
+          type: 'Any',
+          origin: [ 'SubProcess_1' ]
+        }
+      ]);
+    }));
+
+
+    it('should roundtrip <null> values / nested', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const task = elementRegistry.get('Task_1');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(task);
+
+      // then
+      expect(variables).to.variableEqual([
+        {
+          name: 'nonExistingProcessVariable',
+          type: 'Any',
+          origin: [ 'SubProcess_1' ]
+        }
+      ]);
+    }));
+
+
+    it('should roundtrip <null> values / back-to-back', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const root = elementRegistry.get('Participant_1');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(root.businessObject.processRef);
+
+      // then
+      expect(variables).to.variableEqual([
+        {
+          name: 'nonExistingProcessVariable',
+          type: 'Any',
+          origin: [ 'SubProcess_1' ]
         }
       ]);
     }));
