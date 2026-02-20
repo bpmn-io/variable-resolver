@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_1noegy9" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.31.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.1.0">
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_1noegy9" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.44.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.1.0">
   <bpmn:collaboration id="Collaboration_0e60zir">
     <bpmn:participant id="Participant_1" name="Participant_1" processRef="Process_1" />
     <bpmn:participant id="Participant_2" name="Participant_2" processRef="Process_2" />
@@ -8,6 +8,7 @@
     <bpmn:participant id="Participant_5" name="Participant_5" processRef="Process_5" />
     <bpmn:participant id="Participant_6" name="Participant_6" processRef="Process_6" />
     <bpmn:participant id="Participant_7" name="Participant_7" processRef="Process_7" />
+    <bpmn:participant id="Participant_8" name="Participant_8" processRef="Process_8" />
   </bpmn:collaboration>
   <bpmn:process id="Process_1" isExecutable="true">
     <bpmn:serviceTask id="ServiceTask_1" name="Input &#38; output in scope">
@@ -86,6 +87,16 @@
       </bpmn:extensionElements>
     </bpmn:serviceTask>
   </bpmn:process>
+  <bpmn:process id="Process_8" isExecutable="false">
+    <bpmn:serviceTask id="ServiceTask_5" name="Outputs with same name">
+      <bpmn:extensionElements>
+        <zeebe:ioMapping>
+          <zeebe:output source="=&#34;1&#34;" target="foo" />
+          <zeebe:output source="=10" target="foo" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+    </bpmn:serviceTask>
+  </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_0e60zir">
       <bpmndi:BPMNShape id="Participant_10jajek_di" bpmnElement="Participant_1" isHorizontal="true">
@@ -145,6 +156,14 @@
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1533gjq_di" bpmnElement="ServiceTask_4">
         <dc:Bounds x="230" y="360" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_0qg1jk8" bpmnElement="Participant_8" isHorizontal="true">
+        <dc:Bounds x="180" y="480" width="300" height="120" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_0xkbquk" bpmnElement="ServiceTask_5">
+        <dc:Bounds x="230" y="500" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
     </bpmndi:BPMNPlane>
