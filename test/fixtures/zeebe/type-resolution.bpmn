@@ -13,6 +13,7 @@
       <bpmn:extensionElements>
         <zeebe:ioMapping>
           <zeebe:output source="=&#34;hello&#34;" target="outString" />
+          <zeebe:output source="=&#34;&#10;hello&#10;&#34;" target="outCamundaString" />
         </zeebe:ioMapping>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_1</bpmn:incoming>

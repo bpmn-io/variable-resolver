@@ -1392,7 +1392,7 @@ describe('ZeebeVariableResolver', function() {
               name: 'systemPrompt',
               type: 'Context',
               entries: [
-                { name: 'prompt', type: 'Null' }
+                { name: 'prompt', type: 'String' }
               ]
             }
           ]
@@ -1486,7 +1486,7 @@ describe('ZeebeVariableResolver', function() {
 
       const prompt = systemPrompt.entries.find(e => e.name === 'prompt');
       expect(prompt).to.exist;
-      expect(prompt.type).to.equal('Null');
+      expect(prompt.type).to.equal('String');
     }));
 
   });
@@ -2026,6 +2026,23 @@ describe('ZeebeVariableResolver', function() {
         // then
         expect(variables).to.variableInclude({
           name: 'outString',
+          type: 'String',
+          scope: 'Process_varResolution'
+        });
+      }));
+
+
+      it('should resolve <camunda> string literal to String', inject(async function(elementRegistry, variableResolver) {
+
+        // given
+        const task = elementRegistry.get('literalStringTask');
+
+        // when
+        const variables = await variableResolver.getVariablesForElement(task);
+
+        // then
+        expect(variables).to.variableInclude({
+          name: 'outCamundaString',
           type: 'String',
           scope: 'Process_varResolution'
         });
