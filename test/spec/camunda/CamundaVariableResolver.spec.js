@@ -408,7 +408,7 @@ describe('CamundaVariableResolver', function() {
       const variables = await variableResolver.getVariablesForElement(root);
 
       // then
-      expect(variables).to.variableEqual([ { name: 'foo', type: 'String|Number' } ]);
+      expect(variables).to.variableEqual([ { name: 'foo', type: 'Number|String' } ]);
     }));
 
 
