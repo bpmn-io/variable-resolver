@@ -1233,7 +1233,22 @@ describe('ZeebeVariableResolver', function() {
       // then
       expect(variables).to.variableEqual([
         { name: 'agent', origin: [ 'AI_Agent' ], scope: 'ai-agent-chat-with-tools' },
-        { name: 'toolCallResult', origin: [ 'AI_Agent', 'GetDateAndTime', 'SuperfluxProduct' ], scope: 'AI_Agent' },
+        {
+          name: 'toolCallResult',
+          origin: [
+            'AskHumanToSendEmail',
+            'GetDateAndTime',
+            'SuperfluxProduct',
+            'Handle_Message',
+            'SendEmail',
+            'LoadUserByID',
+            'ListUsers',
+            'Search_Recipe',
+            'Jokes_API',
+            'Fetch_URL'
+          ],
+          scope: 'ai-agent-chat-with-tools'
+        },
         { name: 'toolCallResults', origin: [ 'AI_Agent' ], scope: 'AI_Agent' },
         {
           name: 'data',
@@ -1281,10 +1296,11 @@ describe('ZeebeVariableResolver', function() {
               scope: 'AI_Agent'
             },
             {
-              name: 'openai',
+              name: 'bedrock',
               entries: [
-                { name: 'model' },
-                { name: 'authentication' }
+                { name: 'region' },
+                { name: 'authentication' },
+                { name: 'model' }
               ]
             }
           ]
@@ -1304,8 +1320,25 @@ describe('ZeebeVariableResolver', function() {
 
       // then
       expect(variables).to.variableEqual([
+        { name: 'toolCallResult', scope: 'ai-agent-chat-with-tools' },
         { name: 'agent', origin: [ 'AI_Agent' ], scope: 'ai-agent-chat-with-tools' }
       ]);
+    }));
+
+
+    it('should type toolCallResult with joined toolCall value types', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const subProcess = elementRegistry.get('AI_Agent');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(subProcess);
+
+      // then
+      expect(variables).to.variableInclude({
+        name: 'toolCallResult',
+        type: 'Context|String|Null|Any'
+      });
     }));
 
   });
