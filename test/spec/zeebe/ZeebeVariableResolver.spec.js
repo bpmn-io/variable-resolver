@@ -13,6 +13,7 @@ import { ZeebeVariableResolverModule } from 'lib/';
 import simpleXML from 'test/fixtures/zeebe/simple.bpmn';
 import emptyXML from 'test/fixtures/zeebe/empty.bpmn';
 import complexXML from 'test/fixtures/zeebe/complex.bpmn';
+import errorsXML from 'test/fixtures/zeebe/errors.bpmn';
 import complexSubProcessMappingConflictingXML from 'test/fixtures/zeebe/complex.sub-process-mapping-conflict.bpmn';
 import agenticAdHocSubProcessXML from 'test/fixtures/zeebe/ad-hoc-sub-process.agentic.bpmn';
 import agenticTaskXML from 'test/fixtures/zeebe/task.agentic.bpmn';
@@ -2385,6 +2386,66 @@ describe('ZeebeVariableResolver', function() {
       }));
 
     });
+
+  });
+
+
+  describe('error handling', function() {
+
+    beforeEach(bootstrapModeler(errorsXML, {
+      additionalModules: [
+        ZeebeVariableResolverModule
+      ],
+      moddleExtensions: {
+        zeebe: ZeebeModdle
+      }
+    }));
+
+
+    it('should handle invalid input', inject(async function(elementRegistry, variableResolver) {
+
+      // given
+      const task = elementRegistry.get('InvalidInputTask');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(task);
+
+      // then
+      expect(variables).to.variableEqual([
+        { name: 'invalidOutput', type: 'Null', scope: 'Process_1' }
+      ]);
+    }));
+
+
+    it('should handle invalid output', inject(async function(elementRegistry, variableResolver) {
+
+      // given
+      const task = elementRegistry.get('InvalidOutputTask');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(task);
+
+      // then
+      expect(variables).to.variableEqual([
+        { name: 'invalidOutput', type: 'Null', scope: 'Process_1' }
+      ]);
+    }));
+
+
+    it('should handle invalid FEEL expression', inject(async function(elementRegistry, variableResolver) {
+
+      // given
+      const task = elementRegistry.get('InvalidExpressionTask');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(task);
+
+      // then
+      expect(variables).to.variableEqual([
+        { name: 'invalidInput', type: 'Null', scope: 'InvalidExpressionTask' },
+        { name: 'invalidOutput', type: 'Null', scope: 'Process_1' }
+      ]);
+    }));
 
   });
 
