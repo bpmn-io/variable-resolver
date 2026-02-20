@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+import sinon from 'sinon';
 
 import TestContainer from 'mocha-test-container-support';
 
@@ -17,6 +18,11 @@ import mergingXML from 'test/fixtures/zeebe/mappings/merging.bpmn';
 import scopeXML from 'test/fixtures/zeebe/mappings/scope.bpmn';
 import scriptTaskXML from 'test/fixtures/zeebe/mappings/script-task.bpmn';
 import scriptTaskEmptyExpressionXML from 'test/fixtures/zeebe/mappings/script-task-empty-expression.bpmn';
+import inputRequirementsXML from 'test/fixtures/zeebe/mappings/input-requirements.bpmn';
+import scriptTaskInputsXML from 'test/fixtures/zeebe/mappings/script-task-inputs.bpmn';
+import scriptTaskWithInputMappingsXML from 'test/fixtures/zeebe/mappings/script-task-with-input-mappings.bpmn';
+import inputOutputConflictXML from 'test/fixtures/zeebe/mappings/input-output-conflict.bpmn';
+import emptyXML from 'test/fixtures/zeebe/empty.bpmn';
 
 import VariableProvider from 'lib/VariableProvider';
 
@@ -495,6 +501,627 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
         ]);
       }));
     });
+  });
+
+
+  describe('Input Requirements', function() {
+
+    beforeEach(bootstrap(inputRequirementsXML));
+
+
+    it('should extract input variables from simple expression', inject(async function(variableResolver) {
+
+      // when
+      const variables = (await variableResolver.getVariables())['Process_1'];
+
+      // then
+      const a = variables.find(v => v.name === 'a');
+      const b = variables.find(v => v.name === 'b');
+      expect(a).to.exist;
+      expect(b).to.exist;
+      expect(a.usedBy).to.eql([ 'sum' ]);
+      expect(b.usedBy).to.eql([ 'sum' ]);
+    }));
+
+
+    it('should extract input variables with nested properties', inject(async function(variableResolver) {
+
+      // when
+      const variables = (await variableResolver.getVariables())['Process_1'];
+
+      // then
+      const order = variables.find(v => v.name === 'order');
+      expect(order).to.exist;
+      expect(order.entries).to.have.length(1);
+      expect(order.entries[0].name).to.eql('items');
+      expect(order.usedBy).to.eql([ 'orderItems' ]);
+    }));
+
+
+    it('should deduplicate input variables across mappings', inject(async function(variableResolver) {
+
+      // when
+      const variables = (await variableResolver.getVariables())['Process_1'];
+
+      // then - y is used in both input mappings but should only appear once
+      const yVars = variables.filter(v => v.name === 'y');
+      expect(yVars).to.have.length(1);
+    }));
+
+
+    it('should track multiple usedBy targets', inject(async function(variableResolver) {
+
+      // when
+      const variables = (await variableResolver.getVariables())['Process_1'];
+
+      // then - y is used in both result1 (=x+y) and result2 (=y+z)
+      const y = variables.find(v => v.name === 'y');
+      expect(y.usedBy).to.eql([ 'result1', 'result2' ]);
+    }));
+
+
+    it('should extract all unique input variables from multiple mappings', inject(async function(variableResolver) {
+
+      // when
+      const variables = (await variableResolver.getVariables())['Process_1'];
+
+      // then
+      const names = variables.map(v => v.name);
+      expect(names).to.include('x');
+      expect(names).to.include('y');
+      expect(names).to.include('z');
+    }));
+
+
+    it('should merge entries from multiple expressions referencing the same variable', inject(async function(variableResolver) {
+
+      // when
+      const variables = (await variableResolver.getVariables())['Process_1'];
+
+      // then - a.b and a.c should result in a: { entries: [b, c] }
+      const a = variables.find(v => v.name === 'a' && v.origin.some(o => o.id === 'MergedEntriesTask'));
+      expect(a).to.exist;
+      expect(a.entries).to.have.length(2);
+
+      const entryNames = a.entries.map(e => e.name);
+      expect(entryNames).to.include('b');
+      expect(entryNames).to.include('c');
+    }));
+
+
+    it('should scope input requirements to the origin task', inject(async function(variableResolver) {
+
+      // when
+      const variables = (await variableResolver.getVariables())['Process_1'];
+
+      // then - a originates from SimpleTask (the task with the input mapping)
+      const a = variables.find(v => v.name === 'a' && v.origin[0].id === 'SimpleTask');
+      expect(a).to.exist;
+      expect(a.scope).to.not.exist;
+    }));
+
+
+    it('should keep provider and extracted variables separate', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const root = elementRegistry.get('Process_1');
+
+      createProvider({
+        variables: [ { name: 'a', type: 'Number', scope: root } ],
+        variableResolver
+      });
+
+      // when
+      const variables = (await variableResolver.getVariables())['Process_1'];
+
+      // then - provider 'a' (with scope) and extracted 'a' (without scope) coexist
+      const scopedA = variables.find(v => v.name === 'a' && v.scope);
+      const unscopedA = variables.find(v => v.name === 'a' && !v.scope);
+      expect(scopedA).to.exist;
+      expect(unscopedA).to.exist;
+    }));
+
+  });
+
+
+  describe('Input Requirements - Input/Output Conflict', function() {
+
+    beforeEach(bootstrap(inputOutputConflictXML));
+
+
+    it('should extract input requirement from input mapping when another task has output mapping with same name', inject(async function(variableResolver) {
+
+      // when
+      const variables = (await variableResolver.getVariables())['Process_1'];
+
+      // then - foo is used in the input mapping of InputTask, so it should be an input requirement
+      const fooRequirements = variables.filter(v => v.name === 'foo' && v.usedBy && v.usedBy.length > 0);
+
+      // Both InputTask and OutputTask use `foo` in input expressions, so both should have
+      // separate input requirements (not merged into one with multiple origins)
+      expect(fooRequirements).to.have.length(2);
+
+      const inputTaskFoo = fooRequirements.find(v => v.origin[0].id === 'InputTask');
+      const outputTaskFoo = fooRequirements.find(v => v.origin[0].id === 'OutputTask');
+      expect(inputTaskFoo).to.exist;
+      expect(outputTaskFoo).to.exist;
+      expect(inputTaskFoo.origin).to.have.length(1);
+      expect(outputTaskFoo.origin).to.have.length(1);
+    }));
+
+
+    it('should return foo as input requirement for InputTask via getInputRequirementsForElement', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const task = elementRegistry.get('InputTask');
+
+      // when
+      const requirements = await variableResolver.getInputRequirementsForElement(task);
+
+      // then
+      const names = requirements.map(v => v.name);
+      expect(names).to.include('foo');
+    }));
+
+
+    it('should return foo as input requirement for OutputTask via getInputRequirementsForElement', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const task = elementRegistry.get('OutputTask');
+
+      // when
+      const requirements = await variableResolver.getInputRequirementsForElement(task);
+
+      // then
+      const names = requirements.map(v => v.name);
+      expect(names).to.include('foo');
+    }));
+
+  });
+
+
+  describe('Input Requirements - Script Tasks', function() {
+
+    beforeEach(bootstrap(scriptTaskInputsXML));
+
+
+    it('should extract input variables from script task expression', inject(async function(variableResolver) {
+
+      // when
+      const variables = (await variableResolver.getVariables())['Process_1'];
+
+      // then
+      const a = variables.find(v => v.name === 'a');
+      const b = variables.find(v => v.name === 'b');
+      expect(a).to.exist;
+      expect(b).to.exist;
+      expect(a.usedBy).to.eql([ 'firstResult' ]);
+      expect(b.usedBy).to.eql([ 'firstResult' ]);
+    }));
+
+
+    it('should extract input variables from second script task', inject(async function(variableResolver) {
+
+      // when
+      const variables = (await variableResolver.getVariables())['Process_1'];
+
+      // then
+      const d = variables.find(v => v.name === 'd');
+      const f = variables.find(v => v.name === 'f');
+      expect(d).to.exist;
+      expect(f).to.exist;
+      expect(d.usedBy).to.eql([ 'secondResult' ]);
+      expect(f.usedBy).to.eql([ 'secondResult' ]);
+    }));
+
+
+    it('should associate script task inputs with the task origin', inject(async function(variableResolver) {
+
+      // when
+      const variables = (await variableResolver.getVariables())['Process_1'];
+
+      // then - a originates from firstTask, d originates from secondTask
+      const a = variables.find(v => v.name === 'a');
+      const d = variables.find(v => v.name === 'd');
+      expect(a.origin[0].id).to.eql('firstTask');
+      expect(d.origin[0].id).to.eql('secondTask');
+      expect(a.scope).to.not.exist;
+      expect(d.scope).to.not.exist;
+    }));
+
+
+    it('should not include input requirements in getVariablesForElement', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const firstTask = elementRegistry.get('firstTask');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(firstTask);
+
+      // then - input requirements (a, b, d, f) should not appear since they have no scope
+      const names = variables.map(v => v.name);
+      expect(names).to.not.include('a');
+      expect(names).to.not.include('b');
+      expect(names).to.not.include('d');
+      expect(names).to.not.include('f');
+    }));
+
+  });
+
+
+  describe('Input Requirements - Script Task with Input Mappings', function() {
+
+    beforeEach(bootstrap(scriptTaskWithInputMappingsXML));
+
+
+    it('should extract input requirements from input mapping expressions but not from script for locally mapped variables', inject(async function(variableResolver) {
+
+      // when
+      const variables = (await variableResolver.getVariables())['Process_1'];
+      const withUsedBy = variables.filter(v => v.usedBy && v.usedBy.length > 0);
+      const names = withUsedBy.map(v => v.name);
+
+      // then
+      expect(names).to.include('processVar1');
+      expect(names).to.include('processVar2');
+      expect(names).to.not.include('localA');
+      expect(names).to.not.include('localB');
+    }));
+
+
+    it('should still extract input requirements from script without input mappings', inject(async function(variableResolver) {
+
+      // when
+      const variables = (await variableResolver.getVariables())['Process_1'];
+      const withUsedBy = variables.filter(v => v.usedBy && v.usedBy.length > 0);
+      const names = withUsedBy.map(v => v.name);
+
+      // then
+      expect(names).to.include('x');
+      expect(names).to.include('y');
+    }));
+
+
+    it('should not require locally provided variable when chained input mapping references earlier target', inject(async function(variableResolver) {
+
+      // when
+      const variables = (await variableResolver.getVariables())['Process_1'];
+      const chainedReqs = variables.filter(v =>
+        v.usedBy && v.usedBy.length > 0 && v.origin[0].id === 'chainedInputMappings'
+      );
+      const names = chainedReqs.map(v => v.name);
+
+      // then
+      expect(names).to.include('processVar3');
+      expect(names).to.not.include('localC');
+      expect(names).to.not.include('localD');
+    }));
+
+
+    it('should keep shadowed variable as input requirement when mapping a to a', inject(async function(variableResolver) {
+
+      // when
+      const variables = (await variableResolver.getVariables())['Process_1'];
+      const shadowReqs = variables.filter(v =>
+        v.usedBy && v.usedBy.length > 0 && v.origin[0].id === 'shadowingTask'
+      );
+      const names = shadowReqs.map(v => v.name);
+
+      // then
+      expect(names).to.include('a');
+    }));
+
+
+    it('should handle shadowing with chaining correctly', inject(async function(variableResolver) {
+
+      // when
+      const variables = (await variableResolver.getVariables())['Process_1'];
+      const reqs = variables.filter(v =>
+        v.usedBy && v.usedBy.length > 0 && v.origin[0].id === 'shadowingChainedTask'
+      );
+      const names = reqs.map(v => v.name);
+
+      // then
+      expect(names).to.include('a');
+      expect(names).to.not.include('b');
+    }));
+
+
+    it('should not require second input mapping variable used in script', inject(async function(variableResolver) {
+
+      // when
+      const variables = (await variableResolver.getVariables())['Process_1'];
+      const reqs = variables.filter(v =>
+        v.usedBy && v.usedBy.length > 0 && v.origin[0].id === 'scriptUsesSecondInput'
+      );
+      const names = reqs.map(v => v.name);
+
+      // then
+      expect(names).to.include('def');
+      expect(names).to.not.include('test');
+      expect(reqs).to.have.length(1);
+    }));
+
+  });
+
+
+  describe('#getInputRequirementsForElement', function() {
+
+    describe('with input mappings', function() {
+
+      beforeEach(bootstrap(inputRequirementsXML));
+
+
+      it('should return input requirements for a simple task', inject(async function(variableResolver, elementRegistry) {
+
+        // given
+        const task = elementRegistry.get('SimpleTask');
+
+        // when
+        const requirements = await variableResolver.getInputRequirementsForElement(task);
+
+        // then - both 'a' and 'b' are input requirements for SimpleTask
+        const names = requirements.map(v => v.name);
+        expect(names).to.include('a');
+        expect(names).to.include('b');
+        expect(requirements).to.have.length(2);
+      }));
+
+
+      it('should return requirements with nested properties', inject(async function(variableResolver, elementRegistry) {
+
+        // given
+        const task = elementRegistry.get('NestedTask');
+
+        // when
+        const requirements = await variableResolver.getInputRequirementsForElement(task);
+
+        // then
+        expect(requirements).to.have.length(1);
+        expect(requirements[0].name).to.eql('order');
+        expect(requirements[0].entries).to.have.length(1);
+        expect(requirements[0].entries[0].name).to.eql('items');
+      }));
+
+
+      it('should return requirements from multiple input mappings', inject(async function(variableResolver, elementRegistry) {
+
+        // given
+        const task = elementRegistry.get('MultiInputTask');
+
+        // when
+        const requirements = await variableResolver.getInputRequirementsForElement(task);
+
+        // then
+        const names = requirements.map(v => v.name);
+        expect(names).to.include('x');
+        expect(names).to.include('y');
+        expect(names).to.include('z');
+      }));
+
+
+      it('should return empty array for element without input requirements', inject(async function(variableResolver, elementRegistry) {
+
+        // given
+        const process = elementRegistry.get('Process_1');
+
+        // when
+        const requirements = await variableResolver.getInputRequirementsForElement(process);
+
+        // then
+        expect(requirements).to.be.an('array').that.is.empty;
+      }));
+
+
+      it('should not return variables from other elements', inject(async function(variableResolver, elementRegistry) {
+
+        // given
+        const task = elementRegistry.get('SimpleTask');
+
+        // when
+        const requirements = await variableResolver.getInputRequirementsForElement(task);
+
+        // then - should not include variables from MultiInputTask or NestedTask
+        const names = requirements.map(v => v.name);
+        expect(names).to.not.include('x');
+        expect(names).to.not.include('z');
+        expect(names).to.not.include('order');
+      }));
+
+
+      it('should include usedBy information', inject(async function(variableResolver, elementRegistry) {
+
+        // given
+        const task = elementRegistry.get('SimpleTask');
+
+        // when
+        const requirements = await variableResolver.getInputRequirementsForElement(task);
+
+        // then
+        const b = requirements.find(v => v.name === 'b');
+        expect(b).to.exist;
+        expect(b.usedBy).to.eql([ 'sum' ]);
+      }));
+
+
+      it('should return input requirements even when other tasks use the same variable', inject(async function(variableResolver, elementRegistry) {
+
+        // given - MergedEntriesTask uses 'a' which is also used by SimpleTask
+        // Input requirements are per-task and should not be merged
+        const task = elementRegistry.get('MergedEntriesTask');
+
+        // when
+        const requirements = await variableResolver.getInputRequirementsForElement(task);
+
+        // then
+        expect(requirements).to.have.length(1);
+        expect(requirements[0].name).to.eql('a');
+        expect(requirements[0].entries).to.have.length(2);
+      }));
+
+    });
+
+
+    describe('with script tasks', function() {
+
+      beforeEach(bootstrap(scriptTaskInputsXML));
+
+
+      it('should return input requirements for script task', inject(async function(variableResolver, elementRegistry) {
+
+        // given
+        const task = elementRegistry.get('firstTask');
+
+        // when
+        const requirements = await variableResolver.getInputRequirementsForElement(task);
+
+        // then
+        const names = requirements.map(v => v.name);
+        expect(names).to.include('a');
+        expect(names).to.include('b');
+      }));
+
+
+      it('should only return requirements for the requested task', inject(async function(variableResolver, elementRegistry) {
+
+        // given
+        const task = elementRegistry.get('secondTask');
+
+        // when
+        const requirements = await variableResolver.getInputRequirementsForElement(task);
+
+        // then
+        const names = requirements.map(v => v.name);
+        expect(names).to.include('d');
+        expect(names).to.include('f');
+        expect(names).to.not.include('a');
+        expect(names).to.not.include('b');
+      }));
+
+    });
+
+
+    describe('with script tasks and input mappings', function() {
+
+      beforeEach(bootstrap(scriptTaskWithInputMappingsXML));
+
+
+      it('should only return process variables as input requirements, not locally mapped ones', inject(async function(variableResolver, elementRegistry) {
+
+        // when
+        const requirements = await variableResolver.getInputRequirementsForElement(
+          elementRegistry.get('scriptWithInputs')
+        );
+
+        // then
+        const names = requirements.map(v => v.name);
+        expect(names).to.include('processVar1');
+        expect(names).to.include('processVar2');
+        expect(names).to.not.include('localA');
+        expect(names).to.not.include('localB');
+        expect(requirements).to.have.length(2);
+      }));
+
+
+      it('should return all script variables for task without input mappings', inject(async function(variableResolver, elementRegistry) {
+
+        // when
+        const requirements = await variableResolver.getInputRequirementsForElement(
+          elementRegistry.get('scriptWithoutInputs')
+        );
+
+        // then
+        const names = requirements.map(v => v.name);
+        expect(names).to.include('x');
+        expect(names).to.include('y');
+        expect(requirements).to.have.length(2);
+      }));
+
+
+      it('should handle chained input mappings respecting order', inject(async function(variableResolver, elementRegistry) {
+
+        // when
+        const requirements = await variableResolver.getInputRequirementsForElement(
+          elementRegistry.get('chainedInputMappings')
+        );
+
+        // then
+        const names = requirements.map(v => v.name);
+        expect(names).to.include('processVar3');
+        expect(names).to.not.include('localC');
+        expect(names).to.not.include('localD');
+        expect(requirements).to.have.length(1);
+      }));
+
+
+      it('should keep shadowed variable as requirement when mapping a to a', inject(async function(variableResolver, elementRegistry) {
+
+        // when
+        const requirements = await variableResolver.getInputRequirementsForElement(
+          elementRegistry.get('shadowingTask')
+        );
+
+        // then
+        const names = requirements.map(v => v.name);
+        expect(names).to.include('a');
+        expect(requirements).to.have.length(1);
+      }));
+
+
+      it('should handle shadowing with chained mappings', inject(async function(variableResolver, elementRegistry) {
+
+        // when
+        const requirements = await variableResolver.getInputRequirementsForElement(
+          elementRegistry.get('shadowingChainedTask')
+        );
+
+        // then
+        const names = requirements.map(v => v.name);
+        expect(names).to.include('a');
+        expect(names).to.not.include('b');
+        expect(requirements).to.have.length(1);
+      }));
+
+
+      it('should allow script to use all input targets regardless of order', inject(async function(variableResolver, elementRegistry) {
+
+        // when
+        const requirements = await variableResolver.getInputRequirementsForElement(
+          elementRegistry.get('scriptUsesSecondInput')
+        );
+
+        // then
+        const names = requirements.map(v => v.name);
+        expect(names).to.include('def');
+        expect(names).to.not.include('test');
+        expect(requirements).to.have.length(1);
+      }));
+
+    });
+
+
+    describe('error handling', function() {
+
+      beforeEach(bootstrap(emptyXML));
+
+
+      it('should return empty array when getVariables fails', inject(async function(variableResolver, elementRegistry) {
+
+        // given
+        const process = elementRegistry.get('Process_1');
+        sinon.stub(variableResolver, 'getVariables').rejects(new Error('test error'));
+
+        // when
+        const requirements = await variableResolver.getInputRequirementsForElement(process);
+
+        // then
+        expect(requirements).to.be.an('array').that.is.empty;
+
+        variableResolver.getVariables.restore();
+      }));
+
+    });
+
   });
 
 });
