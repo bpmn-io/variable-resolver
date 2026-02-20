@@ -16,7 +16,7 @@
   "author": "bpmn.io contributors",
   "license": "MIT",
   "dependencies": {
-    "@bpmn-io/extract-process-variables": "^2.1.0",
+    "@bpmn-io/extract-process-variables": "^2.2.0-rc.0",
     "@bpmn-io/lezer-feel": "^2.3.0",
     "@lezer/common": "^1.5.1",
     "min-dash": "^5.0.0"
