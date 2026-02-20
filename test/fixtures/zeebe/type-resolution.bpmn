@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_varResolution" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.42.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.9.0">
   <bpmn:process id="Process_varResolution" isExecutable="true">
-    <!-- Literal type outputs -->
     <bpmn:serviceTask id="literalNullTask" name="Literal Null">
       <bpmn:extensionElements>
         <zeebe:ioMapping>
@@ -13,7 +12,7 @@
     <bpmn:serviceTask id="literalStringTask" name="Literal String">
       <bpmn:extensionElements>
         <zeebe:ioMapping>
-          <zeebe:output source="=&quot;hello&quot;" target="outString" />
+          <zeebe:output source="=&#34;hello&#34;" target="outString" />
         </zeebe:ioMapping>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_1</bpmn:incoming>
@@ -40,7 +39,7 @@
     <bpmn:serviceTask id="literalContextTask" name="Literal Context">
       <bpmn:extensionElements>
         <zeebe:ioMapping>
-          <zeebe:output source="={&quot;key&quot;: &quot;value&quot;}" target="outContext" />
+          <zeebe:output source="={&#34;key&#34;: &#34;value&#34;}" target="outContext" />
         </zeebe:ioMapping>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_4</bpmn:incoming>
@@ -55,11 +54,10 @@
       <bpmn:incoming>Flow_5</bpmn:incoming>
       <bpmn:outgoing>Flow_6</bpmn:outgoing>
     </bpmn:serviceTask>
-    <!-- Path expression resolution -->
     <bpmn:serviceTask id="contextProducerTask" name="Context Producer">
       <bpmn:extensionElements>
         <zeebe:ioMapping>
-          <zeebe:output source="={&quot;name&quot;: &quot;alice&quot;, &quot;count&quot;: 42, &quot;flag&quot;: true, &quot;nested&quot;: {&quot;deep&quot;: null}}" target="ctxVar" />
+          <zeebe:output source="={&#10;  &#34;name&#34;: &#34;alice&#34;,&#10;  &#34;count&#34;: 42, &#10;  &#34;flag&#34;: true, &#10;  &#34;nested&#34;: {&#10;    &#34;deepNull&#34;: null, &#10;    &#34;deepString&#34;: &#34;YES&#34;&#10;  }&#10;}" target="ctxVar" />
         </zeebe:ioMapping>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_6</bpmn:incoming>
@@ -71,17 +69,17 @@
           <zeebe:input source="=ctxVar.name" target="pathString" />
           <zeebe:input source="=ctxVar.count" target="pathNumber" />
           <zeebe:input source="=ctxVar.flag" target="pathBoolean" />
-          <zeebe:input source="=ctxVar.nested.deep" target="pathDeepNull" />
+          <zeebe:input source="=ctxVar.nested.deepNull" target="pathDeepNull" />
+          <zeebe:input source="=ctxVar.nested.deepString" target="pathDeepString" />
         </zeebe:ioMapping>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_7</bpmn:incoming>
       <bpmn:outgoing>Flow_8</bpmn:outgoing>
     </bpmn:serviceTask>
-    <!-- Variable passthrough -->
     <bpmn:serviceTask id="passthroughProducerTask" name="Passthrough Producer">
       <bpmn:extensionElements>
         <zeebe:ioMapping>
-          <zeebe:output source="=&quot;world&quot;" target="strVar" />
+          <zeebe:output source="=&#34;world&#34;" target="strVar" />
         </zeebe:ioMapping>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_8</bpmn:incoming>
@@ -96,7 +94,6 @@
       <bpmn:incoming>Flow_9</bpmn:incoming>
       <bpmn:outgoing>Flow_10</bpmn:outgoing>
     </bpmn:serviceTask>
-    <!-- Unresolved variable -->
     <bpmn:serviceTask id="unresolvedConsumerTask" name="Unresolved Consumer">
       <bpmn:extensionElements>
         <zeebe:ioMapping>
@@ -106,11 +103,10 @@
       <bpmn:incoming>Flow_10</bpmn:incoming>
       <bpmn:outgoing>Flow_10b</bpmn:outgoing>
     </bpmn:serviceTask>
-    <!-- Nested reference resolution (hierarchical names) -->
     <bpmn:serviceTask id="nestedProducerTask" name="Nested Producer">
       <bpmn:extensionElements>
         <zeebe:ioMapping>
-          <zeebe:output source="=&quot;hello&quot;" target="nested.deep.leaf" />
+          <zeebe:output source="=&#34;hello&#34;" target="nested.deep.leaf" />
         </zeebe:ioMapping>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_10b</bpmn:incoming>
@@ -124,7 +120,6 @@
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_11</bpmn:incoming>
     </bpmn:serviceTask>
-    <!-- Sequence Flows -->
     <bpmn:sequenceFlow id="Flow_1" sourceRef="literalNullTask" targetRef="literalStringTask" />
     <bpmn:sequenceFlow id="Flow_2" sourceRef="literalStringTask" targetRef="literalNumberTask" />
     <bpmn:sequenceFlow id="Flow_3" sourceRef="literalNumberTask" targetRef="literalBooleanTask" />
@@ -140,7 +135,6 @@
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_varResolution">
-      <!-- Literal type outputs -->
       <bpmndi:BPMNShape id="literalNullTask_di" bpmnElement="literalNullTask">
         <dc:Bounds x="160" y="100" width="100" height="80" />
       </bpmndi:BPMNShape>
@@ -159,25 +153,27 @@
       <bpmndi:BPMNShape id="emptySourceTask_di" bpmnElement="emptySourceTask">
         <dc:Bounds x="560" y="250" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <!-- Path expression resolution -->
       <bpmndi:BPMNShape id="contextProducerTask_di" bpmnElement="contextProducerTask">
         <dc:Bounds x="160" y="400" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="pathConsumerTask_di" bpmnElement="pathConsumerTask">
         <dc:Bounds x="360" y="400" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <!-- Variable passthrough -->
       <bpmndi:BPMNShape id="passthroughProducerTask_di" bpmnElement="passthroughProducerTask">
         <dc:Bounds x="560" y="400" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="passthroughConsumerTask_di" bpmnElement="passthroughConsumerTask">
         <dc:Bounds x="160" y="550" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <!-- Unresolved variable -->
       <bpmndi:BPMNShape id="unresolvedConsumerTask_di" bpmnElement="unresolvedConsumerTask">
         <dc:Bounds x="360" y="550" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <!-- Sequence Flow edges -->
+      <bpmndi:BPMNShape id="nestedProducerTask_di" bpmnElement="nestedProducerTask">
+        <dc:Bounds x="560" y="550" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="nestedConsumerTask_di" bpmnElement="nestedConsumerTask">
+        <dc:Bounds x="160" y="700" width="100" height="80" />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
         <di:waypoint x="260" y="140" />
         <di:waypoint x="360" y="140" />
@@ -224,22 +220,15 @@
         <di:waypoint x="260" y="590" />
         <di:waypoint x="360" y="590" />
       </bpmndi:BPMNEdge>
-      <!-- Nested reference resolution -->
-      <bpmndi:BPMNShape id="nestedProducerTask_di" bpmnElement="nestedProducerTask">
-        <dc:Bounds x="560" y="550" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="nestedConsumerTask_di" bpmnElement="nestedConsumerTask">
-        <dc:Bounds x="160" y="700" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNEdge id="Flow_10b_di" bpmnElement="Flow_10b">
-        <di:waypoint x="460" y="590" />
-        <di:waypoint x="560" y="590" />
-      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_11_di" bpmnElement="Flow_11">
         <di:waypoint x="610" y="630" />
         <di:waypoint x="610" y="670" />
         <di:waypoint x="210" y="670" />
         <di:waypoint x="210" y="700" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_10b_di" bpmnElement="Flow_10b">
+        <di:waypoint x="460" y="590" />
+        <di:waypoint x="560" y="590" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

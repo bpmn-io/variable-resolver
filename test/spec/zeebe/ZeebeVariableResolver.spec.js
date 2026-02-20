@@ -2171,6 +2171,24 @@ describe('ZeebeVariableResolver', function() {
         });
       }));
 
+
+      it('should resolve deep path to string property', inject(async function(elementRegistry, variableResolver) {
+
+        // given
+        const task = elementRegistry.get('pathConsumerTask');
+
+        // when
+        const variables = await variableResolver.getVariablesForElement(task);
+
+        // then
+        expect(variables).to.variableInclude({
+          name: 'pathDeepString',
+          type: 'String',
+          info: 'YES',
+          scope: 'pathConsumerTask'
+        });
+      }));
+
     });
 
 
