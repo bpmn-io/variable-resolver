@@ -14,6 +14,7 @@ import { ZeebeVariableResolverModule } from 'lib/';
 import chainedMappingsXML from 'test/fixtures/zeebe/mappings/chained-mappings.bpmn';
 import primitivesXML from 'test/fixtures/zeebe/mappings/primitives.bpmn';
 import mergingXML from 'test/fixtures/zeebe/mappings/merging.bpmn';
+import mergingChildrenXML from 'test/fixtures/zeebe/mappings/merging.children.bpmn';
 import scopeXML from 'test/fixtures/zeebe/mappings/scope.bpmn';
 import scriptTaskXML from 'test/fixtures/zeebe/mappings/script-task.bpmn';
 import scriptTaskEmptyExpressionXML from 'test/fixtures/zeebe/mappings/script-task-empty-expression.bpmn';
@@ -274,6 +275,42 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       expect(variables).to.variableEqual([
         {
           name: 'foo'
+        }
+      ]);
+    }));
+
+  });
+
+
+  describe('Merging - children types', function() {
+
+    beforeEach(bootstrap(mergingChildrenXML));
+
+
+    it('should combine and child productions output', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const subProcess = elementRegistry.get('SubProcess_2');
+
+      createProvider({
+        variables: [],
+        variableResolver
+      });
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(subProcess);
+
+      // then
+      expect(variables).to.variableEqual([
+        {
+          name: 'processVariable',
+          type: 'Boolean|Number|String',
+          scope: 'Process_5'
+        },
+        {
+          name: 'variable',
+          type: 'Boolean|Number|String',
+          scope: 'SubProcess_2'
         }
       ]);
     }));

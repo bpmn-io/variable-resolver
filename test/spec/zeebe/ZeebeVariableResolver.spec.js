@@ -25,6 +25,7 @@ import ioMappingsStaticXML from 'test/fixtures/zeebe/ioMappings.static.bpmn';
 import subprocessNoOutputMappingXML from 'test/fixtures/zeebe/sub-process.no-output-mapping.bpmn';
 import longBrokenExpressionXML from 'test/fixtures/zeebe/long-broken-expression.bpmn';
 import immediatelyBrokenExpressionXML from 'test/fixtures/zeebe/immediately-broken-expression.bpmn';
+import typeResolutionXML from 'test/fixtures/zeebe/type-resolution.bpmn';
 
 import VariableProvider from 'lib/VariableProvider';
 import { getInputOutput } from '../../../lib/base/util/ExtensionElementsUtil';
@@ -1712,6 +1713,183 @@ describe('ZeebeVariableResolver', function() {
         { name: 'invalidOutput', type: '', scope: 'Process_1' }
       ]);
     }));
+
+  });
+
+
+  describe('variable type resolution', function() {
+
+    beforeEach(bootstrapModeler(typeResolutionXML, {
+      additionalModules: [
+        ZeebeVariableResolverModule
+      ],
+      moddleExtensions: {
+        zeebe: ZeebeModdle
+      }
+    }));
+
+
+    describe('literal type outputs', function() {
+
+      it('should resolve null literal', inject(async function(elementRegistry, variableResolver) {
+
+        // given
+        const task = elementRegistry.get('literalNullTask');
+
+        // when
+        const variables = await variableResolver.getVariablesForElement(task);
+
+        // then
+        expect(variables).to.variableInclude({
+          name: 'outNull',
+          type: '',
+          scope: 'Process_varResolution'
+        });
+      }));
+
+
+      it('should resolve string literal to String', inject(async function(elementRegistry, variableResolver) {
+
+        // given
+        const task = elementRegistry.get('literalStringTask');
+
+        // when
+        const variables = await variableResolver.getVariablesForElement(task);
+
+        // then
+        expect(variables).to.variableInclude({
+          name: 'outString',
+          type: 'String',
+          scope: 'Process_varResolution'
+        });
+      }));
+
+
+      it('should resolve number literal to Number', inject(async function(elementRegistry, variableResolver) {
+
+        // given
+        const task = elementRegistry.get('literalNumberTask');
+
+        // when
+        const variables = await variableResolver.getVariablesForElement(task);
+
+        // then
+        expect(variables).to.variableInclude({
+          name: 'outNumber',
+          type: 'Number',
+          scope: 'Process_varResolution'
+        });
+      }));
+
+
+      it('should resolve boolean literal to Boolean', inject(async function(elementRegistry, variableResolver) {
+
+        // given
+        const task = elementRegistry.get('literalBooleanTask');
+
+        // when
+        const variables = await variableResolver.getVariablesForElement(task);
+
+        // then
+        expect(variables).to.variableInclude({
+          name: 'outBoolean',
+          type: 'Boolean',
+          scope: 'Process_varResolution'
+        });
+      }));
+
+
+      it('should resolve context literal to Context', inject(async function(elementRegistry, variableResolver) {
+
+        // given
+        const task = elementRegistry.get('literalContextTask');
+
+        // when
+        const variables = await variableResolver.getVariablesForElement(task);
+
+        // then
+        expect(variables).to.variableInclude({
+          name: 'outContext',
+          type: 'Context',
+          scope: 'Process_varResolution'
+        });
+      }));
+
+
+      it('should resolve empty source', inject(async function(elementRegistry, variableResolver) {
+
+        // given
+        const task = elementRegistry.get('emptySourceTask');
+
+        // when
+        const variables = await variableResolver.getVariablesForElement(task);
+
+        // then
+        expect(variables).to.variableInclude({
+          name: 'outEmpty',
+          scope: 'Process_varResolution'
+        });
+      }));
+
+
+      it('should resolve reference to unknown variable', inject(async function(elementRegistry, variableResolver) {
+
+        // given
+        const task = elementRegistry.get('useUnknownVariable');
+
+        // when
+        const variables = await variableResolver.getVariablesForElement(task);
+
+        // then
+        expect(variables).to.variableInclude({
+          name: 'localEmpty',
+          scope: 'useUnknownVariable'
+        });
+      }));
+
+    });
+
+
+    describe('variable passthrough', function() {
+
+      it('should resolve passthrough variable to source type', inject(async function(elementRegistry, variableResolver) {
+
+        // given
+        const task = elementRegistry.get('passthroughConsumerTask');
+
+        // when
+        const variables = await variableResolver.getVariablesForElement(task);
+
+        // then
+        expect(variables).to.variableInclude({
+          name: 'passedString',
+          type: 'String',
+          scope: 'passthroughConsumerTask'
+        });
+      }));
+
+    });
+
+
+    describe('unresolved variables', function() {
+
+      it('should resolve unresolved variable', inject(async function(elementRegistry, variableResolver) {
+
+        // given
+        const task = elementRegistry.get('unresolvedConsumerTask');
+
+        // when
+        const variables = await variableResolver.getVariablesForElement(task);
+
+        // then
+        expect(variables).to.variableInclude({
+          name: 'unresolvedInput',
+          type: '',
+          scope: 'unresolvedConsumerTask'
+        });
+      }));
+
+    });
 
   });
 
