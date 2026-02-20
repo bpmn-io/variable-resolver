@@ -826,6 +826,22 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       expect(names).to.not.include('b');
     }));
 
+
+    it('should not require second input mapping variable used in script', inject(async function(variableResolver) {
+
+      // when
+      const variables = (await variableResolver.getVariables())['Process_1'];
+      const reqs = variables.filter(v =>
+        v.usedBy && v.usedBy.length > 0 && v.origin[0].id === 'scriptUsesSecondInput'
+      );
+      const names = reqs.map(v => v.name);
+
+      // then
+      expect(names).to.include('def');
+      expect(names).to.not.include('test');
+      expect(reqs).to.have.length(1);
+    }));
+
   });
 
 
@@ -1063,6 +1079,21 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
         const names = requirements.map(v => v.name);
         expect(names).to.include('a');
         expect(names).to.not.include('b');
+        expect(requirements).to.have.length(1);
+      }));
+
+
+      it('should allow script to use all input targets regardless of order', inject(async function(variableResolver, elementRegistry) {
+
+        // when
+        const requirements = await variableResolver.getInputRequirementsForElement(
+          elementRegistry.get('scriptUsesSecondInput')
+        );
+
+        // then
+        const names = requirements.map(v => v.name);
+        expect(names).to.include('def');
+        expect(names).to.not.include('test');
         expect(requirements).to.have.length(1);
       }));
 

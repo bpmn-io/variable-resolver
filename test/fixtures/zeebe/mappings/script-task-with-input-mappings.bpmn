@@ -41,6 +41,15 @@
         <zeebe:script expression="=a + b" resultVariable="shadowChainResult" />
       </bpmn:extensionElements>
     </bpmn:scriptTask>
+    <bpmn:scriptTask id="scriptUsesSecondInput" name="Script uses second input">
+      <bpmn:extensionElements>
+        <zeebe:ioMapping>
+          <zeebe:input source="=def" target="abc" />
+          <zeebe:input source="=1" target="test" />
+        </zeebe:ioMapping>
+        <zeebe:script expression="=test" resultVariable="abc" />
+      </bpmn:extensionElements>
+    </bpmn:scriptTask>
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_1">
@@ -58,6 +67,9 @@
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Shape_5" bpmnElement="shadowingChainedTask">
         <dc:Bounds x="750" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_6" bpmnElement="scriptUsesSecondInput">
+        <dc:Bounds x="900" y="80" width="100" height="80" />
       </bpmndi:BPMNShape>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
