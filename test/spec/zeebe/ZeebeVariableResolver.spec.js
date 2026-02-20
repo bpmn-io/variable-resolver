@@ -15,6 +15,7 @@ import emptyXML from 'test/fixtures/zeebe/empty.bpmn';
 import complexXML from 'test/fixtures/zeebe/complex.bpmn';
 import complexSubProcessMappingConflictingXML from 'test/fixtures/zeebe/complex.sub-process-mapping-conflict.bpmn';
 import agenticAdHocSubProcessXML from 'test/fixtures/zeebe/ad-hoc-sub-process.agentic.bpmn';
+import agenticTaskXML from 'test/fixtures/zeebe/task.agentic.bpmn';
 import adHocSubProcessOutputCollectionLeakXML from 'test/fixtures/zeebe/ad-hoc-sub-process.output-collection-leak.bpmn';
 import connectorsXML from 'test/fixtures/zeebe/connectors.bpmn';
 import connectorsSubProcessXML from 'test/fixtures/zeebe/connectors.sub-process.bpmn';
@@ -1487,6 +1488,70 @@ describe('ZeebeVariableResolver', function() {
       const prompt = systemPrompt.entries.find(e => e.name === 'prompt');
       expect(prompt).to.exist;
       expect(prompt.type).to.equal('String');
+    }));
+
+  });
+
+
+  describe('agentic - agent task', function() {
+
+    beforeEach(
+      bootstrapModeler(agenticTaskXML, {
+        additionalModules: [
+          ZeebeVariableResolverModule
+        ],
+        moddleExtensions: {
+          zeebe: ZeebeModdle
+        }
+      })
+    );
+
+
+    it('should expose agent scoped variables', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const subProcess = elementRegistry.get('AI_Agent');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(subProcess);
+
+      // then
+      expect(variables).to.variableEqual([
+        { name: 'agent', origin: [ 'AI_Agent' ], scope: 'Process_1' },
+        {
+          name: 'provider',
+          scope: 'AI_Agent',
+          entries: [
+            { name: 'type' },
+            { name: 'bedrock' }
+          ]
+        },
+        {
+          name: 'data',
+          scope: 'AI_Agent',
+          entries: [
+            { name: 'limits' },
+            { name: 'context' },
+            {
+              name: 'userPrompt',
+              type: 'Context',
+              entries: [
+                { name: 'prompt', type: 'Any' },
+                { name: 'documents', type: 'Any' }
+              ]
+            },
+            {
+              name: 'systemPrompt',
+              type: 'Context',
+              entries: [
+                { name: 'prompt', type: 'String' }
+              ]
+            },
+            { name: 'tools' },
+            { name: 'memory' }
+          ]
+        }
+      ]);
     }));
 
   });
