@@ -2189,6 +2189,47 @@ describe('ZeebeVariableResolver', function() {
         });
       }));
 
+
+      it('should resolve for hierarchical input', inject(async function(elementRegistry, variableResolver) {
+
+        // given
+        const task = elementRegistry.get('hierarchicalNameConsumer');
+
+        // when
+        const variables = await variableResolver.getVariablesForElement(task);
+
+        // then
+        expect(variables).to.variableInclude({
+          name: 'deep',
+          type: 'Context',
+          entries: [
+            {
+              name: 'static',
+              type: 'Context',
+              entries: [
+                {
+                  name: 'property',
+                  type: 'String',
+                  info: '10'
+                }
+              ]
+            },
+            {
+              name: 'dynamic',
+              type: 'Context',
+              entries: [
+                {
+                  name: 'property',
+                  type: 'Number',
+                  info: '10'
+                }
+              ]
+            }
+          ],
+          scope: 'hierarchicalNameConsumer'
+        });
+      }));
+
     });
 
 
