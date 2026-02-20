@@ -483,7 +483,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
         {
           name: 'barOutputVariable',
           type: 'Any',
-          info: ''
+          info: '=fooInputVariable'
         }
       ]);
     }));
