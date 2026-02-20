@@ -448,7 +448,7 @@ describe('ZeebeVariableResolver', function() {
       const variables = await variableResolver.getVariablesForElement(root);
 
       // then
-      expect(variables).to.variableEqual([ { name: 'foo', type: 'String|Number' } ]);
+      expect(variables).to.variableEqual([ { name: 'foo', type: 'Number|String' } ]);
     }));
 
 
@@ -753,7 +753,7 @@ describe('ZeebeVariableResolver', function() {
             entries: [
               {
                 name: 'bar',
-                type: 'String|Boolean|Context',
+                type: 'Boolean|Context|String',
                 scope: 'Process_1',
                 entries: [
                   { name: 'woop', type: 'Number', scope: 'Process_1' }
@@ -1411,7 +1411,7 @@ describe('ZeebeVariableResolver', function() {
       // then
       expect(variables).to.variableInclude({
         name: 'toolCallResult',
-        type: 'Context|String|Null|Any'
+        type: 'Any|Context|Null|String'
       });
     }));
 
