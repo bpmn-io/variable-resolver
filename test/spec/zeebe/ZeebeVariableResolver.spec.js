@@ -1332,32 +1332,58 @@ describe('ZeebeVariableResolver', function() {
               name: 'response',
               scope: 'AI_Agent',
               entries: [
-                { name: 'includeAgentContext', scope: 'AI_Agent' },
-                { name: 'includeAssistantMessage' },
-                { name: 'format' }
+                { name: 'includeAgentContext', scope: 'AI_Agent', type: 'Boolean' },
+                { name: 'includeAssistantMessage', type: 'Boolean' },
+                {
+                  name: 'format',
+                  type: 'Context',
+                  entries: [
+                    { name: 'type', type: 'String' },
+                    { name: 'parseJson', type: 'Boolean' }
+                  ]
+                }
               ]
             },
             {
               name: 'events',
               entries: [
-                { name: 'behavior' }
+                { name: 'behavior', type: 'String' }
               ]
             },
             {
-              name: 'limits'
+              name: 'limits',
+              type: 'Context',
+              entries: [
+                { name: 'maxModelCalls', type: 'Number' }
+              ]
             },
             {
               name: 'memory',
               entries: [
-                { name: 'contextWindowSize' },
-                { name: 'storage' }
+                { name: 'contextWindowSize', type: 'Number' },
+                {
+                  name: 'storage',
+                  type: 'Context',
+                  entries: [
+                    { name: 'type', type: 'String' }
+                  ]
+                }
               ]
             },
             {
-              name: 'userPrompt'
+              name: 'userPrompt',
+              type: 'Context',
+              entries: [
+                { name: 'prompt', type: 'Any' },
+                { name: 'documents', type: 'Any' }
+              ]
             },
             {
-              name: 'systemPrompt'
+              name: 'systemPrompt',
+              type: 'Context',
+              entries: [
+                { name: 'prompt', type: 'Null' }
+              ]
             }
           ]
         },
@@ -1372,9 +1398,23 @@ describe('ZeebeVariableResolver', function() {
             {
               name: 'bedrock',
               entries: [
-                { name: 'region' },
-                { name: 'authentication' },
-                { name: 'model' }
+                { name: 'region', type: 'String' },
+                {
+                  name: 'authentication',
+                  type: 'Context',
+                  entries: [
+                    { name: 'type', type: 'String' },
+                    { name: 'accessKey', type: 'String' },
+                    { name: 'secretKey', type: 'String' }
+                  ]
+                },
+                {
+                  name: 'model',
+                  type: 'Context',
+                  entries: [
+                    { name: 'model', type: 'String' }
+                  ]
+                }
               ]
             }
           ]
