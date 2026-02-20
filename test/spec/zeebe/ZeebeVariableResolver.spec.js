@@ -555,6 +555,82 @@ describe('ZeebeVariableResolver', function() {
     }));
 
 
+    it('should type nested entry with no value as Null', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const root = elementRegistry.get('Process_1');
+
+      createProvider({
+        variables: [ {
+          name: 'a',
+          entries: [
+            {
+              name: 'b',
+              entries: [
+                { name: 'c' }
+              ]
+            }
+          ]
+        } ],
+        variableResolver
+      });
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(root);
+
+      // then
+      expect(variables).to.variableEqual([ {
+        name: 'a',
+        entries: [
+          {
+            name: 'b',
+            entries: [
+              { name: 'c', type: 'Null' }
+            ]
+          }
+        ]
+      } ]);
+    }));
+
+
+    it('should not fail when merging entries with mixed type presence', inject(async function(variableResolver, elementRegistry) {
+
+      // given - one provider supplies a type, the other does not
+      const root = elementRegistry.get('Process_1');
+
+      createProvider({
+        variables: [ {
+          name: 'a',
+          type: 'String',
+          entries: [
+            { name: 'b', type: 'Number' }
+          ]
+        } ],
+        variableResolver
+      });
+      createProvider({
+        variables: [ {
+          name: 'a',
+          entries: [
+            { name: 'b' }
+          ]
+        } ],
+        variableResolver
+      });
+
+      // when / then - should not throw
+      const variables = await variableResolver.getVariablesForElement(root);
+
+      expect(variables).to.variableEqual([ {
+        name: 'a',
+        type: 'String',
+        entries: [
+          { name: 'b', type: 'Number' }
+        ]
+      } ]);
+    }));
+
+
     it('should not fail on infinite loop', function() {
 
       // given
@@ -1339,6 +1415,29 @@ describe('ZeebeVariableResolver', function() {
       });
     }));
 
+
+    it('should type nested entries of expanded hierarchical variables', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const subProcess = elementRegistry.get('AI_Agent');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(subProcess);
+      const dataVariable = variables.find(v => v.name === 'data');
+
+      // then
+      expect(dataVariable).to.exist;
+      expect(dataVariable.type).to.equal('Context');
+
+      const systemPrompt = dataVariable.entries.find(e => e.name === 'systemPrompt');
+      expect(systemPrompt).to.exist;
+      expect(systemPrompt.type).to.equal('Context');
+
+      const prompt = systemPrompt.entries.find(e => e.name === 'prompt');
+      expect(prompt).to.exist;
+      expect(prompt.type).to.equal('Null');
+    }));
+
   });
 
 
@@ -1948,6 +2047,36 @@ describe('ZeebeVariableResolver', function() {
           name: 'unresolvedInput',
           type: 'Any',
           scope: 'unresolvedConsumerTask'
+        });
+      }));
+
+    });
+
+
+    describe('nested reference resolution', function() {
+
+      it('should resolve nested output to Context with Null-typed leaf', inject(async function(elementRegistry, variableResolver) {
+
+        // given
+        const task = elementRegistry.get('nestedConsumerTask');
+
+        // when
+        const variables = await variableResolver.getVariablesForElement(task);
+
+        // then
+        expect(variables).to.variableInclude({
+          name: 'nested',
+          type: 'Context',
+          scope: 'Process_varResolution',
+          entries: [
+            {
+              name: 'deep',
+              type: 'Context',
+              entries: [
+                { name: 'leaf', type: 'String' }
+              ]
+            }
+          ]
         });
       }));
 
