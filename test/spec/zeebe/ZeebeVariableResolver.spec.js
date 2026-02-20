@@ -21,6 +21,7 @@ import connectorsXML from 'test/fixtures/zeebe/connectors.bpmn';
 import connectorsSubProcessXML from 'test/fixtures/zeebe/connectors.sub-process.bpmn';
 import connectorsOutputMappingXML from 'test/fixtures/zeebe/connectors.output-mapping.bpmn';
 import ioMappingsXML from 'test/fixtures/zeebe/ioMappings.bpmn';
+import ioMappingsStaticXML from 'test/fixtures/zeebe/ioMappings.static.bpmn';
 import subprocessNoOutputMappingXML from 'test/fixtures/zeebe/sub-process.no-output-mapping.bpmn';
 import longBrokenExpressionXML from 'test/fixtures/zeebe/long-broken-expression.bpmn';
 import immediatelyBrokenExpressionXML from 'test/fixtures/zeebe/immediately-broken-expression.bpmn';
@@ -1555,6 +1556,40 @@ describe('ZeebeVariableResolver', function() {
       }));
 
     });
+
+  });
+
+
+  describe('io mappings - static', function() {
+
+    beforeEach(
+      bootstrapModeler(ioMappingsStaticXML, {
+        additionalModules: [
+          ZeebeVariableResolverModule
+        ],
+        moddleExtensions: {
+          zeebe: ZeebeModdle
+        }
+      })
+    );
+
+
+    it('should map as <String> type', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const task = elementRegistry.get('ServiceTask_1');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(task);
+
+      // then
+      // filter own name, later input mappings + all output mappings
+      expect(variables).to.variableEqual([
+        { name: 'staticInput', type: 'String', scope: 'ServiceTask_1', info: 'YES' },
+        { name: 'otherStaticInput', type: 'String', scope: 'ServiceTask_1', info: '"YES"""' }
+      ]);
+
+    }));
 
   });
 
