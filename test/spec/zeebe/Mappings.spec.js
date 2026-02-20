@@ -16,6 +16,7 @@ import chainedMappingsAnyXML from 'test/fixtures/zeebe/mappings/chained-mappings
 import primitivesXML from 'test/fixtures/zeebe/mappings/primitives.bpmn';
 import mergingXML from 'test/fixtures/zeebe/mappings/merging.bpmn';
 import mergingChildrenXML from 'test/fixtures/zeebe/mappings/merging.children.bpmn';
+import mergingNullXML from 'test/fixtures/zeebe/mappings/merging.null.bpmn';
 import mergingAnyXML from 'test/fixtures/zeebe/mappings/merging.any.bpmn';
 import scopeXML from 'test/fixtures/zeebe/mappings/scope.bpmn';
 import scriptTaskXML from 'test/fixtures/zeebe/mappings/script-task.bpmn';
@@ -338,6 +339,39 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       expect(variables).to.variableEqual([
         {
           name: 'foo'
+        }
+      ]);
+    }));
+
+  });
+
+
+  describe('Merging - null', function() {
+
+    beforeEach(bootstrap(mergingNullXML));
+
+
+    it('should combine local <null> and child output', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const subProcess = elementRegistry.get('SubProcess_1');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(subProcess);
+
+      // then
+      expect(variables).to.variableEqual([
+        {
+          name: 'processVariable',
+          type: 'Null|Number',
+          scope: 'Process_4',
+          origin: [ 'SubProcess_1' ]
+        },
+        {
+          name: 'localVariable',
+          type: 'Null|Number',
+          scope: 'SubProcess_1',
+          origin: [ 'SubProcess_1', 'Task_6' ]
         }
       ]);
     }));
