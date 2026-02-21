@@ -611,7 +611,7 @@ describe('CamundaVariableResolver', function() {
     }));
 
 
-    it('should scope additional variables to task with output mappings', inject(async function(variableResolver, elementRegistry) {
+    it('should scope additional variables - process', inject(async function(variableResolver, elementRegistry) {
 
       // given
       const task = elementRegistry.get('Task_2');
@@ -631,12 +631,12 @@ describe('CamundaVariableResolver', function() {
         { name: 'variable1', origin: [ 'Task_1' ], scope: 'Process_1' },
         { name: 'variable2', origin: [ 'Task_1' ], scope: 'Process_1' },
         { name: 'variable3', origin: [ 'Task_2' ], scope: 'SubProcess_1' },
-        { name: 'foo', origin: [ 'Task_2' ], scope: 'Task_2' }
+        { name: 'foo', origin: [ 'Task_2' ], scope: 'Process_1' }
       ]);
     }));
 
 
-    it('should scope additional variables to nearest scoped parent', inject(async function(variableResolver, elementRegistry) {
+    it('should scope additional variables - nearest scoped parent', inject(async function(variableResolver, elementRegistry) {
 
       // given
       const task = elementRegistry.get('Task_3');
@@ -655,7 +655,32 @@ describe('CamundaVariableResolver', function() {
       expect(variables).to.variableEqual([
         { name: 'variable1', origin: [ 'Task_1' ], scope: 'Process_1' },
         { name: 'variable2', origin: [ 'Task_1' ], scope: 'Process_1' },
-        { name: 'variable3', origin: [ 'Task_2', 'Task_3' ], scope: 'SubProcess_1' },
+        { name: 'variable3', origin: [ 'Task_2', 'Task_3' ], scope: 'SubProcess_1' }
+      ]);
+    }));
+
+
+    it('should scope additional variables - local', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const task = elementRegistry.get('Task_3');
+
+      createProvider({
+        variables: [ { name: 'variable4' } ],
+        origin: 'Task_3',
+        variableResolver
+      });
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(task);
+
+      // then
+      // own + all variables from parent scope
+      expect(variables).to.variableEqual([
+        { name: 'variable1', origin: [ 'Task_1' ], scope: 'Process_1' },
+        { name: 'variable2', origin: [ 'Task_1' ], scope: 'Process_1' },
+        { name: 'variable3', origin: [ 'Task_2' ], scope: 'SubProcess_1' },
+        { name: 'variable4', origin: [ 'Task_3' ], scope: 'Task_3' }
       ]);
     }));
 
