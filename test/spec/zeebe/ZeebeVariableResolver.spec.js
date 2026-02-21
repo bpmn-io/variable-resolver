@@ -16,6 +16,7 @@ import complexXML from 'test/fixtures/zeebe/complex.bpmn';
 import errorsXML from 'test/fixtures/zeebe/errors.bpmn';
 import complexSubProcessMappingConflictingXML from 'test/fixtures/zeebe/complex.sub-process-mapping-conflict.bpmn';
 import agenticAdHocSubProcessXML from 'test/fixtures/zeebe/ad-hoc-sub-process.agentic.bpmn';
+import agenticAdHocSubProcessLocalScopeXML from 'test/fixtures/zeebe/ad-hoc-sub-process.agentic-local-scope.bpmn';
 import agenticTaskXML from 'test/fixtures/zeebe/task.agentic.bpmn';
 import adHocSubProcessOutputCollectionLeakXML from 'test/fixtures/zeebe/ad-hoc-sub-process.output-collection-leak.bpmn';
 import connectorsXML from 'test/fixtures/zeebe/connectors.bpmn';
@@ -1489,6 +1490,60 @@ describe('ZeebeVariableResolver', function() {
       const prompt = systemPrompt.entries.find(e => e.name === 'prompt');
       expect(prompt).to.exist;
       expect(prompt.type).to.equal('String');
+    }));
+
+  });
+
+
+  describe('agentic - ad-hoc sub-process - local scope', function() {
+
+    beforeEach(
+      bootstrapModeler(agenticAdHocSubProcessLocalScopeXML, {
+        additionalModules: [
+          ZeebeVariableResolverModule
+        ],
+        moddleExtensions: {
+          zeebe: ZeebeModdle
+        }
+      })
+    );
+
+
+    it('should expose only <agent> to process', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const root = elementRegistry.get('ai-agent-chat-with-tools');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(root);
+
+      // then
+      expect(variables).to.variableEqual([
+        { name: 'agent', origin: [ 'AI_Agent' ], scope: 'ai-agent-chat-with-tools' }
+      ]);
+    }));
+
+
+    it('should capture <toolCallResult> providers in AI_Agent', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const root = elementRegistry.get('AI_Agent');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(root);
+
+      // then
+      expect(variables).to.variableInclude({
+        name: 'toolCallResult',
+        origin: [
+          'AI_Agent',
+          'AskHumanToSendEmail',
+          'GetDateAndTime',
+          'Handle_Message',
+          'SendEmail'
+        ],
+        scope: 'AI_Agent'
+      });
     }));
 
   });
