@@ -75,7 +75,7 @@ function variableAssertions(chai, utils) {
 
     const remainingVariables = assertVariablesMatch(variables, expectedVariables);
 
-    expect(remainingVariables.length, 'unmatched variables').to.eql(0);
+    expect(remainingVariables.length, `no additional variables, found [${remainingVariables.map(r => r.name)}]`).to.eql(0);
   });
 
   // use to verify that a list of variables
