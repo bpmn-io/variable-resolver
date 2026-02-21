@@ -6,6 +6,17 @@ All notable changes to [@bpmn-io/variable-resolver](https://github.com/bpmn-io/v
 
 ___Note:__ Yet to be released changes appear here._
 
+## 2.0.0
+
+* `FEAT`: introduce `Null` and `Any` types ([#73](https://github.com/bpmn-io/variable-resolver/pull/73))
+* `FEAT`: support static inputs ([#73](https://github.com/bpmn-io/variable-resolver/pull/73))
+* `FEAT`: recognize input mappings without source ([#73](https://github.com/bpmn-io/variable-resolver/pull/73))
+* `FEAT`: sort types alphabetically ([#73](https://github.com/bpmn-io/variable-resolver/pull/73))
+* `FIX`: correct joined variable resolution ([#73](https://github.com/bpmn-io/variable-resolver/pull/73))
+* `FIX`: resolve variable types from nested values ([#73](https://github.com/bpmn-io/variable-resolver/pull/73))
+* `FIX`: correctly handle locally scoped variables ([#73](https://github.com/bpmn-io/variable-resolver/pull/73))
+* `DEPS`: update to `@bpmn-io/extract-process-variables@2.2.0`
+
 ## 1.6.0
 
 * `FEAT`: expand + merge hierarchical names (Camunda 8) ([#70](https://github.com/bpmn-io/variable-resolver/pull/70))

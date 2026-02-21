@@ -13,16 +13,24 @@ import { ZeebeVariableResolverModule } from 'lib/';
 import simpleXML from 'test/fixtures/zeebe/simple.bpmn';
 import emptyXML from 'test/fixtures/zeebe/empty.bpmn';
 import complexXML from 'test/fixtures/zeebe/complex.bpmn';
+import errorsXML from 'test/fixtures/zeebe/errors.bpmn';
 import complexSubProcessMappingConflictingXML from 'test/fixtures/zeebe/complex.sub-process-mapping-conflict.bpmn';
 import agenticAdHocSubProcessXML from 'test/fixtures/zeebe/ad-hoc-sub-process.agentic.bpmn';
+import agenticAdHocSubProcessLocalScopeXML from 'test/fixtures/zeebe/ad-hoc-sub-process.agentic-local-scope.bpmn';
+import agenticTaskXML from 'test/fixtures/zeebe/task.agentic.bpmn';
 import adHocSubProcessOutputCollectionLeakXML from 'test/fixtures/zeebe/ad-hoc-sub-process.output-collection-leak.bpmn';
 import connectorsXML from 'test/fixtures/zeebe/connectors.bpmn';
 import connectorsSubProcessXML from 'test/fixtures/zeebe/connectors.sub-process.bpmn';
 import connectorsOutputMappingXML from 'test/fixtures/zeebe/connectors.output-mapping.bpmn';
 import ioMappingsXML from 'test/fixtures/zeebe/ioMappings.bpmn';
+import ioMappingsEmptyXML from 'test/fixtures/zeebe/ioMappings.empty.bpmn';
+import ioMappingsNullXML from 'test/fixtures/zeebe/ioMappings.null.bpmn';
+import ioMappingsStaticXML from 'test/fixtures/zeebe/ioMappings.static.bpmn';
+import ioMappingsHierarchicalNamesXML from 'test/fixtures/zeebe/ioMappings.hierarchical-names.bpmn';
 import subprocessNoOutputMappingXML from 'test/fixtures/zeebe/sub-process.no-output-mapping.bpmn';
 import longBrokenExpressionXML from 'test/fixtures/zeebe/long-broken-expression.bpmn';
 import immediatelyBrokenExpressionXML from 'test/fixtures/zeebe/immediately-broken-expression.bpmn';
+import typeResolutionXML from 'test/fixtures/zeebe/type-resolution.bpmn';
 
 import VariableProvider from 'lib/VariableProvider';
 import { getInputOutput } from '../../../lib/base/util/ExtensionElementsUtil';
@@ -445,7 +453,7 @@ describe('ZeebeVariableResolver', function() {
       const variables = await variableResolver.getVariablesForElement(root);
 
       // then
-      expect(variables).to.variableEqual([ { name: 'foo', type: 'String|Number' } ]);
+      expect(variables).to.variableEqual([ { name: 'foo', type: 'Number|String' } ]);
     }));
 
 
@@ -552,6 +560,82 @@ describe('ZeebeVariableResolver', function() {
     }));
 
 
+    it('should type nested entry with no value as Null', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const root = elementRegistry.get('Process_1');
+
+      createProvider({
+        variables: [ {
+          name: 'a',
+          entries: [
+            {
+              name: 'b',
+              entries: [
+                { name: 'c' }
+              ]
+            }
+          ]
+        } ],
+        variableResolver
+      });
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(root);
+
+      // then
+      expect(variables).to.variableEqual([ {
+        name: 'a',
+        entries: [
+          {
+            name: 'b',
+            entries: [
+              { name: 'c', type: 'Null' }
+            ]
+          }
+        ]
+      } ]);
+    }));
+
+
+    it('should not fail when merging entries with mixed type presence', inject(async function(variableResolver, elementRegistry) {
+
+      // given - one provider supplies a type, the other does not
+      const root = elementRegistry.get('Process_1');
+
+      createProvider({
+        variables: [ {
+          name: 'a',
+          type: 'String',
+          entries: [
+            { name: 'b', type: 'Number' }
+          ]
+        } ],
+        variableResolver
+      });
+      createProvider({
+        variables: [ {
+          name: 'a',
+          entries: [
+            { name: 'b' }
+          ]
+        } ],
+        variableResolver
+      });
+
+      // when / then - should not throw
+      const variables = await variableResolver.getVariablesForElement(root);
+
+      expect(variables).to.variableEqual([ {
+        name: 'a',
+        type: 'String',
+        entries: [
+          { name: 'b', type: 'Number' }
+        ]
+      } ]);
+    }));
+
+
     it('should not fail on infinite loop', function() {
 
       // given
@@ -576,173 +660,182 @@ describe('ZeebeVariableResolver', function() {
       expect([ target ]).to.variableEqual([ { name: 'foo' } ]);
     });
 
-
-    describe('hierarchical names', function() {
-
-      it('should expand name', inject(async function(variableResolver, elementRegistry) {
-
-        // given
-        const root = elementRegistry.get('Process_1');
-
-        createProvider({
-          variables: [ { name: 'foo.bar', type: 'String', scope: root } ],
-          variableResolver,
-          origin: 'Process_1'
-        });
-
-        // when
-        const variables = await variableResolver.getVariablesForElement(root);
-
-        // then
-        expect(variables).to.variableEqual([
-          {
-            name: 'foo',
-            type: 'Context',
-            scope: 'Process_1',
-            entries: [
-              { name: 'bar', type: 'String', scope: 'Process_1' }
-            ]
-          }
-        ]);
-      }));
+  });
 
 
-      it('should merge same prefix variables with same scope', inject(async function(variableResolver, elementRegistry) {
+  describe('hierarchical names', function() {
 
-        // given
-        const root = elementRegistry.get('Process_1');
-
-        createProvider({
-          variables: [ { name: 'foo.bar', type: 'String', scope: root } ],
-          variableResolver,
-          origin: 'Process_1'
-        });
-        createProvider({
-          variables: [ { name: 'foo.woop', type: 'String', scope: root } ],
-          variableResolver,
-          origin: 'ServiceTask_1'
-        });
-
-        // when
-        const variables = await variableResolver.getVariablesForElement(root);
-
-        // then
-        expect(variables).to.variableEqual([
-          {
-            name: 'foo',
-            type: 'Context',
-            scope: 'Process_1',
-            entries: [
-              { name: 'bar', type: 'String', scope: 'Process_1' },
-              { name: 'woop', type: 'String', scope: 'Process_1' }
-            ]
-          }
-        ]);
-      }));
+    beforeEach(
+      bootstrapModeler(simpleXML, {
+        additionalModules: [
+          ZeebeVariableResolverModule
+        ]
+      })
+    );
 
 
-      it('should merge same prefix variables with different types', inject(async function(variableResolver, elementRegistry) {
+    it('should expand name', inject(async function(variableResolver, elementRegistry) {
 
-        // given
-        const root = elementRegistry.get('Process_1');
+      // given
+      const root = elementRegistry.get('Process_1');
 
-        createProvider({
-          variables: [ { name: 'foo.bar', type: 'String', scope: root } ],
-          variableResolver,
-          origin: 'Process_1'
-        });
-        createProvider({
-          variables: [ { name: 'foo.bar', type: 'Boolean', scope: root } ],
-          variableResolver,
-          origin: 'Process_1'
-        });
-        createProvider({
-          variables: [ { name: 'foo.bar.woop', type: 'Number', scope: root } ],
-          variableResolver,
-          origin: 'Process_1'
-        });
+      createProvider({
+        variables: [ { name: 'foo.bar', type: 'String', scope: root } ],
+        variableResolver,
+        origin: 'Process_1'
+      });
 
-        // when
-        const variables = await variableResolver.getVariablesForElement(root);
+      // when
+      const variables = await variableResolver.getVariablesForElement(root);
 
-        // then
-        expect(variables).to.variableEqual([
-          {
-            name: 'foo',
-            type: 'Context',
-            scope: 'Process_1',
-            entries: [
-              {
-                name: 'bar',
-                type: 'String|Boolean|Context',
-                scope: 'Process_1',
-                entries: [
-                  { name: 'woop', type: 'Number', scope: 'Process_1' }
-                ]
-              }
-            ]
-          }
-        ]);
-      }));
+      // then
+      expect(variables).to.variableEqual([
+        {
+          name: 'foo',
+          type: 'Context',
+          scope: 'Process_1',
+          entries: [
+            { name: 'bar', type: 'String', scope: 'Process_1' }
+          ]
+        }
+      ]);
+    }));
 
 
-      it('should not merge same prefix variables with different scope', inject(async function(variableResolver, elementRegistry) {
+    it('should merge same prefix variables with same scope', inject(async function(variableResolver, elementRegistry) {
 
-        // given
-        const root = elementRegistry.get('Process_1');
-        const serviceTask = elementRegistry.get('ServiceTask_1');
+      // given
+      const root = elementRegistry.get('Process_1');
 
-        createProvider({
-          variables: [ { name: 'foo.bar', type: 'String', scope: root } ],
-          variableResolver,
-          origin: 'Process_1'
-        });
-        createProvider({
-          variables: [ { name: 'foo.woop', type: 'String', scope: serviceTask } ],
-          variableResolver,
-          origin: 'ServiceTask_1'
-        });
+      createProvider({
+        variables: [ { name: 'foo.bar', type: 'String', scope: root } ],
+        variableResolver,
+        origin: 'Process_1'
+      });
+      createProvider({
+        variables: [ { name: 'foo.woop', type: 'String', scope: root } ],
+        variableResolver,
+        origin: 'ServiceTask_1'
+      });
 
-        // when
-        const processVariables = await variableResolver.getVariablesForElement(root);
+      // when
+      const variables = await variableResolver.getVariablesForElement(root);
 
-        // then
-        expect(processVariables).to.variableEqual([
-          {
-            name: 'foo',
-            type: 'Context',
-            scope: 'Process_1',
-            entries: [
-              { name: 'bar', type: 'String', scope: 'Process_1' }
-            ]
-          }
-        ]);
+      // then
+      expect(variables).to.variableEqual([
+        {
+          name: 'foo',
+          type: 'Context',
+          scope: 'Process_1',
+          entries: [
+            { name: 'bar', type: 'String', scope: 'Process_1' },
+            { name: 'woop', type: 'String', scope: 'Process_1' }
+          ]
+        }
+      ]);
+    }));
 
-        // when
-        const serviceTaskVariables = await variableResolver.getVariablesForElement(serviceTask);
 
-        // then
-        expect(serviceTaskVariables).to.variableEqual([
-          {
-            name: 'foo',
-            type: 'Context',
-            scope: 'Process_1',
-            entries: [
-              { name: 'bar', type: 'String', scope: 'Process_1' }
-            ]
-          },
-          {
-            name: 'foo',
-            type: 'Context',
-            scope: 'ServiceTask_1',
-            entries: [
-              { name: 'woop', type: 'String', scope: 'ServiceTask_1' }
-            ]
-          }
-        ]);
-      }));
+    it('should merge same prefix variables with different types', inject(async function(variableResolver, elementRegistry) {
 
-    });
+      // given
+      const root = elementRegistry.get('Process_1');
+
+      createProvider({
+        variables: [ { name: 'foo.bar', type: 'String', scope: root } ],
+        variableResolver,
+        origin: 'Process_1'
+      });
+      createProvider({
+        variables: [ { name: 'foo.bar', type: 'Boolean', scope: root } ],
+        variableResolver,
+        origin: 'Process_1'
+      });
+      createProvider({
+        variables: [ { name: 'foo.bar.woop', type: 'Number', scope: root } ],
+        variableResolver,
+        origin: 'Process_1'
+      });
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(root);
+
+      // then
+      expect(variables).to.variableEqual([
+        {
+          name: 'foo',
+          type: 'Context',
+          scope: 'Process_1',
+          entries: [
+            {
+              name: 'bar',
+              type: 'Boolean|Context|String',
+              scope: 'Process_1',
+              entries: [
+                { name: 'woop', type: 'Number', scope: 'Process_1' }
+              ]
+            }
+          ]
+        }
+      ]);
+    }));
+
+
+    it('should not merge same prefix variables with different scope', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const root = elementRegistry.get('Process_1');
+      const serviceTask = elementRegistry.get('ServiceTask_1');
+
+      createProvider({
+        variables: [ { name: 'foo.bar', type: 'String', scope: root } ],
+        variableResolver,
+        origin: 'Process_1'
+      });
+      createProvider({
+        variables: [ { name: 'foo.woop', type: 'String', scope: serviceTask } ],
+        variableResolver,
+        origin: 'ServiceTask_1'
+      });
+
+      // when
+      const processVariables = await variableResolver.getVariablesForElement(root);
+
+      // then
+      expect(processVariables).to.variableEqual([
+        {
+          name: 'foo',
+          type: 'Context',
+          scope: 'Process_1',
+          entries: [
+            { name: 'bar', type: 'String', scope: 'Process_1' }
+          ]
+        }
+      ]);
+
+      // when
+      const serviceTaskVariables = await variableResolver.getVariablesForElement(serviceTask);
+
+      // then
+      expect(serviceTaskVariables).to.variableEqual([
+        {
+          name: 'foo',
+          type: 'Context',
+          scope: 'Process_1',
+          entries: [
+            { name: 'bar', type: 'String', scope: 'Process_1' }
+          ]
+        },
+        {
+          name: 'foo',
+          type: 'Context',
+          scope: 'ServiceTask_1',
+          entries: [
+            { name: 'woop', type: 'String', scope: 'ServiceTask_1' }
+          ]
+        }
+      ]);
+    }));
 
   });
 
@@ -1228,8 +1321,22 @@ describe('ZeebeVariableResolver', function() {
       // then
       expect(variables).to.variableEqual([
         { name: 'agent', origin: [ 'AI_Agent' ], scope: 'ai-agent-chat-with-tools' },
-        { name: 'toolCallResult', origin: [ 'AI_Agent', 'GetDateAndTime', 'SuperfluxProduct' ], scope: 'AI_Agent' },
-        { name: 'toolCallResults', origin: [ 'AI_Agent' ], scope: 'AI_Agent' },
+        {
+          name: 'toolCallResult',
+          origin: [
+            'AskHumanToSendEmail',
+            'GetDateAndTime',
+            'SuperfluxProduct',
+            'SendEmail',
+            'LoadUserByID',
+            'ListUsers',
+            'Search_Recipe',
+            'Jokes_API',
+            'Fetch_URL'
+          ],
+          scope: 'ai-agent-chat-with-tools'
+        },
+        { name: 'toolCallResults', origin: [ 'AI_Agent' ], scope: 'ai-agent-chat-with-tools' },
         {
           name: 'data',
           scope: 'AI_Agent',
@@ -1238,32 +1345,58 @@ describe('ZeebeVariableResolver', function() {
               name: 'response',
               scope: 'AI_Agent',
               entries: [
-                { name: 'includeAgentContext', scope: 'AI_Agent' },
-                { name: 'includeAssistantMessage' },
-                { name: 'format' }
+                { name: 'includeAgentContext', scope: 'AI_Agent', type: 'Boolean' },
+                { name: 'includeAssistantMessage', type: 'Boolean' },
+                {
+                  name: 'format',
+                  type: 'Context',
+                  entries: [
+                    { name: 'type', type: 'String' },
+                    { name: 'parseJson', type: 'Boolean' }
+                  ]
+                }
               ]
             },
             {
               name: 'events',
               entries: [
-                { name: 'behavior' }
+                { name: 'behavior', type: 'String' }
               ]
             },
             {
-              name: 'limits'
+              name: 'limits',
+              type: 'Context',
+              entries: [
+                { name: 'maxModelCalls', type: 'Number' }
+              ]
             },
             {
               name: 'memory',
               entries: [
-                { name: 'contextWindowSize' },
-                { name: 'storage' }
+                { name: 'contextWindowSize', type: 'Number' },
+                {
+                  name: 'storage',
+                  type: 'Context',
+                  entries: [
+                    { name: 'type', type: 'String' }
+                  ]
+                }
               ]
             },
             {
-              name: 'userPrompt'
+              name: 'userPrompt',
+              type: 'Context',
+              entries: [
+                { name: 'prompt', type: 'Any' },
+                { name: 'documents', type: 'Any' }
+              ]
             },
             {
-              name: 'systemPrompt'
+              name: 'systemPrompt',
+              type: 'Context',
+              entries: [
+                { name: 'prompt', type: 'String' }
+              ]
             }
           ]
         },
@@ -1276,10 +1409,25 @@ describe('ZeebeVariableResolver', function() {
               scope: 'AI_Agent'
             },
             {
-              name: 'openai',
+              name: 'bedrock',
               entries: [
-                { name: 'model' },
-                { name: 'authentication' }
+                { name: 'region', type: 'String' },
+                {
+                  name: 'authentication',
+                  type: 'Context',
+                  entries: [
+                    { name: 'type', type: 'String' },
+                    { name: 'accessKey', type: 'String' },
+                    { name: 'secretKey', type: 'String' }
+                  ]
+                },
+                {
+                  name: 'model',
+                  type: 'Context',
+                  entries: [
+                    { name: 'model', type: 'String' }
+                  ]
+                }
               ]
             }
           ]
@@ -1299,7 +1447,166 @@ describe('ZeebeVariableResolver', function() {
 
       // then
       expect(variables).to.variableEqual([
+        { name: 'toolCallResults', scope: 'ai-agent-chat-with-tools' },
+        { name: 'toolCallResult', scope: 'ai-agent-chat-with-tools' },
         { name: 'agent', origin: [ 'AI_Agent' ], scope: 'ai-agent-chat-with-tools' }
+      ]);
+    }));
+
+
+    it('should type toolCallResult with joined toolCall value types', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const subProcess = elementRegistry.get('AI_Agent');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(subProcess);
+
+      // then
+      expect(variables).to.variableInclude({
+        name: 'toolCallResult',
+        type: 'Any|Context|Null|String'
+      });
+    }));
+
+
+    it('should type nested entries of expanded hierarchical variables', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const subProcess = elementRegistry.get('AI_Agent');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(subProcess);
+      const dataVariable = variables.find(v => v.name === 'data');
+
+      // then
+      expect(dataVariable).to.exist;
+      expect(dataVariable.type).to.equal('Context');
+
+      const systemPrompt = dataVariable.entries.find(e => e.name === 'systemPrompt');
+      expect(systemPrompt).to.exist;
+      expect(systemPrompt.type).to.equal('Context');
+
+      const prompt = systemPrompt.entries.find(e => e.name === 'prompt');
+      expect(prompt).to.exist;
+      expect(prompt.type).to.equal('String');
+    }));
+
+  });
+
+
+  describe('agentic - ad-hoc sub-process - local scope', function() {
+
+    beforeEach(
+      bootstrapModeler(agenticAdHocSubProcessLocalScopeXML, {
+        additionalModules: [
+          ZeebeVariableResolverModule
+        ],
+        moddleExtensions: {
+          zeebe: ZeebeModdle
+        }
+      })
+    );
+
+
+    it('should expose only <agent> to process', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const root = elementRegistry.get('ai-agent-chat-with-tools');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(root);
+
+      // then
+      expect(variables).to.variableEqual([
+        { name: 'agent', origin: [ 'AI_Agent' ], scope: 'ai-agent-chat-with-tools' }
+      ]);
+    }));
+
+
+    it('should capture <toolCallResult> providers in AI_Agent', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const root = elementRegistry.get('AI_Agent');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(root);
+
+      // then
+      expect(variables).to.variableInclude({
+        name: 'toolCallResult',
+        origin: [
+          'AI_Agent',
+          'AskHumanToSendEmail',
+          'GetDateAndTime',
+          'Handle_Message',
+          'SendEmail'
+        ],
+        scope: 'AI_Agent'
+      });
+    }));
+
+  });
+
+
+  describe('agentic - agent task', function() {
+
+    beforeEach(
+      bootstrapModeler(agenticTaskXML, {
+        additionalModules: [
+          ZeebeVariableResolverModule
+        ],
+        moddleExtensions: {
+          zeebe: ZeebeModdle
+        }
+      })
+    );
+
+
+    it('should expose agent scoped variables', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const subProcess = elementRegistry.get('AI_Agent');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(subProcess);
+
+      // then
+      expect(variables).to.variableEqual([
+        { name: 'agent', origin: [ 'AI_Agent' ], scope: 'Process_1' },
+        {
+          name: 'provider',
+          scope: 'AI_Agent',
+          entries: [
+            { name: 'type' },
+            { name: 'bedrock' }
+          ]
+        },
+        {
+          name: 'data',
+          scope: 'AI_Agent',
+          entries: [
+            { name: 'limits' },
+            { name: 'context' },
+            {
+              name: 'userPrompt',
+              type: 'Context',
+              entries: [
+                { name: 'prompt', type: 'Any' },
+                { name: 'documents', type: 'Any' }
+              ]
+            },
+            {
+              name: 'systemPrompt',
+              type: 'Context',
+              entries: [
+                { name: 'prompt', type: 'String' }
+              ]
+            },
+            { name: 'tools' },
+            { name: 'memory' }
+          ]
+        }
       ]);
     }));
 
@@ -1558,6 +1865,184 @@ describe('ZeebeVariableResolver', function() {
   });
 
 
+  describe('io mappings - empty', function() {
+
+    beforeEach(
+      bootstrapModeler(ioMappingsEmptyXML, {
+        additionalModules: [
+          ZeebeVariableResolverModule
+        ],
+        moddleExtensions: {
+          zeebe: ZeebeModdle
+        }
+      })
+    );
+
+
+    it('should map as <null>', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const task = elementRegistry.get('ServiceTask_1');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(task);
+
+      // then
+      expect(variables).to.variableEqual([
+        { name: 'emptyInput', type: 'Null', scope: 'ServiceTask_1' }
+      ]);
+
+    }));
+
+  });
+
+
+  describe('io mappings - null', function() {
+
+    beforeEach(
+      bootstrapModeler(ioMappingsNullXML, {
+        additionalModules: [
+          ZeebeVariableResolverModule
+        ],
+        moddleExtensions: {
+          zeebe: ZeebeModdle
+        }
+      })
+    );
+
+
+    it('should declare Null type', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const task = elementRegistry.get('ServiceTask_1');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(task);
+
+      // then
+      // filter own name, later input mappings + all output mappings
+      expect(variables).to.variableEqual([
+        { name: 'nullInput', type: 'Null', scope: 'ServiceTask_1' },
+        { name: 'nullOutput', type: 'Null', scope: 'Process_1' }
+      ]);
+
+    }));
+
+  });
+
+
+  describe('io mappings - static', function() {
+
+    beforeEach(
+      bootstrapModeler(ioMappingsStaticXML, {
+        additionalModules: [
+          ZeebeVariableResolverModule
+        ],
+        moddleExtensions: {
+          zeebe: ZeebeModdle
+        }
+      })
+    );
+
+
+    it('should map as <String> type', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const task = elementRegistry.get('ServiceTask_1');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(task);
+
+      // then
+      // filter own name, later input mappings + all output mappings
+      expect(variables).to.variableEqual([
+        { name: 'staticInput', type: 'String', scope: 'ServiceTask_1', info: 'YES' }
+      ]);
+
+    }));
+
+  });
+
+
+  describe('io mappings - hierarchical names', function() {
+
+    beforeEach(
+      bootstrapModeler(ioMappingsHierarchicalNamesXML, {
+        additionalModules: [
+          ZeebeVariableResolverModule
+        ],
+        moddleExtensions: {
+          zeebe: ZeebeModdle
+        }
+      })
+    );
+
+
+    it('should expand input', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const task = elementRegistry.get('ServiceTask_1');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(task);
+
+      // then
+      expect(variables).to.variableInclude({
+        name: 'local',
+        type: 'Context',
+        scope: 'ServiceTask_1',
+        entries: [
+          {
+            name: 'a',
+            type: 'Context',
+            scope: 'ServiceTask_1',
+            entries: [
+              {
+                name: 'b',
+                type: 'Number',
+                scope: 'ServiceTask_1'
+              }
+            ]
+          }
+        ]
+      });
+    }));
+
+
+    it('should expand output', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const task = elementRegistry.get('Process_1');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(task);
+
+      // then
+      expect(variables).to.variableInclude({
+        name: 'process',
+        type: 'Context',
+        scope: 'Process_1',
+        entries: [
+          {
+            name: 'x',
+            type: 'Context',
+            scope: 'Process_1',
+            entries: [
+              {
+                name: 'y',
+                type: 'Number',
+                scope: 'Process_1'
+              }
+            ]
+          }
+        ]
+      });
+
+    }));
+
+  });
+
+
   describe('parsing', function() {
 
     describe('long broken expression', function() {
@@ -1617,6 +2102,406 @@ describe('ZeebeVariableResolver', function() {
         ]);
       }));
     });
+  });
+
+
+  describe('variable type resolution', function() {
+
+    beforeEach(bootstrapModeler(typeResolutionXML, {
+      additionalModules: [
+        ZeebeVariableResolverModule
+      ],
+      moddleExtensions: {
+        zeebe: ZeebeModdle
+      }
+    }));
+
+
+    describe('literal type outputs', function() {
+
+      it('should resolve null literal to Null', inject(async function(elementRegistry, variableResolver) {
+
+        // given
+        const task = elementRegistry.get('literalNullTask');
+
+        // when
+        const variables = await variableResolver.getVariablesForElement(task);
+
+        // then
+        expect(variables).to.variableInclude({
+          name: 'outNull',
+          type: 'Null',
+          scope: 'Process_varResolution'
+        });
+      }));
+
+
+      it('should resolve string literal to String', inject(async function(elementRegistry, variableResolver) {
+
+        // given
+        const task = elementRegistry.get('literalStringTask');
+
+        // when
+        const variables = await variableResolver.getVariablesForElement(task);
+
+        // then
+        expect(variables).to.variableInclude({
+          name: 'outString',
+          type: 'String',
+          scope: 'Process_varResolution'
+        });
+      }));
+
+
+      it('should resolve <camunda> string literal to String', inject(async function(elementRegistry, variableResolver) {
+
+        // given
+        const task = elementRegistry.get('literalStringTask');
+
+        // when
+        const variables = await variableResolver.getVariablesForElement(task);
+
+        // then
+        expect(variables).to.variableInclude({
+          name: 'outCamundaString',
+          type: 'String',
+          scope: 'Process_varResolution'
+        });
+      }));
+
+
+      it('should resolve number literal to Number', inject(async function(elementRegistry, variableResolver) {
+
+        // given
+        const task = elementRegistry.get('literalNumberTask');
+
+        // when
+        const variables = await variableResolver.getVariablesForElement(task);
+
+        // then
+        expect(variables).to.variableInclude({
+          name: 'outNumber',
+          type: 'Number',
+          scope: 'Process_varResolution'
+        });
+      }));
+
+
+      it('should resolve boolean literal to Boolean', inject(async function(elementRegistry, variableResolver) {
+
+        // given
+        const task = elementRegistry.get('literalBooleanTask');
+
+        // when
+        const variables = await variableResolver.getVariablesForElement(task);
+
+        // then
+        expect(variables).to.variableInclude({
+          name: 'outBoolean',
+          type: 'Boolean',
+          scope: 'Process_varResolution'
+        });
+      }));
+
+
+      it('should resolve context literal to Context', inject(async function(elementRegistry, variableResolver) {
+
+        // given
+        const task = elementRegistry.get('literalContextTask');
+
+        // when
+        const variables = await variableResolver.getVariablesForElement(task);
+
+        // then
+        expect(variables).to.variableInclude({
+          name: 'outContext',
+          type: 'Context',
+          scope: 'Process_varResolution'
+        });
+      }));
+
+
+      it('should resolve empty source to Null', inject(async function(elementRegistry, variableResolver) {
+
+        // given
+        const task = elementRegistry.get('emptySourceTask');
+
+        // when
+        const variables = await variableResolver.getVariablesForElement(task);
+
+        // then
+        expect(variables).to.variableInclude({
+          name: 'outEmpty',
+          type: 'Null',
+          scope: 'Process_varResolution'
+        });
+      }));
+
+    });
+
+
+    describe('path expression resolution', function() {
+
+      it('should resolve path to string property', inject(async function(elementRegistry, variableResolver) {
+
+        // given
+        const task = elementRegistry.get('pathConsumerTask');
+
+        // when
+        const variables = await variableResolver.getVariablesForElement(task);
+
+        // then
+        expect(variables).to.variableInclude({
+          name: 'pathString',
+          type: 'String',
+          scope: 'pathConsumerTask'
+        });
+      }));
+
+
+      it('should resolve path to number property', inject(async function(elementRegistry, variableResolver) {
+
+        // given
+        const task = elementRegistry.get('pathConsumerTask');
+
+        // when
+        const variables = await variableResolver.getVariablesForElement(task);
+
+        // then
+        expect(variables).to.variableInclude({
+          name: 'pathNumber',
+          type: 'Number',
+          scope: 'pathConsumerTask'
+        });
+      }));
+
+
+      it('should resolve path to boolean property', inject(async function(elementRegistry, variableResolver) {
+
+        // given
+        const task = elementRegistry.get('pathConsumerTask');
+
+        // when
+        const variables = await variableResolver.getVariablesForElement(task);
+
+        // then
+        expect(variables).to.variableInclude({
+          name: 'pathBoolean',
+          type: 'Boolean',
+          scope: 'pathConsumerTask'
+        });
+      }));
+
+
+      it('should resolve deep path to null property', inject(async function(elementRegistry, variableResolver) {
+
+        // given
+        const task = elementRegistry.get('pathConsumerTask');
+
+        // when
+        const variables = await variableResolver.getVariablesForElement(task);
+
+        // then
+        expect(variables).to.variableInclude({
+          name: 'pathDeepNull',
+          type: 'Null',
+          scope: 'pathConsumerTask'
+        });
+      }));
+
+
+      it('should resolve deep path to string property', inject(async function(elementRegistry, variableResolver) {
+
+        // given
+        const task = elementRegistry.get('pathConsumerTask');
+
+        // when
+        const variables = await variableResolver.getVariablesForElement(task);
+
+        // then
+        expect(variables).to.variableInclude({
+          name: 'pathDeepString',
+          type: 'String',
+          info: 'YES',
+          scope: 'pathConsumerTask'
+        });
+      }));
+
+
+      it('should resolve for hierarchical input', inject(async function(elementRegistry, variableResolver) {
+
+        // given
+        const task = elementRegistry.get('hierarchicalNameConsumer');
+
+        // when
+        const variables = await variableResolver.getVariablesForElement(task);
+
+        // then
+        expect(variables).to.variableInclude({
+          name: 'deep',
+          type: 'Context',
+          entries: [
+            {
+              name: 'static',
+              type: 'Context',
+              entries: [
+                {
+                  name: 'property',
+                  type: 'String',
+                  info: '10'
+                }
+              ]
+            },
+            {
+              name: 'dynamic',
+              type: 'Context',
+              entries: [
+                {
+                  name: 'property',
+                  type: 'Number',
+                  info: '10'
+                }
+              ]
+            }
+          ],
+          scope: 'hierarchicalNameConsumer'
+        });
+      }));
+
+    });
+
+
+    describe('variable passthrough', function() {
+
+      it('should resolve passthrough variable to source type', inject(async function(elementRegistry, variableResolver) {
+
+        // given
+        const task = elementRegistry.get('passthroughConsumerTask');
+
+        // when
+        const variables = await variableResolver.getVariablesForElement(task);
+
+        // then
+        expect(variables).to.variableInclude({
+          name: 'passedString',
+          type: 'String',
+          scope: 'passthroughConsumerTask'
+        });
+      }));
+
+    });
+
+
+    describe('unresolved variables', function() {
+
+      it('should resolve unresolved variable to Any', inject(async function(elementRegistry, variableResolver) {
+
+        // given
+        const task = elementRegistry.get('unresolvedConsumerTask');
+
+        // when
+        const variables = await variableResolver.getVariablesForElement(task);
+
+        // then
+        expect(variables).to.variableInclude({
+          name: 'unresolvedInput',
+          type: 'Any',
+          scope: 'unresolvedConsumerTask'
+        });
+      }));
+
+    });
+
+
+    describe('nested reference resolution', function() {
+
+      it('should resolve nested output literal value', inject(async function(elementRegistry, variableResolver) {
+
+        // given
+        const task = elementRegistry.get('nestedConsumerTask');
+
+        // when
+        const variables = await variableResolver.getVariablesForElement(task);
+
+        // then
+        expect(variables).to.variableInclude({
+          name: 'nested',
+          type: 'Context',
+          scope: 'Process_varResolution',
+          entries: [
+            {
+              name: 'deep',
+              type: 'Context',
+              entries: [
+                { name: 'leaf', type: 'String' }
+              ]
+            }
+          ]
+        });
+      }));
+
+    });
+
+  });
+
+
+  describe('error handling', function() {
+
+    beforeEach(bootstrapModeler(errorsXML, {
+      additionalModules: [
+        ZeebeVariableResolverModule
+      ],
+      moddleExtensions: {
+        zeebe: ZeebeModdle
+      }
+    }));
+
+
+    it('should handle invalid input', inject(async function(elementRegistry, variableResolver) {
+
+      // given
+      const task = elementRegistry.get('InvalidInputTask');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(task);
+
+      // then
+      expect(variables).to.variableEqual([
+        { name: 'invalidOutput', type: 'Null', scope: 'Process_1' }
+      ]);
+    }));
+
+
+    it('should handle invalid output', inject(async function(elementRegistry, variableResolver) {
+
+      // given
+      const task = elementRegistry.get('InvalidOutputTask');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(task);
+
+      // then
+      expect(variables).to.variableEqual([
+        { name: 'invalidOutput', type: 'Null', scope: 'Process_1' }
+      ]);
+    }));
+
+
+    it('should handle invalid FEEL expression', inject(async function(elementRegistry, variableResolver) {
+
+      // given
+      const task = elementRegistry.get('InvalidExpressionTask');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(task);
+
+      // then
+      expect(variables).to.variableEqual([
+        { name: 'invalidInput', type: 'Null', scope: 'InvalidExpressionTask' },
+        { name: 'invalidOutput', type: 'Null', scope: 'Process_1' }
+      ]);
+    }));
+
   });
 
 });

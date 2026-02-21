@@ -12,9 +12,14 @@ import { bootstrapModeler, inject } from 'test/TestHelper';
 import { ZeebeVariableResolverModule } from 'lib/';
 
 import chainedMappingsXML from 'test/fixtures/zeebe/mappings/chained-mappings.bpmn';
+import chainedMappingsAnyXML from 'test/fixtures/zeebe/mappings/chained-mappings.any.bpmn';
 import primitivesXML from 'test/fixtures/zeebe/mappings/primitives.bpmn';
 import mergingXML from 'test/fixtures/zeebe/mappings/merging.bpmn';
+import mergingNullXML from 'test/fixtures/zeebe/mappings/merging.null.bpmn';
+import mergingAnyXML from 'test/fixtures/zeebe/mappings/merging.any.bpmn';
+import mergingChildrenXML from 'test/fixtures/zeebe/mappings/merging.children.bpmn';
 import scopeXML from 'test/fixtures/zeebe/mappings/scope.bpmn';
+import propagationXML from 'test/fixtures/zeebe/mappings/propagation.bpmn';
 import scriptTaskXML from 'test/fixtures/zeebe/mappings/script-task.bpmn';
 import scriptTaskEmptyExpressionXML from 'test/fixtures/zeebe/mappings/script-task-empty-expression.bpmn';
 
@@ -72,6 +77,67 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
   });
 
 
+  describe('Mappings - any', function() {
+
+    beforeEach(bootstrap(chainedMappingsAnyXML));
+
+
+    it('should map <Any>', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const subProcess = elementRegistry.get('SubProcess_3');
+      const task = elementRegistry.get('Task_9');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(subProcess);
+
+      // then
+      expect(variables).to.variableEqual([
+        {
+          name: 'nonExisting_fromProcess',
+          type: 'Any',
+          scope: 'SubProcess_3'
+        },
+        {
+          name: 'result_fromSubProcess',
+          type: 'Any',
+          scope: 'Process_6'
+        },
+        {
+          name: 'result_fromProcess',
+          type: 'Any',
+          scope: 'Process_6'
+        }
+      ]);
+
+      // when
+      const taskVariables = await variableResolver.getVariablesForElement(task);
+
+      // then
+      expect(taskVariables).to.variableEqual([
+        {
+          name: 'nonExisting_fromProcess',
+          type: 'Any',
+          scope: 'SubProcess_3'
+        },
+        {
+          name: 'result_fromSubProcess',
+          type: 'Any',
+          scope: 'Process_6'
+        },
+        {
+          name: 'result_fromProcess',
+          type: 'Any',
+          scope: 'Process_6'
+        },
+        { name: 'taskVariable_fromSubProcess', scope: 'Task_9', type: 'Any' },
+        { name: 'taskVariable_fromProcess', scope: 'Task_9', type: 'Any' }
+      ]);
+    }));
+
+  });
+
+
   describe('Primitives', function() {
 
     beforeEach(bootstrap(primitivesXML));
@@ -96,7 +162,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
             { name: 'number', type: 'Number', info: '1', entries: [] },
             { name: 'booleanTrue', type: 'Boolean', info: 'true', entries: [] },
             { name: 'booleanFalse', type: 'Boolean', info: 'false', entries: [] },
-            { name: 'null', type: '', entries: [] },
+            { name: 'null', type: 'Null', entries: [] },
           ]
         }
       ]);
@@ -122,7 +188,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
             { name: 'number', detail: 'Number', info: '1', entries: [] },
             { name: 'booleanTrue', detail: 'Boolean', info: 'true', entries: [] },
             { name: 'booleanFalse', detail: 'Boolean', info: 'false', entries: [] },
-            { name: 'null', detail: '', entries: [] },
+            { name: 'null', detail: 'Null', entries: [] },
           ]
         }
       ]);
@@ -217,7 +283,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
         },
         {
           name: 'mergedContext',
-          type: 'globalType|Context',
+          type: 'Context|globalType',
           entries: [
             { name: 'a', type: 'TestVariable', info: 'TestInfo', entries: [ { name: 'foo' } ] },
             { name: 'b', type: 'TestVariable', info: 'TestInfo', entries: [ { name: 'foo' } ] },
@@ -280,6 +346,106 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
   });
 
 
+  describe('Merging - null', function() {
+
+    beforeEach(bootstrap(mergingNullXML));
+
+
+    it('should combine local <null> and child output', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const subProcess = elementRegistry.get('SubProcess_1');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(subProcess);
+
+      // then
+      expect(variables).to.variableEqual([
+        {
+          name: 'processVariable',
+          type: 'Null|Number',
+          scope: 'Process_4',
+          origin: [ 'SubProcess_1' ]
+        },
+        {
+          name: 'localVariable',
+          type: 'Null|Number',
+          scope: 'SubProcess_1',
+          origin: [ 'SubProcess_1', 'Task_6' ]
+        }
+      ]);
+    }));
+
+  });
+
+
+  describe('Merging - children types', function() {
+
+    beforeEach(bootstrap(mergingChildrenXML));
+
+
+    it('should combine and child productions output', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const subProcess = elementRegistry.get('SubProcess_2');
+
+      createProvider({
+        variables: [],
+        variableResolver
+      });
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(subProcess);
+
+      // then
+      expect(variables).to.variableEqual([
+        {
+          name: 'processVariable',
+          type: 'Boolean|Number|String',
+          scope: 'Process_5'
+        },
+        {
+          name: 'variable',
+          type: 'Boolean|Number|String',
+          scope: 'SubProcess_2'
+        }
+      ]);
+    }));
+
+  });
+
+
+  describe('Merging - any', function() {
+
+    beforeEach(bootstrap(mergingAnyXML));
+
+
+    it('should combine local <Any> and child output', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const subProcess = elementRegistry.get('SubProcess_4');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(subProcess);
+
+      // then
+      expect(variables).to.variableEqual([
+        {
+          name: 'processVariable',
+          type: 'Any|Number',
+          scope: 'Process_7'
+        },
+        {
+          name: 'localVariable',
+          type: 'Any|Number',
+          scope: 'SubProcess_4'
+        }
+      ]);
+    }));
+
+  });
+
+
   describe('Scope', function() {
 
     beforeEach(bootstrap(scopeXML));
@@ -315,7 +481,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
         },
         {
           name: 'barOutputVariable',
-          type: '',
+          type: 'Any',
           info: ''
         }
       ]);
@@ -437,6 +603,168 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
           name: 'foo',
           type: 'String',
           info: '2'
+        }
+      ]);
+    }));
+
+
+    it('should handle duplicate output definition (second overrides first)', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const root = elementRegistry.get('Participant_8');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(root.businessObject.processRef);
+
+      // then
+      expect(variables).to.variableEqual([
+        {
+          name: 'foo',
+          type: 'Number',
+          info: '10'
+        }
+      ]);
+    }));
+
+  });
+
+
+  describe('Propagation', function() {
+
+    beforeEach(bootstrap(propagationXML));
+
+
+    it('should input map <null> values', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const subProcess = elementRegistry.get('SubProcess_2');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(subProcess);
+
+      // then
+      expect(variables).to.variableEqual([
+        {
+          name: 'nonExistingProcessVariable',
+          type: 'Any',
+          origin: [ 'SubProcess_2' ]
+        }
+      ]);
+    }));
+
+
+    it('should input map <null> values / nested', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const task = elementRegistry.get('Task_2');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(task);
+
+      // then
+      expect(variables).to.variableEqual([
+        {
+          name: 'nonExistingProcessVariable',
+          type: 'Any',
+          origin: [ 'SubProcess_2' ]
+        }
+      ]);
+    }));
+
+
+    it('should output map <null> values', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const subProcess = elementRegistry.get('SubProcess_3');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(subProcess);
+
+      // then
+      // not a locally scoped sub-process variable, hence two origins
+      expect(variables).to.variableEqual([
+        {
+          name: 'nonExistingTaskVariable',
+          type: 'Any',
+          origin: [ 'SubProcess_3', 'Task_3' ]
+        }
+      ]);
+    }));
+
+
+    it('should output map <null> values / nested', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const root = elementRegistry.get('Participant_3');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(root.businessObject.processRef);
+
+
+      // then
+      // not a locally scoped sub-process variable, hence two origins
+      expect(variables).to.variableEqual([
+        {
+          name: 'nonExistingTaskVariable',
+          type: 'Any',
+          origin: [ 'SubProcess_3', 'Task_3' ]
+        }
+      ]);
+    }));
+
+
+    it('should roundtrip <null> values', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const subProcess = elementRegistry.get('SubProcess_1');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(subProcess);
+
+      // then
+      expect(variables).to.variableEqual([
+        {
+          name: 'nonExistingProcessVariable',
+          type: 'Any',
+          origin: [ 'SubProcess_1' ]
+        }
+      ]);
+    }));
+
+
+    it('should roundtrip <null> values / nested', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const task = elementRegistry.get('Task_1');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(task);
+
+      // then
+      expect(variables).to.variableEqual([
+        {
+          name: 'nonExistingProcessVariable',
+          type: 'Any',
+          origin: [ 'SubProcess_1' ]
+        }
+      ]);
+    }));
+
+
+    it('should roundtrip <null> values / back-to-back', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const root = elementRegistry.get('Participant_1');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(root.businessObject.processRef);
+
+      // then
+      expect(variables).to.variableEqual([
+        {
+          name: 'nonExistingProcessVariable',
+          type: 'Any',
+          origin: [ 'SubProcess_1' ]
         }
       ]);
     }));
