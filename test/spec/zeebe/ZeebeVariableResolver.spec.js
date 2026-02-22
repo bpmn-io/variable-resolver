@@ -932,79 +932,83 @@ describe('ZeebeVariableResolver', function() {
     }));
 
 
-    it('should scope additional variable - process', inject(async function(variableResolver, elementRegistry) {
+    describe('additional variables', function() {
 
-      // given
-      const task = elementRegistry.get('Task_2');
+      it('should scope / global', inject(async function(variableResolver, elementRegistry) {
 
-      createProvider({
-        variables: [ { name: 'foo' } ],
-        origin: 'Task_2',
-        variableResolver
-      });
+        // given
+        const task = elementRegistry.get('Task_2');
 
-      // when
-      const variables = await variableResolver.getVariablesForElement(task);
+        createProvider({
+          variables: [ { name: 'foo' } ],
+          origin: 'Task_2',
+          variableResolver
+        });
 
-      // then
-      // own + all variables from parent scope
-      expect(variables).to.variableEqual([
-        { name: 'variable1', origin: [ 'Task_1' ], scope: 'Process_1' },
-        { name: 'variable2', origin: [ 'Task_1' ], scope: 'Process_1' },
-        { name: 'variable3', origin: [ 'SubProcess_1', 'Task_2' ], scope: 'SubProcess_1' },
-        { name: 'foo', origin: [ 'Task_2' ], scope: 'Process_1' }
-      ]);
-    }));
+        // when
+        const variables = await variableResolver.getVariablesForElement(task);
 
-
-    it('should scope additional variables - nearest scoped parent', inject(async function(variableResolver, elementRegistry) {
-
-      // given
-      const task = elementRegistry.get('Task_3');
-
-      createProvider({
-        variables: [ { name: 'variable3' } ],
-        origin: 'Task_3',
-        variableResolver
-      });
-
-      // when
-      const variables = await variableResolver.getVariablesForElement(task);
-
-      // then
-      // own + all variables from parent scope
-      expect(variables).to.variableEqual([
-        { name: 'variable1', origin: [ 'Task_1' ], scope: 'Process_1' },
-        { name: 'variable2', origin: [ 'Task_1' ], scope: 'Process_1' },
-        { name: 'variable3', origin: [ 'SubProcess_1', 'Task_2', 'Task_3' ], scope: 'SubProcess_1' },
-        { name: 'variable4', origin: [ 'Task_3' ], scope: 'Task_3' }
-      ]);
-    }));
+        // then
+        // own + all variables from parent scope
+        expect(variables).to.variableEqual([
+          { name: 'variable1', origin: [ 'Task_1' ], scope: 'Process_1' },
+          { name: 'variable2', origin: [ 'Task_1' ], scope: 'Process_1' },
+          { name: 'variable3', origin: [ 'SubProcess_1', 'Task_2' ], scope: 'SubProcess_1' },
+          { name: 'foo', origin: [ 'Task_2' ], scope: 'Process_1' }
+        ]);
+      }));
 
 
-    it('should scope additional variables - local', inject(async function(variableResolver, elementRegistry) {
+      it('should scope / nearest scoped parent', inject(async function(variableResolver, elementRegistry) {
 
-      // given
-      const task = elementRegistry.get('Task_3');
+        // given
+        const task = elementRegistry.get('Task_3');
 
-      createProvider({
-        variables: [ { name: 'variable4' } ],
-        origin: 'Task_3',
-        variableResolver
-      });
+        createProvider({
+          variables: [ { name: 'variable3' } ],
+          origin: 'Task_3',
+          variableResolver
+        });
 
-      // when
-      const variables = await variableResolver.getVariablesForElement(task);
+        // when
+        const variables = await variableResolver.getVariablesForElement(task);
 
-      // then
-      // own + all variables from parent scope
-      expect(variables).to.variableEqual([
-        { name: 'variable1', origin: [ 'Task_1' ], scope: 'Process_1' },
-        { name: 'variable2', origin: [ 'Task_1' ], scope: 'Process_1' },
-        { name: 'variable3', origin: [ 'SubProcess_1', 'Task_2' ], scope: 'SubProcess_1' },
-        { name: 'variable4', origin: [ 'Task_3' ], scope: 'Task_3' }
-      ]);
-    }));
+        // then
+        // own + all variables from parent scope
+        expect(variables).to.variableEqual([
+          { name: 'variable1', origin: [ 'Task_1' ], scope: 'Process_1' },
+          { name: 'variable2', origin: [ 'Task_1' ], scope: 'Process_1' },
+          { name: 'variable3', origin: [ 'SubProcess_1', 'Task_2', 'Task_3' ], scope: 'SubProcess_1' },
+          { name: 'variable4', origin: [ 'Task_3' ], scope: 'Task_3' }
+        ]);
+      }));
+
+
+      it('should scope / local', inject(async function(variableResolver, elementRegistry) {
+
+        // given
+        const task = elementRegistry.get('Task_3');
+
+        createProvider({
+          variables: [ { name: 'variable4' } ],
+          origin: 'Task_3',
+          variableResolver
+        });
+
+        // when
+        const variables = await variableResolver.getVariablesForElement(task);
+
+        // then
+        // own + all variables from parent scope
+        expect(variables).to.variableEqual([
+          { name: 'variable1', origin: [ 'Task_1' ], scope: 'Process_1' },
+          { name: 'variable2', origin: [ 'Task_1' ], scope: 'Process_1' },
+          { name: 'variable3', origin: [ 'SubProcess_1', 'Task_2' ], scope: 'SubProcess_1' },
+          { name: 'variable4', origin: [ 'Task_3' ], scope: 'Task_3' }
+        ]);
+      }));
+
+    });
 
   });
 
