@@ -937,8 +937,36 @@ describe('ZeebeVariableResolver', function() {
       it('should scope / global', inject(async function(variableResolver, elementRegistry) {
 
         // given
+        const task = elementRegistry.get('Task_3');
+
+        // task has no output mapping, variable bubbles
+        createProvider({
+          variables: [ { name: 'globalVar' } ],
+          origin: 'Task_3',
+          variableResolver
+        });
+
+        // when
+        const variables = await variableResolver.getVariablesForElement(task);
+
+        // then
+        // own + all variables from parent scope
+        expect(variables).to.variableEqual([
+          { name: 'variable1', origin: [ 'Task_1' ], scope: 'Process_1' },
+          { name: 'variable2', origin: [ 'Task_1' ], scope: 'Process_1' },
+          { name: 'variable3', origin: [ 'SubProcess_1', 'Task_2' ], scope: 'SubProcess_1' },
+          { name: 'variable4', origin: [ 'Task_3' ], scope: 'Task_3' },
+          { name: 'globalVar', origin: [ 'Task_3' ], scope: 'Process_1' }
+        ]);
+      }));
+
+
+      it('should scope / local / output mapping', inject(async function(variableResolver, elementRegistry) {
+
+        // given
         const task = elementRegistry.get('Task_2');
 
+        // task has output mapping, variable <foo> is local
         createProvider({
           variables: [ { name: 'foo' } ],
           origin: 'Task_2',
@@ -954,7 +982,7 @@ describe('ZeebeVariableResolver', function() {
           { name: 'variable1', origin: [ 'Task_1' ], scope: 'Process_1' },
           { name: 'variable2', origin: [ 'Task_1' ], scope: 'Process_1' },
           { name: 'variable3', origin: [ 'SubProcess_1', 'Task_2' ], scope: 'SubProcess_1' },
-          { name: 'foo', origin: [ 'Task_2' ], scope: 'Process_1' }
+          { name: 'foo', origin: [ 'Task_2' ], scope: 'Task_2' }
         ]);
       }));
 
@@ -964,6 +992,7 @@ describe('ZeebeVariableResolver', function() {
         // given
         const task = elementRegistry.get('Task_3');
 
+        // task has no output mapping, variable bubbles
         createProvider({
           variables: [ { name: 'variable3' } ],
           origin: 'Task_3',
@@ -984,13 +1013,19 @@ describe('ZeebeVariableResolver', function() {
       }));
 
 
-      it('should scope / local', inject(async function(variableResolver, elementRegistry) {
+      it('should scope / local / input mapping', inject(async function(variableResolver, elementRegistry) {
 
         // given
         const task = elementRegistry.get('Task_3');
 
+        // task has input mapping for <variable4>, variable is local
         createProvider({
-          variables: [ { name: 'variable4' } ],
+          variables: [ {
+            name: 'variable4',
+            entries: [
+              { name: 'attr' }
+            ]
+          } ],
           origin: 'Task_3',
           variableResolver
         });
@@ -1004,7 +1039,14 @@ describe('ZeebeVariableResolver', function() {
           { name: 'variable1', origin: [ 'Task_1' ], scope: 'Process_1' },
           { name: 'variable2', origin: [ 'Task_1' ], scope: 'Process_1' },
           { name: 'variable3', origin: [ 'SubProcess_1', 'Task_2' ], scope: 'SubProcess_1' },
-          { name: 'variable4', origin: [ 'Task_3' ], scope: 'Task_3' }
+          {
+            name: 'variable4',
+            origin: [ 'Task_3' ],
+            scope: 'Task_3',
+            entries: [
+              { name: 'attr' }
+            ]
+          }
         ]);
       }));
 
