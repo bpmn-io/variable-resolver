@@ -6,6 +6,10 @@ All notable changes to [@bpmn-io/variable-resolver](https://github.com/bpmn-io/v
 
 ___Note:__ Yet to be released changes appear here._
 
+## 1.6.2
+
+* `DEPS`: update to `@bpmn-io/extract-process-variables@2.1.1`
+
 ## 1.6.1
 
 * `FIX`: filter out variables without name ([#79](https://github.com/bpmn-io/variable-resolver/pull/79))
