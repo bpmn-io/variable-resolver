@@ -17,6 +17,7 @@ import mergingXML from 'test/fixtures/zeebe/mappings/merging.bpmn';
 import scopeXML from 'test/fixtures/zeebe/mappings/scope.bpmn';
 import scriptTaskXML from 'test/fixtures/zeebe/mappings/script-task.bpmn';
 import scriptTaskEmptyExpressionXML from 'test/fixtures/zeebe/mappings/script-task-empty-expression.bpmn';
+import scriptTaskOutputNoNameXML from 'test/fixtures/zeebe/mappings/script-task-output-no-name.bpmn';
 
 import VariableProvider from 'lib/VariableProvider';
 
@@ -491,6 +492,34 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
         expect(variables).to.variableEqual([
           {
             name: 'scriptResult'
+          }
+        ]);
+      }));
+    });
+
+
+    describe('output mapping without name', function() {
+
+      beforeEach(bootstrap(scriptTaskOutputNoNameXML));
+
+
+      it('should NOT error for output mapping without a name', inject(async function(variableResolver, elementRegistry) {
+
+        // given
+        const element = elementRegistry.get('ScriptTask');
+
+        // when
+        const variables = await variableResolver.getVariablesForElement(element.businessObject);
+
+        // then
+        expect(variables).to.variableEqual([
+          {
+            name: 'scriptResult',
+            type: 'Context',
+            info: '',
+            entries: [
+              { name: 'foo', type: 'Number', info: '123', entries: [] },
+            ]
           }
         ]);
       }));
