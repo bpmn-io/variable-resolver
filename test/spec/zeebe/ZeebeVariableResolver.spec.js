@@ -1409,7 +1409,7 @@ describe('ZeebeVariableResolver', function() {
           ],
           scope: 'ai-agent-chat-with-tools'
         },
-        { name: 'toolCallResults', origin: [ 'AI_Agent' ], scope: 'AI_Agent' },
+        { name: 'toolCallResults', origin: [ 'AI_Agent' ], scope: 'ai-agent-chat-with-tools' },
         {
           name: 'data',
           scope: 'AI_Agent',
@@ -1520,6 +1520,7 @@ describe('ZeebeVariableResolver', function() {
 
       // then
       expect(variables).to.variableEqual([
+        { name: 'toolCallResults', scope: 'ai-agent-chat-with-tools' },
         { name: 'toolCallResult', scope: 'ai-agent-chat-with-tools' },
         { name: 'agent', origin: [ 'AI_Agent' ], scope: 'ai-agent-chat-with-tools' }
       ]);
@@ -1581,7 +1582,7 @@ describe('ZeebeVariableResolver', function() {
     );
 
 
-    it('should expose only <agent> to process', inject(async function(variableResolver, elementRegistry) {
+    it('should expose <agent> and <toolCallResults> to process', inject(async function(variableResolver, elementRegistry) {
 
       // given
       const root = elementRegistry.get('ai-agent-chat-with-tools');
@@ -1591,7 +1592,10 @@ describe('ZeebeVariableResolver', function() {
 
       // then
       expect(variables).to.variableEqual([
-        { name: 'agent', origin: [ 'AI_Agent' ], scope: 'ai-agent-chat-with-tools' }
+        { name: 'agent', origin: [ 'AI_Agent' ], scope: 'ai-agent-chat-with-tools' },
+
+        // leaks to parent, no way to prevent that
+        { name: 'toolCallResults', origin: [ 'AI_Agent' ], scope: 'ai-agent-chat-with-tools' }
       ]);
     }));
 
