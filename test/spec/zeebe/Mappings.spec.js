@@ -98,7 +98,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
             { name: 'number', type: 'Number', info: '1', entries: [] },
             { name: 'booleanTrue', type: 'Boolean', info: 'true', entries: [] },
             { name: 'booleanFalse', type: 'Boolean', info: 'false', entries: [] },
-            { name: 'null', type: '', entries: [] },
+            { name: 'null', type: 'Null', entries: [] },
           ]
         }
       ]);
@@ -124,7 +124,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
             { name: 'number', detail: 'Number', info: '1', entries: [] },
             { name: 'booleanTrue', detail: 'Boolean', info: 'true', entries: [] },
             { name: 'booleanFalse', detail: 'Boolean', info: 'false', entries: [] },
-            { name: 'null', detail: '', entries: [] },
+            { name: 'null', detail: 'Null', entries: [] },
           ]
         }
       ]);
@@ -353,7 +353,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
         },
         {
           name: 'barOutputVariable',
-          type: '',
+          type: 'Null',
           info: ''
         }
       ]);
