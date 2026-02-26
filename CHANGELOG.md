@@ -6,6 +6,14 @@ All notable changes to [@bpmn-io/variable-resolver](https://github.com/bpmn-io/v
 
 ___Note:__ Yet to be released changes appear here._
 
+## 1.7.0
+
+* `FEAT`: handle static input values ([#83](https://github.com/bpmn-io/variable-resolver/pull/83), [#81](https://github.com/bpmn-io/variable-resolver/issues/81))
+* `FEAT`: recognize output mappings with paths ([bpmn-io/extract-process-variables#35](https://github.com/bpmn-io/extract-process-variables/pull/35))
+* `FIX`: correctly recognize local resultVariable ([bpmn-io/extract-process-variables#35](https://github.com/bpmn-io/extract-process-variables/pull/35))
+* `FIX`: ensure input mapping always creates local scope ([bpmn-io/extract-process-variables#35](https://github.com/bpmn-io/extract-process-variables/pull/35))
+* `DEPS`: update to `@bpmn-io/extract-process-variables@2.2.0`
+
 ## 1.6.2
 
 * `DEPS`: update to `@bpmn-io/extract-process-variables@2.1.1`
