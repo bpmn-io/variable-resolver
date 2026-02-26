@@ -22,6 +22,7 @@ import connectorsSubProcessXML from 'test/fixtures/zeebe/connectors.sub-process.
 import connectorsOutputMappingXML from 'test/fixtures/zeebe/connectors.output-mapping.bpmn';
 import ioMappingsXML from 'test/fixtures/zeebe/ioMappings.bpmn';
 import ioMappingsStaticXML from 'test/fixtures/zeebe/ioMappings.static.bpmn';
+import ioMappingsNullXML from 'test/fixtures/zeebe/ioMappings.null.bpmn';
 import subprocessNoOutputMappingXML from 'test/fixtures/zeebe/sub-process.no-output-mapping.bpmn';
 import longBrokenExpressionXML from 'test/fixtures/zeebe/long-broken-expression.bpmn';
 import immediatelyBrokenExpressionXML from 'test/fixtures/zeebe/immediately-broken-expression.bpmn';
@@ -1561,6 +1562,40 @@ describe('ZeebeVariableResolver', function() {
   });
 
 
+  describe('io mappings - null', function() {
+
+    beforeEach(
+      bootstrapModeler(ioMappingsNullXML, {
+        additionalModules: [
+          ZeebeVariableResolverModule
+        ],
+        moddleExtensions: {
+          zeebe: ZeebeModdle
+        }
+      })
+    );
+
+
+    it('should declare Null type', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const task = elementRegistry.get('ServiceTask_1');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(task);
+
+      // then
+      // filter own name, later input mappings + all output mappings
+      expect(variables).to.variableEqual([
+        { name: 'nullInput', type: 'Null', scope: 'ServiceTask_1' },
+        { name: 'nullOutput', type: 'Null', scope: 'Process_1' }
+      ]);
+
+    }));
+
+  });
+
+
   describe('io mappings - static', function() {
 
     beforeEach(
@@ -1679,7 +1714,7 @@ describe('ZeebeVariableResolver', function() {
 
       // then
       expect(variables).to.variableEqual([
-        { name: 'invalidOutput', type: '', scope: 'Process_1' }
+        { name: 'invalidOutput', type: 'Null', scope: 'Process_1' }
       ]);
     }));
 
@@ -1694,7 +1729,7 @@ describe('ZeebeVariableResolver', function() {
 
       // then
       expect(variables).to.variableEqual([
-        { name: 'invalidOutput', type: '', scope: 'Process_1' }
+        { name: 'invalidOutput', type: 'Null', scope: 'Process_1' }
       ]);
     }));
 
@@ -1709,8 +1744,8 @@ describe('ZeebeVariableResolver', function() {
 
       // then
       expect(variables).to.variableEqual([
-        { name: 'invalidInput', type: '', scope: 'InvalidExpressionTask' },
-        { name: 'invalidOutput', type: '', scope: 'Process_1' }
+        { name: 'invalidInput', type: 'Null', scope: 'InvalidExpressionTask' },
+        { name: 'invalidOutput', type: 'Null', scope: 'Process_1' }
       ]);
     }));
 
@@ -1742,7 +1777,7 @@ describe('ZeebeVariableResolver', function() {
         // then
         expect(variables).to.variableInclude({
           name: 'outNull',
-          type: '',
+          type: 'Null',
           scope: 'Process_varResolution'
         });
       }));
@@ -1914,7 +1949,7 @@ describe('ZeebeVariableResolver', function() {
         // then
         expect(variables).to.variableInclude({
           name: 'pathDeepNull',
-          type: '',
+          type: 'Null',
           scope: 'pathConsumerTask'
         });
       }));
@@ -1956,7 +1991,7 @@ describe('ZeebeVariableResolver', function() {
         // then
         expect(variables).to.variableInclude({
           name: 'unresolvedInput',
-          type: '',
+          type: 'Null',
           scope: 'unresolvedConsumerTask'
         });
       }));
