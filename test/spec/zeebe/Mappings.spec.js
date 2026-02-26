@@ -18,6 +18,7 @@ import mergingXML from 'test/fixtures/zeebe/mappings/merging.bpmn';
 import mergingChildrenXML from 'test/fixtures/zeebe/mappings/merging.children.bpmn';
 import mergingNullXML from 'test/fixtures/zeebe/mappings/merging.null.bpmn';
 import mergingAnyXML from 'test/fixtures/zeebe/mappings/merging.any.bpmn';
+import mergingAnyExpressionsXML from 'test/fixtures/zeebe/mappings/merging.any-expression.bpmn';
 import scopeXML from 'test/fixtures/zeebe/mappings/scope.bpmn';
 import propagationXML from 'test/fixtures/zeebe/mappings/propagation.bpmn';
 import scriptTaskXML from 'test/fixtures/zeebe/mappings/script-task.bpmn';
@@ -440,6 +441,32 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
           name: 'localVariable',
           type: 'Any|Number',
           scope: 'SubProcess_4'
+        }
+      ]);
+    }));
+
+  });
+
+
+  describe('Merging - any expressions', function() {
+
+    beforeEach(bootstrap(mergingAnyExpressionsXML));
+
+
+    it('should combine source expressions', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const subProcess = elementRegistry.get('Process_1');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(subProcess);
+
+      // then
+      expect(variables).to.variableEqual([
+        {
+          name: 'variable',
+          type: 'Any',
+          info: '=unknown\n=alsoUnknown'
         }
       ]);
     }));
