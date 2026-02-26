@@ -1850,6 +1850,78 @@ describe('ZeebeVariableResolver', function() {
     });
 
 
+    describe('path expression resolution', function() {
+
+      it('should resolve path to string property', inject(async function(elementRegistry, variableResolver) {
+
+        // given
+        const task = elementRegistry.get('pathConsumerTask');
+
+        // when
+        const variables = await variableResolver.getVariablesForElement(task);
+
+        // then
+        expect(variables).to.variableInclude({
+          name: 'pathString',
+          type: 'String',
+          scope: 'pathConsumerTask'
+        });
+      }));
+
+
+      it('should resolve path to number property', inject(async function(elementRegistry, variableResolver) {
+
+        // given
+        const task = elementRegistry.get('pathConsumerTask');
+
+        // when
+        const variables = await variableResolver.getVariablesForElement(task);
+
+        // then
+        expect(variables).to.variableInclude({
+          name: 'pathNumber',
+          type: 'Number',
+          scope: 'pathConsumerTask'
+        });
+      }));
+
+
+      it('should resolve path to boolean property', inject(async function(elementRegistry, variableResolver) {
+
+        // given
+        const task = elementRegistry.get('pathConsumerTask');
+
+        // when
+        const variables = await variableResolver.getVariablesForElement(task);
+
+        // then
+        expect(variables).to.variableInclude({
+          name: 'pathBoolean',
+          type: 'Boolean',
+          scope: 'pathConsumerTask'
+        });
+      }));
+
+
+      it('should resolve deep path to null property', inject(async function(elementRegistry, variableResolver) {
+
+        // given
+        const task = elementRegistry.get('pathConsumerTask');
+
+        // when
+        const variables = await variableResolver.getVariablesForElement(task);
+
+        // then
+        expect(variables).to.variableInclude({
+          name: 'pathDeepNull',
+          type: '',
+          scope: 'pathConsumerTask'
+        });
+      }));
+
+    });
+
+
     describe('variable passthrough', function() {
 
       it('should resolve passthrough variable to source type', inject(async function(elementRegistry, variableResolver) {
