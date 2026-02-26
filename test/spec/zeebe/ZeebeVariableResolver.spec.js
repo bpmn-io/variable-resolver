@@ -2029,7 +2029,7 @@ describe('ZeebeVariableResolver', function() {
         // then
         expect(variables).to.variableInclude({
           name: 'unresolvedInput',
-          type: 'Null',
+          type: 'Any',
           scope: 'unresolvedConsumerTask'
         });
       }));
