@@ -6,6 +6,9 @@ All notable changes to [@bpmn-io/variable-resolver](https://github.com/bpmn-io/v
 
 ___Note:__ Yet to be released changes appear here._
 
+* `CHORE`: require `VariableResolver` implementations to implement `_getScope` ([#78](https://github.com/bpmn-io/variable-resolver/pull/78))
+* `CHORE`: use upstream `getScope` for `camunda` and `zeebe` scope computation [#78](https://github.com/bpmn-io/variable-resolver/pull/78)
+
 ## 1.7.0
 
 * `FEAT`: handle static input values ([#83](https://github.com/bpmn-io/variable-resolver/pull/83), [#81](https://github.com/bpmn-io/variable-resolver/issues/81))
