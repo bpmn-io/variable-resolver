@@ -6,9 +6,18 @@ All notable changes to [@bpmn-io/variable-resolver](https://github.com/bpmn-io/v
 
 ___Note:__ Yet to be released changes appear here._
 
-* `FEAT`: preserve expression unresolvable values ([#77](https://github.com/bpmn-io/variable-resolver/pull/77))
+## 2.0.0
+
+* `FEAT`: preserve expression for unresolvable values ([#77](https://github.com/bpmn-io/variable-resolver/pull/77))
+* `FEAT`: handle special `outputCollection` defined variables ([#84](https://github.com/bpmn-io/variable-resolver/pull/84))
+* `FEAT`: recognize input mappings without a source ([#73](https://github.com/bpmn-io/variable-resolver/pull/73))
+* `FEAT`: merge types from collected variable instances ([#85](https://github.com/bpmn-io/variable-resolver/pull/85))
+* `FEAT`: resolve types from path expressions ([#85](https://github.com/bpmn-io/variable-resolver/pull/85))
+* `FEAT`: introduce `Null` and `Any` types ([#73](https://github.com/bpmn-io/variable-resolver/pull/73))
+* `FIX`: use `camunda` dialect for FEEL expression parsing ([#73](https://github.com/bpmn-io/variable-resolver/pull/73))
 * `CHORE`: require `VariableResolver` implementations to implement `_getScope` ([#78](https://github.com/bpmn-io/variable-resolver/pull/78))
 * `CHORE`: use upstream `getScope` for `camunda` and `zeebe` scope computation [#78](https://github.com/bpmn-io/variable-resolver/pull/78)
+* `DEPS`: update to `@bpmn-io/extract-process-variables@2.2.1`
 
 ## 1.7.0
 
