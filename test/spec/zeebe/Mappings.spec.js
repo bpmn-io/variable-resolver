@@ -920,11 +920,11 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       const variables = await variableResolver.getConsumedVariablesForElement(task);
 
       // then
-      const order = variables.find(v => v.name === 'order');
-      expect(order).to.exist;
-      expect(order.entries).to.have.length(1);
-      expect(order.entries[0].name).to.eql('items');
-      expect(order.usedBy).to.eql([ 'orderItems' ]);
+      expect(variables).to.variableInclude({
+        name: 'order',
+        entries: [ { name: 'items' } ],
+        usedBy: [ 'orderItems' ]
+      });
     }));
 
 
@@ -965,10 +965,11 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       const variables = await variableResolver.getConsumedVariablesForElement(task);
 
       // then
-      const names = variables.map(v => v.name);
-      expect(names).to.include('x');
-      expect(names).to.include('y');
-      expect(names).to.include('z');
+      expect(variables).to.variableInclude([
+        { name: 'x' },
+        { name: 'y' },
+        { name: 'z' }
+      ]);
     }));
 
 
@@ -981,13 +982,13 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       const variables = await variableResolver.getConsumedVariablesForElement(task);
 
       // then - a.b and a.c should result in a: { entries: [b, c] }
-      const a = variables.find(v => v.name === 'a');
-      expect(a).to.exist;
-      expect(a.entries).to.have.length(2);
-
-      const entryNames = a.entries.map(e => e.name);
-      expect(entryNames).to.include('b');
-      expect(entryNames).to.include('c');
+      expect(variables).to.variableInclude({
+        name: 'a',
+        entries: [
+          { name: 'b' },
+          { name: 'c' }
+        ]
+      });
     }));
 
 
@@ -1047,12 +1048,8 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       const outputReqs = await variableResolver.getConsumedVariablesForElement(outputTask);
 
       // then - foo is used in the input mapping of both tasks
-      const inputTaskFoo = inputReqs.find(v => v.name === 'foo');
-      const outputTaskFoo = outputReqs.find(v => v.name === 'foo');
-      expect(inputTaskFoo).to.exist;
-      expect(outputTaskFoo).to.exist;
-      expect(inputTaskFoo.origin).to.have.length(1);
-      expect(outputTaskFoo.origin).to.have.length(1);
+      expect(inputReqs).to.variableInclude({ name: 'foo' });
+      expect(outputReqs).to.variableInclude({ name: 'foo' });
     }));
 
 
@@ -1065,8 +1062,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       const requirements = await variableResolver.getConsumedVariablesForElement(task);
 
       // then
-      const names = requirements.map(v => v.name);
-      expect(names).to.include('foo');
+      expect(requirements).to.variableInclude({ name: 'foo' });
     }));
 
 
@@ -1079,8 +1075,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       const requirements = await variableResolver.getConsumedVariablesForElement(task);
 
       // then
-      const names = requirements.map(v => v.name);
-      expect(names).to.include('foo');
+      expect(requirements).to.variableInclude({ name: 'foo' });
     }));
 
   });
@@ -1138,12 +1133,8 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       const secondVars = await variableResolver.getConsumedVariablesForElement(secondTask);
 
       // then - a originates from firstTask, d originates from secondTask
-      const a = firstVars.find(v => v.name === 'a');
-      const d = secondVars.find(v => v.name === 'd');
-      expect(a.origin[0].id).to.eql('firstTask');
-      expect(d.origin[0].id).to.eql('secondTask');
-      expect(a.scope).to.not.exist;
-      expect(d.scope).to.not.exist;
+      expect(firstVars).to.variableInclude({ name: 'a', origin: [ 'firstTask' ] });
+      expect(secondVars).to.variableInclude({ name: 'd', origin: [ 'secondTask' ] });
     }));
 
 
@@ -1178,11 +1169,14 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
 
       // when
       const variables = await variableResolver.getConsumedVariablesForElement(task);
-      const names = variables.map(v => v.name);
 
       // then
-      expect(names).to.include('processVar1');
-      expect(names).to.include('processVar2');
+      expect(variables).to.variableInclude([
+        { name: 'processVar1' },
+        { name: 'processVar2' }
+      ]);
+
+      const names = variables.map(v => v.name);
       expect(names).to.not.include('localA');
       expect(names).to.not.include('localB');
     }));
@@ -1195,11 +1189,12 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
 
       // when
       const variables = await variableResolver.getConsumedVariablesForElement(task);
-      const names = variables.map(v => v.name);
 
       // then
-      expect(names).to.include('x');
-      expect(names).to.include('y');
+      expect(variables).to.variableInclude([
+        { name: 'x' },
+        { name: 'y' }
+      ]);
     }));
 
 
@@ -1210,10 +1205,11 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
 
       // when
       const variables = await variableResolver.getConsumedVariablesForElement(task);
-      const names = variables.map(v => v.name);
 
       // then
-      expect(names).to.include('processVar3');
+      expect(variables).to.variableInclude({ name: 'processVar3' });
+
+      const names = variables.map(v => v.name);
       expect(names).to.not.include('localC');
       expect(names).to.not.include('localD');
     }));
@@ -1226,10 +1222,9 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
 
       // when
       const variables = await variableResolver.getConsumedVariablesForElement(task);
-      const names = variables.map(v => v.name);
 
       // then
-      expect(names).to.include('a');
+      expect(variables).to.variableInclude({ name: 'a' });
     }));
 
 
@@ -1240,10 +1235,11 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
 
       // when
       const variables = await variableResolver.getConsumedVariablesForElement(task);
-      const names = variables.map(v => v.name);
 
       // then
-      expect(names).to.include('a');
+      expect(variables).to.variableInclude({ name: 'a' });
+
+      const names = variables.map(v => v.name);
       expect(names).to.not.include('b');
     }));
 
@@ -1255,12 +1251,11 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
 
       // when
       const variables = await variableResolver.getConsumedVariablesForElement(task);
-      const names = variables.map(v => v.name);
 
       // then
-      expect(names).to.include('def');
-      expect(names).to.not.include('test');
-      expect(variables).to.have.length(1);
+      expect(variables).to.variableEqual([
+        { name: 'def' }
+      ]);
     }));
 
 
@@ -1273,11 +1268,14 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       const variables = await variableResolver.getVariablesForElement(task);
 
       // then - localA and localB should have usedBy pointing to scriptResult
+      expect(variables).to.variableInclude([
+        { name: 'localA' },
+        { name: 'localB' }
+      ]);
+
       const localA = variables.find(v => v.name === 'localA');
       const localB = variables.find(v => v.name === 'localB');
-      expect(localA).to.exist;
       expect(localA.usedBy).to.eql([ 'scriptResult' ]);
-      expect(localB).to.exist;
       expect(localB.usedBy).to.eql([ 'scriptResult' ]);
     }));
 
@@ -1334,10 +1332,10 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
         const requirements = await variableResolver.getConsumedVariablesForElement(task);
 
         // then - both 'a' and 'b' are consumed variables for SimpleTask
-        const names = requirements.map(v => v.name);
-        expect(names).to.include('a');
-        expect(names).to.include('b');
-        expect(requirements).to.have.length(2);
+        expect(requirements).to.variableEqual([
+          { name: 'a' },
+          { name: 'b' }
+        ]);
       }));
 
 
@@ -1350,10 +1348,9 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
         const requirements = await variableResolver.getConsumedVariablesForElement(task);
 
         // then
-        expect(requirements).to.have.length(1);
-        expect(requirements[0].name).to.eql('order');
-        expect(requirements[0].entries).to.have.length(1);
-        expect(requirements[0].entries[0].name).to.eql('items');
+        expect(requirements).to.variableEqual([
+          { name: 'order', entries: [ { name: 'items' } ] }
+        ]);
       }));
 
 
@@ -1366,10 +1363,11 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
         const requirements = await variableResolver.getConsumedVariablesForElement(task);
 
         // then
-        const names = requirements.map(v => v.name);
-        expect(names).to.include('x');
-        expect(names).to.include('y');
-        expect(names).to.include('z');
+        expect(requirements).to.variableInclude([
+          { name: 'x' },
+          { name: 'y' },
+          { name: 'z' }
+        ]);
       }));
 
 
@@ -1395,10 +1393,10 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
         const requirements = await variableResolver.getConsumedVariablesForElement(task);
 
         // then - should not include variables from MultiInputTask or NestedTask
-        const names = requirements.map(v => v.name);
-        expect(names).to.not.include('x');
-        expect(names).to.not.include('z');
-        expect(names).to.not.include('order');
+        expect(requirements).to.variableEqual([
+          { name: 'a' },
+          { name: 'b' }
+        ]);
       }));
 
 
@@ -1427,9 +1425,9 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
         const requirements = await variableResolver.getConsumedVariablesForElement(task);
 
         // then
-        expect(requirements).to.have.length(1);
-        expect(requirements[0].name).to.eql('a');
-        expect(requirements[0].entries).to.have.length(2);
+        expect(requirements).to.variableEqual([
+          { name: 'a', entries: [ { name: 'b' }, { name: 'c' } ] }
+        ]);
       }));
 
     });
@@ -1449,9 +1447,10 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
         const requirements = await variableResolver.getConsumedVariablesForElement(task);
 
         // then
-        const names = requirements.map(v => v.name);
-        expect(names).to.include('a');
-        expect(names).to.include('b');
+        expect(requirements).to.variableInclude([
+          { name: 'a' },
+          { name: 'b' }
+        ]);
       }));
 
 
@@ -1464,9 +1463,12 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
         const requirements = await variableResolver.getConsumedVariablesForElement(task);
 
         // then
+        expect(requirements).to.variableInclude([
+          { name: 'd' },
+          { name: 'f' }
+        ]);
+
         const names = requirements.map(v => v.name);
-        expect(names).to.include('d');
-        expect(names).to.include('f');
         expect(names).to.not.include('a');
         expect(names).to.not.include('b');
       }));
@@ -1487,12 +1489,10 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
         );
 
         // then
-        const names = requirements.map(v => v.name);
-        expect(names).to.include('processVar1');
-        expect(names).to.include('processVar2');
-        expect(names).to.not.include('localA');
-        expect(names).to.not.include('localB');
-        expect(requirements).to.have.length(2);
+        expect(requirements).to.variableEqual([
+          { name: 'processVar1' },
+          { name: 'processVar2' }
+        ]);
       }));
 
 
@@ -1504,10 +1504,10 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
         );
 
         // then
-        const names = requirements.map(v => v.name);
-        expect(names).to.include('x');
-        expect(names).to.include('y');
-        expect(requirements).to.have.length(2);
+        expect(requirements).to.variableEqual([
+          { name: 'x' },
+          { name: 'y' }
+        ]);
       }));
 
 
@@ -1519,11 +1519,9 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
         );
 
         // then
-        const names = requirements.map(v => v.name);
-        expect(names).to.include('processVar3');
-        expect(names).to.not.include('localC');
-        expect(names).to.not.include('localD');
-        expect(requirements).to.have.length(1);
+        expect(requirements).to.variableEqual([
+          { name: 'processVar3' }
+        ]);
       }));
 
 
@@ -1535,9 +1533,9 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
         );
 
         // then
-        const names = requirements.map(v => v.name);
-        expect(names).to.include('a');
-        expect(requirements).to.have.length(1);
+        expect(requirements).to.variableEqual([
+          { name: 'a' }
+        ]);
       }));
 
 
@@ -1549,10 +1547,9 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
         );
 
         // then
-        const names = requirements.map(v => v.name);
-        expect(names).to.include('a');
-        expect(names).to.not.include('b');
-        expect(requirements).to.have.length(1);
+        expect(requirements).to.variableEqual([
+          { name: 'a' }
+        ]);
       }));
 
 
@@ -1564,10 +1561,9 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
         );
 
         // then
-        const names = requirements.map(v => v.name);
-        expect(names).to.include('def');
-        expect(names).to.not.include('test');
-        expect(requirements).to.have.length(1);
+        expect(requirements).to.variableEqual([
+          { name: 'def' }
+        ]);
       }));
 
     });
