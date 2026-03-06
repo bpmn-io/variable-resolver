@@ -1,4 +1,5 @@
 const { expect } = require('chai');
+const { has } = require('min-dash');
 
 
 function isDefined(value) {
@@ -21,30 +22,72 @@ function findVariable(variables, expectedVariable) {
 }
 
 function assertVariableMatches(variable, expectedVariable) {
-  const {
-    name,
-    type,
-    detail,
-    info,
-    scope,
-    isList,
-    origin,
-    entries
-  } = expectedVariable;
 
-  isDefined(type) && expect(variable.type, `variable[name=${name}].type`).to.eql(type);
-  isDefined(info) && expect(variable.info, `variable[name=${name}].info`).to.eql(info);
-  isDefined(detail) && expect(variable.detail, `variable[name=${name}].detail`).to.eql(detail);
-  isDefined(scope) && expect(variable.scope.id, `variable[name=${name}].scope.id`).to.eql(scope);
-  isDefined(isList) && expect(!!variable.isList, `variable[name=${name}].isList`).to.eql(!!isList);
-  isDefined(entries) && expect(variable.entries, `variable[name=${name}].entries`).to.variableEqual(entries);
+  const { name } = variable;
 
-  isDefined(origin) && origin.forEach((expectedOrigin) => {
-    const foundOrigin = variable.origin.find(o => o.id === expectedOrigin);
-    expect(foundOrigin, `origin[name=${expectedOrigin}]`).to.exist;
-  });
+  if (has(expectedVariable, 'type')) {
+    expect(variable.type, `variable[name=${name}].type`).to.eql(expectedVariable.type);
+  }
 
-  isDefined(origin) && expect(variable.origin.length, `variable[name=${name}].origin.length`).to.eql(origin.length);
+  if (has(expectedVariable, 'info')) {
+    expect(variable.info, `variable[name=${name}].info`).to.eql(expectedVariable.info);
+  }
+
+  if (has(expectedVariable, 'detail')) {
+    expect(variable.detail, `variable[name=${name}].detail`).to.eql(expectedVariable.detail);
+  }
+
+  if (has(expectedVariable, 'scope')) {
+
+    if (expectedVariable.scope) {
+      expect(variable.scope, `variable[name=${name}].scope`).to.exist;
+      expect(variable.scope.id, `variable[name=${name}].scope.id`).to.eql(expectedVariable.scope);
+    } else {
+      expect(variable.scope, `variable[name=${name}].scope`).not.to.exist;
+    }
+  }
+
+  if (has(expectedVariable, 'isList')) {
+    expect(!!variable.isList, `variable[name=${name}].isList`).to.eql(!!expectedVariable.isList);
+  }
+
+  if (has(expectedVariable, 'entries')) {
+    expect(variable.entries, `variable[name=${name}].entries`).to.variableEqual(expectedVariable.entries);
+  }
+
+  if (has(expectedVariable, 'origin')) {
+
+    if (expectedVariable.origin) {
+      expect(variable.origin, `variable[name=${name}].origin`).to.exist;
+
+      expectedVariable.origin.forEach((expectedId) => {
+        const foundOrigin = variable.origin.find(e => e.id === expectedId);
+
+        expect(foundOrigin, `variable[name=${name}] > origin[id=${expectedId}]`).to.exist;
+      });
+
+      expect(variable.origin.length, `variable[name=${name}].origin.length`).to.eql(expectedVariable.origin.length);
+    } else {
+      expect(variable.origin, `variable[name=${name}].origin`).not.to.exist;
+    }
+  }
+
+  if (has(expectedVariable, 'usedBy')) {
+
+    if (expectedVariable.usedBy) {
+      expect(variable.usedBy, `variable[name=${name}].usedBy`).to.exist;
+
+      expectedVariable.usedBy.forEach((expectedId) => {
+        const foundUsedBy = variable.usedBy.find(e => e.id === expectedId);
+
+        expect(foundUsedBy, `variable[name=${name}] > usedBy[id=${expectedId}]`).to.exist;
+      });
+
+      expect(variable.usedBy.length, `variable[name=${name}].usedBy.length`).to.eql(expectedVariable.usedBy.length);
+    } else {
+      expect(variable.usedBy, `variable[name=${name}].usedBy`).not.to.exist;
+    }
+  }
 }
 
 /**
