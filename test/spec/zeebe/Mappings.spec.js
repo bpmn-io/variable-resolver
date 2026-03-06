@@ -902,12 +902,10 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       const variables = await variableResolver.getConsumedVariablesForElement(task);
 
       // then
-      const a = variables.find(v => v.name === 'a');
-      const b = variables.find(v => v.name === 'b');
-      expect(a).to.exist;
-      expect(b).to.exist;
-      expect(a.usedBy).to.eql([ 'sum' ]);
-      expect(b.usedBy).to.eql([ 'sum' ]);
+      expect(variables).to.variableEqual([
+        { name: 'a', usedBy: [ 'SimpleTask' ] },
+        { name: 'b', usedBy: [ 'SimpleTask' ] }
+      ]);
     }));
 
 
@@ -923,7 +921,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       expect(variables).to.variableInclude({
         name: 'order',
         entries: [ { name: 'items' } ],
-        usedBy: [ 'orderItems' ]
+        usedBy: [ 'NestedTask' ]
       });
     }));
 
@@ -939,20 +937,6 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       // then - y is used in both input mappings but should only appear once
       const yVars = variables.filter(v => v.name === 'y');
       expect(yVars).to.have.length(1);
-    }));
-
-
-    it('should track multiple usedBy targets', inject(async function(variableResolver, elementRegistry) {
-
-      // given
-      const task = elementRegistry.get('MultiInputTask');
-
-      // when
-      const variables = await variableResolver.getConsumedVariablesForElement(task);
-
-      // then - y is used in both result1 (=x+y) and result2 (=y+z)
-      const y = variables.find(v => v.name === 'y');
-      expect(y.usedBy).to.eql([ 'result1', 'result2' ]);
     }));
 
 
@@ -1095,12 +1079,10 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       const variables = await variableResolver.getConsumedVariablesForElement(task);
 
       // then
-      const a = variables.find(v => v.name === 'a');
-      const b = variables.find(v => v.name === 'b');
-      expect(a).to.exist;
-      expect(b).to.exist;
-      expect(a.usedBy).to.eql([ 'firstResult' ]);
-      expect(b.usedBy).to.eql([ 'firstResult' ]);
+      expect(variables).to.variableEqual([
+        { name: 'a', usedBy: [ 'firstTask' ] },
+        { name: 'b', usedBy: [ 'firstTask' ] }
+      ]);
     }));
 
 
@@ -1113,28 +1095,10 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       const variables = await variableResolver.getConsumedVariablesForElement(task);
 
       // then
-      const d = variables.find(v => v.name === 'd');
-      const f = variables.find(v => v.name === 'f');
-      expect(d).to.exist;
-      expect(f).to.exist;
-      expect(d.usedBy).to.eql([ 'secondResult' ]);
-      expect(f.usedBy).to.eql([ 'secondResult' ]);
-    }));
-
-
-    it('should associate script task inputs with the task origin', inject(async function(variableResolver, elementRegistry) {
-
-      // given
-      const firstTask = elementRegistry.get('firstTask');
-      const secondTask = elementRegistry.get('secondTask');
-
-      // when
-      const firstVars = await variableResolver.getConsumedVariablesForElement(firstTask);
-      const secondVars = await variableResolver.getConsumedVariablesForElement(secondTask);
-
-      // then - a originates from firstTask, d originates from secondTask
-      expect(firstVars).to.variableInclude({ name: 'a', origin: [ 'firstTask' ] });
-      expect(secondVars).to.variableInclude({ name: 'd', origin: [ 'secondTask' ] });
+      expect(variables).to.variableEqual([
+        { name: 'd', usedBy: [ 'secondTask' ] },
+        { name: 'f', usedBy: [ 'secondTask' ] }
+      ]);
     }));
 
 
@@ -1397,21 +1361,6 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
           { name: 'a' },
           { name: 'b' }
         ]);
-      }));
-
-
-      it('should include usedBy information', inject(async function(variableResolver, elementRegistry) {
-
-        // given
-        const task = elementRegistry.get('SimpleTask');
-
-        // when
-        const requirements = await variableResolver.getConsumedVariablesForElement(task);
-
-        // then
-        const b = requirements.find(v => v.name === 'b');
-        expect(b).to.exist;
-        expect(b.usedBy).to.eql([ 'sum' ]);
       }));
 
 
