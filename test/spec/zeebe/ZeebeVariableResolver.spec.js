@@ -33,6 +33,8 @@ import longBrokenExpressionXML from 'test/fixtures/zeebe/long-broken-expression.
 import immediatelyBrokenExpressionXML from 'test/fixtures/zeebe/immediately-broken-expression.bpmn';
 import typeResolutionXML from 'test/fixtures/zeebe/type-resolution.bpmn';
 import usedVariablesScopesXML from 'test/fixtures/zeebe/used-variables.scopes.bpmn';
+import readWriteXML from 'test/fixtures/zeebe/read-write.bpmn';
+import readWriteHierarchicalXML from 'test/fixtures/zeebe/read-write.hierarchical.bpmn';
 
 import VariableProvider from 'lib/VariableProvider';
 import { getInputOutput } from '../../../lib/base/util/ExtensionElementsUtil';
@@ -2704,6 +2706,66 @@ describe('ZeebeVariableResolver', function() {
       expect(variables).to.variableEqual([
         { name: 'taskResult' },
         { name: 'approved', usedBy: [ 'Task_1' ] }
+      ]);
+    }));
+
+  });
+
+
+  describe('used variables - read and written', function() {
+
+    beforeEach(bootstrapModeler(readWriteXML, {
+      additionalModules: [
+        ZeebeVariableResolverModule
+      ],
+      moddleExtensions: {
+        zeebe: ZeebeModdle
+      }
+    }));
+
+
+    it('should indicate dual use', inject(async function(elementRegistry, variableResolver) {
+
+      // given
+      const task = elementRegistry.get('ValidateApprovedTask');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(task);
+
+      // then
+      expect(variables).to.variableEqual([
+        { name: 'approved', scope: 'Process_1', origin: [ 'ValidateApprovedTask' ], usedBy: [ 'ValidateApprovedTask' ] },
+        { name: 'localApproved', scope: 'ValidateApprovedTask' }
+      ]);
+    }));
+
+  });
+
+
+  describe('used variables - read and written / hierarchical', function() {
+
+    beforeEach(bootstrapModeler(readWriteHierarchicalXML, {
+      additionalModules: [
+        ZeebeVariableResolverModule
+      ],
+      moddleExtensions: {
+        zeebe: ZeebeModdle
+      }
+    }));
+
+
+    it('should indicate dual use', inject(async function(elementRegistry, variableResolver) {
+
+      // given
+      const task = elementRegistry.get('ValidateApprovedTask');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(task);
+
+      // then
+      expect(variables).to.variableEqual([
+        { name: 'application', scope: 'Process_1', origin: [ 'ValidateApprovedTask' ], usedBy: [ 'ValidateApprovedTask' ] },
+        { name: 'localApproved', scope: 'ValidateApprovedTask' }
       ]);
     }));
 
