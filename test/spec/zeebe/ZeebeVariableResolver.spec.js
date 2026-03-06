@@ -31,6 +31,7 @@ import subprocessNoOutputMappingXML from 'test/fixtures/zeebe/sub-process.no-out
 import longBrokenExpressionXML from 'test/fixtures/zeebe/long-broken-expression.bpmn';
 import immediatelyBrokenExpressionXML from 'test/fixtures/zeebe/immediately-broken-expression.bpmn';
 import typeResolutionXML from 'test/fixtures/zeebe/type-resolution.bpmn';
+import usedVariablesScopesXML from 'test/fixtures/zeebe/used-variables.scopes.bpmn';
 
 import VariableProvider from 'lib/VariableProvider';
 import { getInputOutput } from '../../../lib/base/util/ExtensionElementsUtil';
@@ -2599,6 +2600,52 @@ describe('ZeebeVariableResolver', function() {
       }));
 
     });
+
+  });
+
+
+  describe('used variables - scopes', function() {
+
+    beforeEach(bootstrapModeler(usedVariablesScopesXML, {
+      additionalModules: [
+        ZeebeVariableResolverModule
+      ],
+      moddleExtensions: {
+        zeebe: ZeebeModdle
+      }
+    }));
+
+
+    it('should attach <usedBy> to local scope', inject(async function(elementRegistry, variableResolver) {
+
+      // given
+      const subProcess = elementRegistry.get('SubProcess_1');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(subProcess);
+
+      // then
+      expect(variables).to.variableEqual([
+        { name: 'taskResult' },
+        { name: 'approved', usedBy: [ 'Task_2' ] }
+      ]);
+    }));
+
+
+    it('should attach <usedBy> to global scope', inject(async function(elementRegistry, variableResolver) {
+
+      // given
+      const rootElement = elementRegistry.get('Process_1');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(rootElement);
+
+      // then
+      expect(variables).to.variableEqual([
+        { name: 'taskResult' },
+        { name: 'approved', usedBy: [ 'Task_1' ] }
+      ]);
+    }));
 
   });
 
