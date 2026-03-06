@@ -40,6 +40,9 @@ const task = elementRegistry.get('Task_1');
 const process = elementRegistry.get('Process_1');
 
 await variableResolver.getVariablesForElement(task); // returns variables in the scope of the element
+await variableResolver.getVariablesForElement(task, { read: true, local: false }); // read-only variables, excluding local ones
+await variableResolver.getVariablesForElement(task, { written: true }); // written variables
+await variableResolver.getVariablesForElement(task, { read: true, written: true, local: false }); // read + written variables
 await variableResolver.getProcessVariables(process); // returns all variables for the process, not filtering by scope
 ```
 
