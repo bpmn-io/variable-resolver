@@ -4,7 +4,7 @@
     <bpmn:serviceTask id="ValidateApprovedTask" name="Validate Approved">
       <bpmn:extensionElements>
         <zeebe:ioMapping>
-          <zeebe:input source="approved" target="localApproved" />
+          <zeebe:input source="=approved" target="localApproved" />
           <zeebe:output source="=localApproved" target="approved" />
         </zeebe:ioMapping>
       </bpmn:extensionElements>
