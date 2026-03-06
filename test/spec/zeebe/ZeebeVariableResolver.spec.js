@@ -31,6 +31,7 @@ import subprocessNoOutputMappingXML from 'test/fixtures/zeebe/sub-process.no-out
 import longBrokenExpressionXML from 'test/fixtures/zeebe/long-broken-expression.bpmn';
 import immediatelyBrokenExpressionXML from 'test/fixtures/zeebe/immediately-broken-expression.bpmn';
 import typeResolutionXML from 'test/fixtures/zeebe/type-resolution.bpmn';
+import usedVariablesXML from 'test/fixtures/zeebe/used-variables.bpmn';
 import usedVariablesScopesXML from 'test/fixtures/zeebe/used-variables.scopes.bpmn';
 import readWriteXML from 'test/fixtures/zeebe/read-write.bpmn';
 import readWriteHierarchicalXML from 'test/fixtures/zeebe/read-write.hierarchical.bpmn';
@@ -2648,6 +2649,88 @@ describe('ZeebeVariableResolver', function() {
         { name: 'approved', usedBy: [ 'Task_1' ] }
       ]);
     }));
+
+  });
+
+
+  describe('used variables - pro code', function() {
+
+    beforeEach(bootstrapModeler(usedVariablesXML, {
+      additionalModules: [
+        ZeebeVariableResolverModule
+      ],
+      moddleExtensions: {
+        zeebe: ZeebeModdle
+      }
+    }));
+
+
+    it('should expose used variables globally', inject(async function(elementRegistry, variableResolver) {
+
+      // when
+      const allVariables = await variableResolver.getVariables();
+
+      // then
+      expect(allVariables).to.have.property('Process_1');
+
+      expect(allVariables['Process_1']).to.variableEqual([
+        { name: 'isAgeVerified', usedBy: [ 'SequenceFlow_1', 'SequenceFlow_10' ], scope: undefined, origin: undefined },
+        { name: 'subscriptionRequestID', usedBy: [ 'VerifyAgeTask' ], scope: undefined, origin: undefined },
+        { name: 'checkResults', usedBy: [ 'SequenceFlow_10' ], scope: undefined, origin: undefined }
+      ]);
+
+      // and when
+      const rootElement = elementRegistry.get('Process_1');
+
+      const processVariables = await variableResolver.getProcessVariables(rootElement);
+
+      expect(processVariables).to.eql(allVariables['Process_1']);
+    }));
+
+
+    describe('should expose used variables per element', function() {
+
+      it('sequence flow', inject(async function(elementRegistry, variableResolver) {
+
+        // when
+        const flow = elementRegistry.get('SequenceFlow_1');
+
+        const variables = await variableResolver.getVariablesForElement(flow);
+
+        // then
+        expect(variables).to.variableEqual([
+          { name: 'isAgeVerified', usedBy: [ 'SequenceFlow_1', 'SequenceFlow_10' ], scope: undefined, origin: undefined }
+        ]);
+      }));
+
+
+      it('receive task', inject(async function(elementRegistry, variableResolver) {
+
+        // when
+        const task = elementRegistry.get('VerifyAgeTask');
+
+        const variables = await variableResolver.getVariablesForElement(task);
+
+        // then
+        expect(variables).to.variableEqual([
+          { name: 'subscriptionRequestID', usedBy: [ 'VerifyAgeTask' ], scope: undefined, origin: undefined }
+        ]);
+      }));
+
+
+      it('process', inject(async function(elementRegistry, variableResolver) {
+
+        // when
+        const rootElement = elementRegistry.get('Process_1');
+
+        const variables = await variableResolver.getVariablesForElement(rootElement);
+
+        // then
+        // TODO(nikku): should that include variables not used by process?
+        expect(variables['Process_1']).to.variableEqual([]);
+      }));
+
+    });
 
   });
 
