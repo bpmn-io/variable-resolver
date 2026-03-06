@@ -10,6 +10,8 @@ import { bootstrapModeler, inject } from 'test/TestHelper';
 
 import { ZeebeVariableResolverModule } from 'lib/';
 
+import readWriteXML from 'test/fixtures/zeebe/read-write.bpmn';
+import readWriteHierarchicalXML from 'test/fixtures/zeebe/read-write.hierarchical.bpmn';
 import simpleXML from 'test/fixtures/zeebe/simple.bpmn';
 import emptyXML from 'test/fixtures/zeebe/empty.bpmn';
 import complexXML from 'test/fixtures/zeebe/complex.bpmn';
@@ -2651,6 +2653,65 @@ describe('ZeebeVariableResolver', function() {
 
       const approved = variables.find(v => v.name === 'approved');
       expect(approved.usedBy.map(v => v.id)).to.include('Task_1');
+    }));
+
+  });
+
+  describe('used variables - read and written', function() {
+
+    beforeEach(bootstrapModeler(readWriteXML, {
+      additionalModules: [
+        ZeebeVariableResolverModule
+      ],
+      moddleExtensions: {
+        zeebe: ZeebeModdle
+      }
+    }));
+
+
+    it('should indicate dual use', inject(async function(elementRegistry, variableResolver) {
+
+      // given
+      const task = elementRegistry.get('ValidateApprovedTask');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(task);
+
+      console.log(JSON.stringify(variables, null, 2));
+
+      // then
+      expect(variables).to.variableInclude([
+        { name: 'approved', scope: 'Process_1', origin: [ 'ValidateApprovedTask' ], usedBy: [ 'ValidateApprovedTask' ] }
+      ]);
+    }));
+
+  });
+
+
+  describe('used variables - read and written / hierarchical', function() {
+
+    beforeEach(bootstrapModeler(readWriteHierarchicalXML, {
+      additionalModules: [
+        ZeebeVariableResolverModule
+      ],
+      moddleExtensions: {
+        zeebe: ZeebeModdle
+      }
+    }));
+
+
+    it('should indicate dual use', inject(async function(elementRegistry, variableResolver) {
+
+      // given
+      const task = elementRegistry.get('ValidateApprovedTask');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(task);
+
+      // then
+      expect(variables).to.variableInclude([
+        { name: 'application', scope: 'Process_1', origin: [ 'ValidateApprovedTask' ], usedBy: [ 'ValidateApprovedTask' ] }
+      ]);
     }));
 
   });
