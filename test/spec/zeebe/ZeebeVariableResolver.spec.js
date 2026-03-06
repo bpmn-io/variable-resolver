@@ -11,6 +11,7 @@ import { bootstrapModeler, inject } from 'test/TestHelper';
 import { ZeebeVariableResolverModule } from 'lib/';
 
 import readWriteXML from 'test/fixtures/zeebe/read-write.bpmn';
+import tttXML from 'test/fixtures/zeebe/ttt.bpmn';
 import readWriteHierarchicalXML from 'test/fixtures/zeebe/read-write.hierarchical.bpmn';
 import simpleXML from 'test/fixtures/zeebe/simple.bpmn';
 import emptyXML from 'test/fixtures/zeebe/empty.bpmn';
@@ -2677,8 +2678,6 @@ describe('ZeebeVariableResolver', function() {
       // when
       const variables = await variableResolver.getVariablesForElement(task);
 
-      console.log(JSON.stringify(variables, null, 2));
-
       // then
       expect(variables).to.variableInclude([
         { name: 'approved', scope: 'Process_1', origin: [ 'ValidateApprovedTask' ], usedBy: [ 'ValidateApprovedTask' ] }
@@ -2711,6 +2710,52 @@ describe('ZeebeVariableResolver', function() {
       // then
       expect(variables).to.variableInclude([
         { name: 'application', scope: 'Process_1', origin: [ 'ValidateApprovedTask' ], usedBy: [ 'ValidateApprovedTask' ] }
+      ]);
+    }));
+
+  });
+
+
+  describe('used variables - scopes 2', function() {
+
+    beforeEach(bootstrapModeler(tttXML, {
+      additionalModules: [
+        ZeebeVariableResolverModule
+      ],
+      moddleExtensions: {
+        zeebe: ZeebeModdle
+      }
+    }));
+
+
+    it('should attach <usedBy> to local scope', inject(async function(elementRegistry, variableResolver) {
+
+      // given
+      const subProcess = elementRegistry.get('SubProcess_1');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(subProcess);
+
+      // then
+      expect(variables).to.variableEqual([
+        { name: 'taskResult' },
+        { name: 'approved', usedBy: [ 'Task_2' ] }
+      ]);
+    }));
+
+
+    it('should attach <usedBy> to global scope', inject(async function(elementRegistry, variableResolver) {
+
+      // given
+      const rootElement = elementRegistry.get('Process_1');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(rootElement);
+
+      // then
+      expect(variables).to.variableEqual([
+        { name: 'taskResult' },
+        { name: 'approved', usedBy: [ 'Task_1' ] }
       ]);
     }));
 
