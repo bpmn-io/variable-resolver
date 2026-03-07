@@ -2,7 +2,10 @@
 
 [![CI](https://github.com/bpmn-io/variable-resolver/actions/workflows/CI.yml/badge.svg)](https://github.com/bpmn-io/variable-resolver/actions/workflows/CI.yml)
 
-A bpmn-js extension to add and manage additional variable extractors in bpmn diagrams.
+An extension for [bpmn-js](https://github.com/bpmn-io/bpmn-js) that makes the data model of the diagram available to other components.
+
+> [!NOTE]
+> As of version `v3` this library exposes both written and consumed variables.
 
 ## Usage
 
@@ -30,17 +33,29 @@ const modeler = new BpmnModeler({
 
 ### Retrieving variables
 
-To retrieve the variables from a diagram, use one of the following methods of the `variableResolver` service:
+Retrieve the variables from a diagram using the `variableResolver` service:
 
 ```javascript
-const elementRegistry = modeler.get('elementRegistry');
 const variableResolver = modeler.get('variableResolver');
+const elementRegistry = modeler.get('elementRegistry');
 
+// retrieve variables relevant to an element
 const task = elementRegistry.get('Task_1');
-const process = elementRegistry.get('Process_1');
 
-await variableResolver.getVariablesForElement(task); // returns variables in the scope of the element
-await variableResolver.getProcessVariables(process); // returns all variables for the process, not filtering by scope
+// variables available in scope of <task>
+await variableResolver.getVariablesForElement(task);
+
+// variables read by <task>, excluding local ones
+await variableResolver.getVariablesForElement(task, { read: true, local: false });
+
+// all variables written by <task>
+await variableResolver.getVariablesForElement(task, { written: true });
+
+// retrieve all variables defined in a process
+const processElement = elementRegistry.get('Process_1');
+
+// returns all variables for the process (unfiltered), for local processing
+await variableResolver.getProcessVariables(processElement);
 ```
 
 ### Adding a variable extractor
@@ -76,11 +91,9 @@ export const MyExtension = {
 
 ### Advanced use-cases
 
-By default, `getVariablesForElement` and `getProcessVariables` will attempt to merge variables with the same name and scope into
-one. Entry structure and types are then mixed.
+By default, `getVariablesForElement` and `getProcessVariables` merge variables with the same name and scope into one - entry structure and types are mixed in the merged representation.
 
-In some cases, you might want access to the raw data, e.g. to run lint rules to detect potential schema mismatches between providers.
-For this, you can use
+In some cases, you might want access to the raw data, e.g. to run lint rules to detect potential schema mismatches between providers. For this, you can use `getRawVariables`:
 
 ```javascript
 const variableResolver = modeler.get('variableResolver');
