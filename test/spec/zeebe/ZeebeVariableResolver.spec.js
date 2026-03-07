@@ -35,6 +35,7 @@ import usedVariablesXML from 'test/fixtures/zeebe/used-variables.bpmn';
 import usedVariablesScopesXML from 'test/fixtures/zeebe/used-variables.scopes.bpmn';
 import readWriteXML from 'test/fixtures/zeebe/read-write.bpmn';
 import readWriteHierarchicalXML from 'test/fixtures/zeebe/read-write.hierarchical.bpmn';
+import filteringXML from 'test/fixtures/zeebe/filtering.bpmn';
 
 import VariableProvider from 'lib/VariableProvider';
 import { getInputOutput } from '../../../lib/base/util/ExtensionElementsUtil';
@@ -2789,6 +2790,136 @@ describe('ZeebeVariableResolver', function() {
       expect(variables).to.variableEqual([
         { name: 'application', scope: 'Process_1', origin: [ 'ValidateApprovedTask' ], usedBy: [ 'ValidateApprovedTask' ] },
         { name: 'localApproved', scope: 'ValidateApprovedTask' }
+      ]);
+    }));
+
+  });
+
+
+  describe('filtering', function() {
+
+    beforeEach(bootstrapModeler(filteringXML, {
+      additionalModules: [
+        ZeebeVariableResolverModule
+      ],
+      moddleExtensions: {
+        zeebe: ZeebeModdle
+      }
+    }));
+
+
+
+    it('should NOT filter', inject(async function(elementRegistry, variableResolver) {
+
+      // given
+      const task = elementRegistry.get('Task_1');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(task);
+
+      // then
+      expect(variables).to.variableEqual([
+        { name: 'globalFoo', scope: undefined, usedBy: [ 'SubProcess_1' ] },
+        { name: 'subFoo', scope: 'SubProcess_1', origin: [ 'SubProcess_1' ], usedBy: [ 'Task_1' ] },
+        { name: 'taskFoo', scope: 'Task_1', origin: [ 'Task_1' ], usedBy: [ 'Task_1' ] },
+        { name: 'localResult', scope: 'Task_1', origin: [ 'Task_1' ], usedBy: [ 'Task_1' ] },
+        { name: 'taskResult', scope: 'Process_1', origin: [ 'Task_1' ] }
+      ]);
+    }));
+
+
+    it('should filter read', inject(async function(elementRegistry, variableResolver) {
+
+      // given
+      const task = elementRegistry.get('Task_1');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(task, { read: true });
+
+      // then
+      expect(variables).to.variableEqual([
+        { name: 'subFoo', scope: 'SubProcess_1', origin: [ 'SubProcess_1' ], usedBy: [ 'Task_1' ] },
+        { name: 'taskFoo', scope: 'Task_1', origin: [ 'Task_1' ], usedBy: [ 'Task_1' ] },
+        { name: 'localResult', scope: 'Task_1', origin: [ 'Task_1' ], usedBy: [ 'Task_1' ] }
+      ]);
+    }));
+
+
+    it('should filter read / local', inject(async function(elementRegistry, variableResolver) {
+
+      // given
+      const task = elementRegistry.get('Task_1');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(task, { read: true, local: true });
+
+      // then
+      expect(variables).to.variableEqual([
+        { name: 'taskFoo', scope: 'Task_1', origin: [ 'Task_1' ], usedBy: [ 'Task_1' ] },
+        { name: 'localResult', scope: 'Task_1', origin: [ 'Task_1' ], usedBy: [ 'Task_1' ] }
+      ]);
+    }));
+
+
+    it('should filter read / global', inject(async function(elementRegistry, variableResolver) {
+
+      // given
+      const task = elementRegistry.get('Task_1');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(task, { read: true, local: false });
+
+      // then
+      expect(variables).to.variableEqual([
+        { name: 'subFoo', scope: 'SubProcess_1', origin: [ 'SubProcess_1' ], usedBy: [ 'Task_1' ] }
+      ]);
+    }));
+
+
+    it('should filter write', inject(async function(elementRegistry, variableResolver) {
+
+      // given
+      const task = elementRegistry.get('Task_1');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(task, { written: true });
+
+      // then
+      expect(variables).to.variableEqual([
+        { name: 'taskFoo', scope: 'Task_1', origin: [ 'Task_1' ], usedBy: [ 'Task_1' ] },
+        { name: 'localResult', scope: 'Task_1', origin: [ 'Task_1' ], usedBy: [ 'Task_1' ] },
+        { name: 'taskResult', scope: 'Process_1', origin: [ 'Task_1' ] }
+      ]);
+    }));
+
+
+    it('should filter written / local', inject(async function(elementRegistry, variableResolver) {
+
+      // given
+      const task = elementRegistry.get('Task_1');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(task, { written: true, local: true });
+
+      // then
+      expect(variables).to.variableEqual([
+        { name: 'taskFoo', scope: 'Task_1', origin: [ 'Task_1' ], usedBy: [ 'Task_1' ] },
+        { name: 'localResult', scope: 'Task_1', origin: [ 'Task_1' ], usedBy: [ 'Task_1' ] }
+      ]);
+    }));
+
+
+    it('should filter written / global', inject(async function(elementRegistry, variableResolver) {
+
+      // given
+      const task = elementRegistry.get('Task_1');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(task, { written: true, local: false });
+
+      // then
+      expect(variables).to.variableEqual([
+        { name: 'taskResult', scope: 'Process_1', origin: [ 'Task_1' ] }
       ]);
     }));
 
