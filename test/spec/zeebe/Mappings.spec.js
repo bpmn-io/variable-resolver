@@ -160,7 +160,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
           type: 'Context',
           info: '',
           entries: [
-            { name: 'string', type: 'String', info: 'foo', entries: [] },
+            { name: 'string', type: 'String', info: '"foo"', entries: [] },
             { name: 'number', type: 'Number', info: '1', entries: [] },
             { name: 'booleanTrue', type: 'Boolean', info: 'true', entries: [] },
             { name: 'booleanFalse', type: 'Boolean', info: 'false', entries: [] },
@@ -186,7 +186,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
           detail: 'Context',
           info: '',
           entries: [
-            { name: 'string', detail: 'String', info: 'foo', entries: [] },
+            { name: 'string', detail: 'String', info: '"foo"', entries: [] },
             { name: 'number', detail: 'Number', info: '1', entries: [] },
             { name: 'booleanTrue', detail: 'Boolean', info: 'true', entries: [] },
             { name: 'booleanFalse', detail: 'Boolean', info: 'false', entries: [] },
@@ -529,7 +529,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
         {
           name: 'resultVariable',
           type: 'String',
-          info: '1'
+          info: '"1"'
         }
       ]);
     }));
@@ -548,7 +548,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
         {
           name: 'output',
           type: 'String',
-          info: '2'
+          info: '"2"'
         }
       ]);
     }));
@@ -569,7 +569,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
         {
           name: 'foo',
           type: 'String',
-          info: '1'
+          info: '"1"'
         }
       ]);
     }));
@@ -590,7 +590,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
         {
           name: 'foo',
           type: 'String',
-          info: '2'
+          info: '"2"'
         }
       ]);
     }));
@@ -611,7 +611,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
         {
           name: 'foo',
           type: 'String',
-          info: '2'
+          info: '"2"'
         }
       ]);
     }));
@@ -630,7 +630,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
         {
           name: 'foo',
           type: 'String',
-          info: '2'
+          info: '"2"'
         }
       ]);
     }));
