@@ -2691,7 +2691,7 @@ describe('ZeebeVariableResolver', function() {
       // then
       expect(variables).to.variableEqual([
         { name: 'taskResult' },
-        { name: 'approved', usedBy: [ 'Task_2' ] }
+        { name: 'approved', usedBy: [ 'Task_1', 'Task_2' ] }
       ]);
     }));
 
@@ -2707,7 +2707,7 @@ describe('ZeebeVariableResolver', function() {
       // then
       expect(variables).to.variableEqual([
         { name: 'taskResult' },
-        { name: 'approved', usedBy: [ 'Task_1' ] }
+        { name: 'approved', usedBy: [ 'Task_1', 'Task_2' ] }
       ]);
     }));
 
