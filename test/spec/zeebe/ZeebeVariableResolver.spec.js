@@ -24,6 +24,7 @@ import connectorsSubProcessXML from 'test/fixtures/zeebe/connectors.sub-process.
 import connectorsOutputMappingXML from 'test/fixtures/zeebe/connectors.output-mapping.bpmn';
 import ioMappingsXML from 'test/fixtures/zeebe/ioMappings.bpmn';
 import ioMappingsStaticXML from 'test/fixtures/zeebe/ioMappings.static.bpmn';
+import ioMappingsContextXML from 'test/fixtures/zeebe/ioMappings.context.bpmn';
 import ioMappingsEmptyXML from 'test/fixtures/zeebe/ioMappings.empty.bpmn';
 import ioMappingsNullXML from 'test/fixtures/zeebe/ioMappings.null.bpmn';
 import ioMappingsHierarchicalNamesXML from 'test/fixtures/zeebe/ioMappings.hierarchical-names.bpmn';
@@ -1941,6 +1942,63 @@ describe('ZeebeVariableResolver', function() {
   });
 
 
+  describe('io mappings - context', function() {
+
+    beforeEach(
+      bootstrapModeler(ioMappingsContextXML, {
+        additionalModules: [
+          ZeebeVariableResolverModule
+        ],
+        moddleExtensions: {
+          zeebe: ZeebeModdle
+        }
+      })
+    );
+
+
+    it('should declare context with string entries', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const task = elementRegistry.get('ServiceTask_1');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(task);
+
+      // then
+      expect(variables).to.variableEqual([
+        {
+          name: 'contextWithStrings',
+          type: 'Context',
+          info: '',
+          scope: 'ServiceTask_1',
+          entries: [
+            {
+              name: 'plain',
+              type: 'String',
+              entries: [],
+              info: '"hello"'
+            },
+            {
+              name: 'withNewlines',
+              type: 'String',
+              entries: [],
+              info: '"\\nhello\\n"'
+            },
+            {
+              name: 'withQuotes',
+              type: 'String',
+              entries: [],
+              info: '"\\"YES\\"\\"\\""'
+            }
+          ]
+        },
+      ]);
+
+    }));
+
+  });
+
+
   describe('io mappings - empty', function() {
 
     beforeEach(
@@ -2037,8 +2095,8 @@ describe('ZeebeVariableResolver', function() {
       // then
       // filter own name, later input mappings + all output mappings
       expect(variables).to.variableEqual([
-        { name: 'staticInput', type: 'String', scope: 'ServiceTask_1', info: 'YES' },
-        { name: 'otherStaticInput', type: 'String', scope: 'ServiceTask_1', info: '"YES"""' }
+        { name: 'staticInput', type: 'String', scope: 'ServiceTask_1', info: '"YES"' },
+        { name: 'otherStaticInput', type: 'String', scope: 'ServiceTask_1', info: '"\\"YES\\"\\"\\""' }
       ]);
 
     }));
@@ -2291,6 +2349,7 @@ describe('ZeebeVariableResolver', function() {
         expect(variables).to.variableInclude({
           name: 'outString',
           type: 'String',
+          info: '"hello"',
           scope: 'Process_varResolution'
         });
       }));
@@ -2308,6 +2367,7 @@ describe('ZeebeVariableResolver', function() {
         expect(variables).to.variableInclude({
           name: 'outCamundaString',
           type: 'String',
+          info: '"\\nhello\\n"',
           scope: 'Process_varResolution'
         });
       }));
@@ -2480,7 +2540,7 @@ describe('ZeebeVariableResolver', function() {
         expect(variables).to.variableInclude({
           name: 'pathDeepString',
           type: 'String',
-          info: 'YES',
+          info: '"YES"',
           scope: 'pathConsumerTask'
         });
       }));
@@ -2506,7 +2566,7 @@ describe('ZeebeVariableResolver', function() {
                 {
                   name: 'property',
                   type: 'String',
-                  info: '10'
+                  info: '"10"'
                 }
               ]
             },
