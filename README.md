@@ -5,7 +5,7 @@
 An extension for [bpmn-js](https://github.com/bpmn-io/bpmn-js) that makes the data model of the diagram available to other components.
 
 > [!NOTE]
-> As of version `v3` this library exposes both written and consumed variables.
+> As of version `v3` this library exposes both written and consumed variables, you can filter them via options.
 
 ## Usage
 
@@ -42,14 +42,29 @@ const elementRegistry = modeler.get('elementRegistry');
 // retrieve variables relevant to an element
 const task = elementRegistry.get('Task_1');
 
-// variables available in scope of <task>
+// default: variables relevant to <task> in its visible scopes
 await variableResolver.getVariablesForElement(task);
 
-// variables read by <task>, excluding local ones
-await variableResolver.getVariablesForElement(task, { read: true, local: false });
+// variables read by <task> only
+await variableResolver.getVariablesForElement(task, {
+  read: true,
+  written: false
+});
 
 // all variables written by <task>
-await variableResolver.getVariablesForElement(task, { written: true });
+await variableResolver.getVariablesForElement(task, { written: true, read: false });
+
+// local variables only (scope === queried element)
+await variableResolver.getVariablesForElement(task, {
+  local: true,
+  external: false
+});
+
+// non-local variables only (scope !== queried element)
+await variableResolver.getVariablesForElement(task, {
+  local: false,
+  external: true
+});
 
 // retrieve all variables defined in a process
 const processElement = elementRegistry.get('Process_1');
@@ -57,6 +72,16 @@ const processElement = elementRegistry.get('Process_1');
 // returns all variables for the process (unfiltered), for local processing
 await variableResolver.getProcessVariables(processElement);
 ```
+
+`getVariablesForElement(element, options)` supports five filter switches:
+
+| Option | Default | Description |
+| --- | --- | --- |
+| `read` | `true` | Include variables consumed by the queried element |
+| `written` | `true` | Include variables written/created by the queried element |
+| `local` | `true` | Include variables local to the queried element scope |
+| `external` | `true` | Include variables outside the queried element scope |
+| `outputMappings` | `true` | Count output-mapping reads as reads |
 
 ### Adding a variable extractor
 

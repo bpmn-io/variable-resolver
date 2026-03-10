@@ -932,7 +932,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       const task = elementRegistry.get('SimpleTask');
 
       // when
-      const variables = await variableResolver.getConsumedVariablesForElement(task);
+      const variables = await getReadVariablesForElement(variableResolver, task);
 
       // then
       expect(variables).to.variableEqual([
@@ -948,7 +948,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       const task = elementRegistry.get('NestedTask');
 
       // when
-      const variables = await variableResolver.getConsumedVariablesForElement(task);
+      const variables = await getReadVariablesForElement(variableResolver, task);
 
       // then
       expect(variables).to.variableInclude({
@@ -965,7 +965,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       const task = elementRegistry.get('MultiInputTask');
 
       // when
-      const variables = await variableResolver.getConsumedVariablesForElement(task);
+      const variables = await getReadVariablesForElement(variableResolver, task);
 
       // then - y is used in both input mappings but should only appear once
       const yVars = variables.filter(v => v.name === 'y');
@@ -979,7 +979,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       const task = elementRegistry.get('MultiInputTask');
 
       // when
-      const variables = await variableResolver.getConsumedVariablesForElement(task);
+      const variables = await getReadVariablesForElement(variableResolver, task);
 
       // then
       expect(variables).to.variableInclude([
@@ -996,7 +996,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       const task = elementRegistry.get('MergedEntriesTask');
 
       // when
-      const variables = await variableResolver.getConsumedVariablesForElement(task);
+      const variables = await getReadVariablesForElement(variableResolver, task);
 
       // then - a.b and a.c should result in a: { entries: [b, c] }
       expect(variables).to.variableInclude({
@@ -1015,7 +1015,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       const task = elementRegistry.get('SimpleTask');
 
       // when
-      const variables = await variableResolver.getConsumedVariablesForElement(task);
+      const variables = await getReadVariablesForElement(variableResolver, task);
 
       // then - a originates from SimpleTask (the task with the input mapping)
       const a = variables.find(v => v.name === 'a');
@@ -1040,8 +1040,8 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       const scopedA = variables.find(v => v.name === 'a' && v.scope);
       expect(scopedA).to.exist;
 
-      // and getConsumedVariablesForElement should have the unscoped consumed variable
-      const consumed = await variableResolver.getConsumedVariablesForElement(task);
+      // and a read-only query should have the unscoped consumed variable
+      const consumed = await getReadVariablesForElement(variableResolver, task);
       const unscopedA = consumed.find(v => v.name === 'a' && !v.scope);
       expect(unscopedA).to.exist;
     }));
@@ -1061,8 +1061,8 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       const outputTask = elementRegistry.get('OutputTask');
 
       // when
-      const inputReqs = await variableResolver.getConsumedVariablesForElement(inputTask);
-      const outputReqs = await variableResolver.getConsumedVariablesForElement(outputTask);
+      const inputReqs = await getReadVariablesForElement(variableResolver, inputTask);
+      const outputReqs = await getReadVariablesForElement(variableResolver, outputTask);
 
       // then - foo is used in the input mapping of both tasks
       expect(inputReqs).to.variableInclude({ name: 'foo' });
@@ -1070,26 +1070,26 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
     }));
 
 
-    it('should return foo as consumed variable for InputTask via getConsumedVariablesForElement', inject(async function(variableResolver, elementRegistry) {
+    it('should return foo as read variable for InputTask', inject(async function(variableResolver, elementRegistry) {
 
       // given
       const task = elementRegistry.get('InputTask');
 
       // when
-      const requirements = await variableResolver.getConsumedVariablesForElement(task);
+      const requirements = await getReadVariablesForElement(variableResolver, task);
 
       // then
       expect(requirements).to.variableInclude({ name: 'foo' });
     }));
 
 
-    it('should return foo as consumed variable for OutputTask via getConsumedVariablesForElement', inject(async function(variableResolver, elementRegistry) {
+    it('should return foo as read variable for OutputTask', inject(async function(variableResolver, elementRegistry) {
 
       // given
       const task = elementRegistry.get('OutputTask');
 
       // when
-      const requirements = await variableResolver.getConsumedVariablesForElement(task);
+      const requirements = await getReadVariablesForElement(variableResolver, task);
 
       // then
       expect(requirements).to.variableInclude({ name: 'foo' });
@@ -1109,7 +1109,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       const task = elementRegistry.get('firstTask');
 
       // when
-      const variables = await variableResolver.getConsumedVariablesForElement(task);
+      const variables = await getReadVariablesForElement(variableResolver, task);
 
       // then
       expect(variables).to.variableEqual([
@@ -1125,7 +1125,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       const task = elementRegistry.get('secondTask');
 
       // when
-      const variables = await variableResolver.getConsumedVariablesForElement(task);
+      const variables = await getReadVariablesForElement(variableResolver, task);
 
       // then
       expect(variables).to.variableEqual([
@@ -1165,7 +1165,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       const task = elementRegistry.get('scriptWithInputs');
 
       // when
-      const variables = await variableResolver.getConsumedVariablesForElement(task);
+      const variables = await getReadVariablesForElement(variableResolver, task);
 
       // then
       expect(variables).to.variableInclude([
@@ -1185,7 +1185,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       const task = elementRegistry.get('scriptWithoutInputs');
 
       // when
-      const variables = await variableResolver.getConsumedVariablesForElement(task);
+      const variables = await getReadVariablesForElement(variableResolver, task);
 
       // then
       expect(variables).to.variableInclude([
@@ -1201,7 +1201,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       const task = elementRegistry.get('chainedInputMappings');
 
       // when
-      const variables = await variableResolver.getConsumedVariablesForElement(task);
+      const variables = await getReadVariablesForElement(variableResolver, task);
 
       // then
       expect(variables).to.variableInclude({ name: 'processVar3' });
@@ -1218,7 +1218,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       const task = elementRegistry.get('shadowingTask');
 
       // when
-      const variables = await variableResolver.getConsumedVariablesForElement(task);
+      const variables = await getReadVariablesForElement(variableResolver, task);
 
       // then
       expect(variables).to.variableInclude({ name: 'a' });
@@ -1231,7 +1231,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       const task = elementRegistry.get('shadowingChainedTask');
 
       // when
-      const variables = await variableResolver.getConsumedVariablesForElement(task);
+      const variables = await getReadVariablesForElement(variableResolver, task);
 
       // then
       expect(variables).to.variableInclude({ name: 'a' });
@@ -1247,7 +1247,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       const task = elementRegistry.get('scriptUsesSecondInput');
 
       // when
-      const variables = await variableResolver.getConsumedVariablesForElement(task);
+      const variables = await getReadVariablesForElement(variableResolver, task);
 
       // then
       expect(variables).to.variableEqual([
@@ -1272,8 +1272,8 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
 
       const localA = variables.find(v => v.name === 'localA');
       const localB = variables.find(v => v.name === 'localB');
-      expect(localA.usedBy).to.eql([ 'scriptResult' ]);
-      expect(localB.usedBy).to.eql([ 'scriptResult' ]);
+      expect(localA.usedBy.map(usage => usage.id)).to.eql([ task.id ]);
+      expect(localB.usedBy.map(usage => usage.id)).to.eql([ task.id ]);
     }));
 
 
@@ -1289,10 +1289,9 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       const localC = variables.find(v => v.name === 'localC');
       const localD = variables.find(v => v.name === 'localD');
       expect(localC).to.exist;
-      expect(localC.usedBy).to.include('localD');
-      expect(localC.usedBy).to.include('chainedResult');
+      expect(localC.usedBy.map(usage => usage.id)).to.eql([ task.id ]);
       expect(localD).to.exist;
-      expect(localD.usedBy).to.eql([ 'chainedResult' ]);
+      expect(localD.usedBy.map(usage => usage.id)).to.eql([ task.id ]);
     }));
 
 
@@ -1313,7 +1312,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
   });
 
 
-  describe('#getConsumedVariablesForElement', function() {
+  describe('#getVariablesForElement (read filter)', function() {
 
     describe('with input mappings', function() {
 
@@ -1326,7 +1325,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
         const task = elementRegistry.get('SimpleTask');
 
         // when
-        const requirements = await variableResolver.getConsumedVariablesForElement(task);
+        const requirements = await getReadVariablesForElement(variableResolver, task);
 
         // then - both 'a' and 'b' are consumed variables for SimpleTask
         expect(requirements).to.variableEqual([
@@ -1342,7 +1341,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
         const task = elementRegistry.get('NestedTask');
 
         // when
-        const requirements = await variableResolver.getConsumedVariablesForElement(task);
+        const requirements = await getReadVariablesForElement(variableResolver, task);
 
         // then
         expect(requirements).to.variableEqual([
@@ -1357,7 +1356,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
         const task = elementRegistry.get('MultiInputTask');
 
         // when
-        const requirements = await variableResolver.getConsumedVariablesForElement(task);
+        const requirements = await getReadVariablesForElement(variableResolver, task);
 
         // then
         expect(requirements).to.variableInclude([
@@ -1374,7 +1373,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
         const process = elementRegistry.get('Process_1');
 
         // when
-        const requirements = await variableResolver.getConsumedVariablesForElement(process);
+        const requirements = await getReadVariablesForElement(variableResolver, process);
 
         // then
         expect(requirements).to.be.an('array').that.is.empty;
@@ -1387,7 +1386,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
         const task = elementRegistry.get('SimpleTask');
 
         // when
-        const requirements = await variableResolver.getConsumedVariablesForElement(task);
+        const requirements = await getReadVariablesForElement(variableResolver, task);
 
         // then - should not include variables from MultiInputTask or NestedTask
         expect(requirements).to.variableEqual([
@@ -1404,7 +1403,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
         const task = elementRegistry.get('MergedEntriesTask');
 
         // when
-        const requirements = await variableResolver.getConsumedVariablesForElement(task);
+        const requirements = await getReadVariablesForElement(variableResolver, task);
 
         // then
         expect(requirements).to.variableEqual([
@@ -1426,7 +1425,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
         const task = elementRegistry.get('firstTask');
 
         // when
-        const requirements = await variableResolver.getConsumedVariablesForElement(task);
+        const requirements = await getReadVariablesForElement(variableResolver, task);
 
         // then
         expect(requirements).to.variableInclude([
@@ -1442,7 +1441,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
         const task = elementRegistry.get('secondTask');
 
         // when
-        const requirements = await variableResolver.getConsumedVariablesForElement(task);
+        const requirements = await getReadVariablesForElement(variableResolver, task);
 
         // then
         expect(requirements).to.variableInclude([
@@ -1466,7 +1465,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       it('should only return process variables as consumed variables, not locally mapped ones', inject(async function(variableResolver, elementRegistry) {
 
         // when
-        const requirements = await variableResolver.getConsumedVariablesForElement(
+        const requirements = await getReadVariablesForElement(variableResolver,
           elementRegistry.get('scriptWithInputs')
         );
 
@@ -1481,7 +1480,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       it('should return all script variables for task without input mappings', inject(async function(variableResolver, elementRegistry) {
 
         // when
-        const requirements = await variableResolver.getConsumedVariablesForElement(
+        const requirements = await getReadVariablesForElement(variableResolver,
           elementRegistry.get('scriptWithoutInputs')
         );
 
@@ -1496,7 +1495,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       it('should handle chained input mappings respecting order', inject(async function(variableResolver, elementRegistry) {
 
         // when
-        const requirements = await variableResolver.getConsumedVariablesForElement(
+        const requirements = await getReadVariablesForElement(variableResolver,
           elementRegistry.get('chainedInputMappings')
         );
 
@@ -1510,7 +1509,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       it('should keep shadowed variable as requirement when mapping a to a', inject(async function(variableResolver, elementRegistry) {
 
         // when
-        const requirements = await variableResolver.getConsumedVariablesForElement(
+        const requirements = await getReadVariablesForElement(variableResolver,
           elementRegistry.get('shadowingTask')
         );
 
@@ -1524,7 +1523,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       it('should handle shadowing with chained mappings', inject(async function(variableResolver, elementRegistry) {
 
         // when
-        const requirements = await variableResolver.getConsumedVariablesForElement(
+        const requirements = await getReadVariablesForElement(variableResolver,
           elementRegistry.get('shadowingChainedTask')
         );
 
@@ -1538,7 +1537,7 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       it('should allow script to use all input targets regardless of order', inject(async function(variableResolver, elementRegistry) {
 
         // when
-        const requirements = await variableResolver.getConsumedVariablesForElement(
+        const requirements = await getReadVariablesForElement(variableResolver,
           elementRegistry.get('scriptUsesSecondInput')
         );
 
@@ -1556,17 +1555,24 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       beforeEach(bootstrap(emptyXML));
 
 
-      it('should return empty array when getVariables fails', inject(async function(variableResolver, elementRegistry) {
+      it('should reject when getVariables fails', inject(async function(variableResolver, elementRegistry) {
 
         // given
         const process = elementRegistry.get('Process_1');
         sinon.stub(variableResolver, 'getVariables').rejects(new Error('test error'));
 
         // when
-        const requirements = await variableResolver.getConsumedVariablesForElement(process);
-
         // then
-        expect(requirements).to.be.an('array').that.is.empty;
+        let error;
+
+        try {
+          await getReadVariablesForElement(variableResolver, process);
+        } catch (err) {
+          error = err;
+        }
+
+        expect(error).to.exist;
+        expect(error.message).to.eql('test error');
 
         variableResolver.getVariables.restore();
       }));
@@ -1592,6 +1598,16 @@ const createProvider = function({ variables, variableResolver, origin }) {
     }
   }(variableResolver);
 };
+
+async function getReadVariablesForElement(variableResolver, element) {
+  const variables = await variableResolver.getVariablesForElement(element, {
+    read: true,
+    written: false
+  });
+
+  // Preserve old consumed-only test semantics: consumed variables are unscoped.
+  return variables.filter(variable => !variable.scope);
+}
 
 function toVariableFormat(variables) {
   return Object.keys(variables).map(v => {
