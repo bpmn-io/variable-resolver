@@ -24,6 +24,7 @@ import propagationXML from 'test/fixtures/zeebe/mappings/propagation.bpmn';
 import scriptTaskXML from 'test/fixtures/zeebe/mappings/script-task.bpmn';
 import scriptTaskEmptyExpressionXML from 'test/fixtures/zeebe/mappings/script-task-empty-expression.bpmn';
 import scriptTaskOutputNoNameXML from 'test/fixtures/zeebe/mappings/script-task-output-no-name.bpmn';
+import unresolvablePathExpressionXML from 'test/fixtures/zeebe/mappings/unresolvable-path-expression.bpmn';
 
 import VariableProvider from 'lib/VariableProvider';
 
@@ -467,6 +468,38 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
           name: 'variable',
           type: 'Any',
           info: '=unknown\n=alsoUnknown'
+        }
+      ]);
+    }));
+
+  });
+
+
+  describe('Unresolvable path expression', function() {
+
+    beforeEach(bootstrap(unresolvablePathExpressionXML));
+
+
+    it('should resolve unresolvable path expression as <Any>', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const subProcess = elementRegistry.get('SubProcess_1');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(subProcess);
+
+      // then
+      // cf. https://github.com/bpmn-io/variable-resolver/issues/87
+      expect(variables).to.variableEqual([
+        {
+          name: 'agentContext',
+          type: 'Any',
+          info: '=agent.context'
+        },
+        {
+          name: 'agent',
+          type: 'Any',
+          info: '=agent'
         }
       ]);
     }));
