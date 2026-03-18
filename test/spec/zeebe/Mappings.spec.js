@@ -25,6 +25,7 @@ import scriptTaskXML from 'test/fixtures/zeebe/mappings/script-task.bpmn';
 import scriptTaskEmptyExpressionXML from 'test/fixtures/zeebe/mappings/script-task-empty-expression.bpmn';
 import scriptTaskOutputNoNameXML from 'test/fixtures/zeebe/mappings/script-task-output-no-name.bpmn';
 import unresolvablePathExpressionXML from 'test/fixtures/zeebe/mappings/unresolvable-path-expression.bpmn';
+import pathExpressionOnAnyVariableXML from 'test/fixtures/zeebe/mappings/path-expression-on-any-variable.bpmn';
 
 import VariableProvider from 'lib/VariableProvider';
 
@@ -500,6 +501,40 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
           name: 'agent',
           type: 'Any',
           info: '=agent'
+        }
+      ]);
+    }));
+
+  });
+
+
+  describe('Path expression on Any-typed variable', function() {
+
+    beforeEach(bootstrap(pathExpressionOnAnyVariableXML));
+
+
+    it('should resolve path expression on <Any>-typed external variable as <Any>', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const subProcess = elementRegistry.get('SubProcess_1');
+
+      // agent is provided as a plain variable object (not an EntriesContext), with type: 'Any'.
+      // Accessing a property of an Any-typed variable should still yield Any, not Null.
+      // cf. https://github.com/bpmn-io/variable-resolver/pull/98#discussion_r2951746646
+      createProvider({
+        variables: [ { name: 'agent', type: 'Any' } ],
+        variableResolver
+      });
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(subProcess);
+
+      // then
+      expect(variables).to.variableInclude([
+        {
+          name: 'agentContext',
+          type: 'Any',
+          info: '=agent.context'
         }
       ]);
     }));
