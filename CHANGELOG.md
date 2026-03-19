@@ -6,6 +6,12 @@ All notable changes to [@bpmn-io/variable-resolver](https://github.com/bpmn-io/v
 
 ___Note:__ Yet to be released changes appear here._
 
+## 2.0.1
+
+* `DEPS`: update to `@bpmn-io/lezer-feel@2.3.1`
+* `FIX`: serialize string info values as JSON ([#95](https://github.com/bpmn-io/variable-resolver/pull/95))
+* `FIX`: resolve direct path expressions on `Any`-typed variable as `Any` ([#98](https://github.com/bpmn-io/variable-resolver/pull/98))
+
 ## 2.0.0
 
 * `FEAT`: preserve expression for unresolvable values ([#77](https://github.com/bpmn-io/variable-resolver/pull/77))
