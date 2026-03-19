@@ -10,6 +10,10 @@
     "test": "karma start",
     "lint": "eslint ."
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bpmn-io/variable-resolver"
+  },
   "files": [
     "lib"
   ],
