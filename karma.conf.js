@@ -38,6 +38,13 @@ module.exports = function(karma) {
 
     browsers: browsers,
 
+    customLaunchers: {
+      ChromeHeadlessWithMemory: {
+        base: 'ChromeHeadless',
+        flags: [ '--enable-precise-memory-info', '--js-flags=--expose-gc' ]
+      }
+    },
+
     autoWatch: false,
     singleRun: true,
 

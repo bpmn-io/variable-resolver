@@ -88,3 +88,28 @@ with many elements × many providers in real diagrams.
 | extractor 200 providers sync | 11.4 | 1.6 | **7.1x** |
 | FEEL nested IO mappings | 12.0 | 9.4 | 1.3x |
 | repeated 10x 2000 vars | 120.9 | 8.9 | **13.6x** |
+
+## Memory Impact (heap delta in KB)
+
+Measured with `performance.memory.usedJSHeapSize` in ChromeHeadless with
+`--enable-precise-memory-info` and `--js-flags=--expose-gc`. GC is triggered
+before each measurement. Negative values mean GC reclaimed more than was allocated.
+
+| Benchmark | Baseline (KB) | Optimized (KB) | Delta |
+|---|---|---|---|
+| parseVariables 500 + 50% dupes | -57 | -51 | +6 |
+| parseVariables 2000 + 50% dupes | 634 | 635 | +1 |
+| parseVariables 5000 + 50% dupes | 1522 | 1523 | +1 |
+| scopeFilter nested 500 | 66 | 70 | +4 |
+| scopeFilter nested 2000 | 241 | 240 | -1 |
+| scopeFilter nested 5000 | 572 | 569 | -3 |
+| extractor 50 providers sync | 57 | 54 | -3 |
+| extractor 200 providers sync | 230 | 226 | -4 |
+| FEEL nested IO mappings | 129 | 132 | +3 |
+| repeated 10x 2000 vars | 236 | 232 | -4 |
+
+**Conclusion:** Memory impact is negligible (within noise ±6 KB). The Map and Set
+structures are temporary — created during computation, populated with references to
+existing objects (no data duplication), and garbage collected immediately after the
+function returns. The output arrays are identical in size regardless of whether
+duplicates were found via Map or linear scan.

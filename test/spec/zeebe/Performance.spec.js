@@ -35,19 +35,32 @@ describe('Performance', function() {
     console.log('=== PERF_RESULTS_END ===\n');
   });
 
-  function bench(name, fn) {
-    const t0 = performance.now();
-    const result = fn();
-    const duration = performance.now() - t0;
-    results[name] = { duration };
-    return result;
+  /**
+   * Try to get current heap usage. Returns bytes or null if unavailable.
+   * Requires ChromeHeadlessWithMemory launcher for precise values.
+   */
+  function getHeapUsed() {
+    if (window.gc) {
+      window.gc();
+    }
+    if (performance.memory) {
+      return performance.memory.usedJSHeapSize;
+    }
+    return null;
   }
 
   async function benchAsync(name, fn) {
+    const heapBefore = getHeapUsed();
     const t0 = performance.now();
     const result = await fn();
     const duration = performance.now() - t0;
-    results[name] = { duration };
+    const heapAfter = getHeapUsed();
+
+    const entry = { duration };
+    if (heapBefore !== null && heapAfter !== null) {
+      entry.heapDeltaKB = Math.round((heapAfter - heapBefore) / 1024);
+    }
+    results[name] = entry;
     return result;
   }
 
@@ -284,14 +297,20 @@ describe('Performance', function() {
         createProvider({ variables: vars, variableResolver });
 
         // when
+        const heapBefore = getHeapUsed();
         const t0 = performance.now();
         for (let i = 0; i < 10; i++) {
           eventBus.fire('commandStack.changed');
           await variableResolver.getVariablesForElement(root);
         }
         const duration = performance.now() - t0;
+        const heapAfter = getHeapUsed();
 
-        results['repeated_10x_2000vars'] = { duration, avg: duration / 10 };
+        const entry = { duration, avg: duration / 10 };
+        if (heapBefore !== null && heapAfter !== null) {
+          entry.heapDeltaKB = Math.round((heapAfter - heapBefore) / 1024);
+        }
+        results['repeated_10x_2000vars'] = entry;
 
         // then
         expect(duration).to.be.a('number');
