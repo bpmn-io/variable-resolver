@@ -31,3 +31,16 @@ Replaces `mergedVariables.find()` O(n) linear scan with Map keyed by `name\0scop
 | extractor 200 providers sync | 11.4 | 1.6 | 7.1x |
 | FEEL nested IO mappings | 12.0 | 9.4 | 1.3x |
 | repeated 10x 2000 vars | 120.9 | 11.0 | **11.0x** |
+
+## Optimization 2: Set + single-pass for scope filtering in getVariablesForElement
+
+Replaces two-pass `filter()` with a single loop. Replaces `parents.find()` O(m) per variable
+with `parentIds.has()` O(1) using a Set of parent IDs.
+
+| Benchmark | Before (ms) | After (ms) | Speedup |
+|---|---|---|---|
+| scopeFilter nested 500 | 7.5 | 5.7 | 1.3x |
+| scopeFilter nested 2000 | 20.8 | 19.8 | ~1x |
+| scopeFilter nested 5000 | 53.8 | 48.8 | 1.1x |
+| FEEL nested IO mappings | 9.4 | 8.9 | ~1x |
+| repeated 10x 2000 vars | 11.0 | 10.0 | 1.1x |
