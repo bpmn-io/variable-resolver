@@ -44,3 +44,16 @@ with `parentIds.has()` O(1) using a Set of parent IDs.
 | scopeFilter nested 5000 | 53.8 | 48.8 | 1.1x |
 | FEEL nested IO mappings | 9.4 | 8.9 | ~1x |
 | repeated 10x 2000 vars | 11.0 | 10.0 | 1.1x |
+
+## Optimization 3: Set for scope lookups in FEEL resolution (filterForScope + resolveReferences)
+
+Replaces `validScopes.find()` with `validScopeIds.has()` in filterForScope.
+Replaces `variablesToResolve.find()` with Set.has() in resolveReferences.
+
+| Benchmark | Before (ms) | After (ms) | Speedup |
+|---|---|---|---|
+| scopeFilter nested 500 | 5.7 | 6.1 | ~1x |
+| scopeFilter nested 2000 | 19.8 | 18.7 | 1.1x |
+| scopeFilter nested 5000 | 48.8 | 44.5 | 1.1x |
+| FEEL nested IO mappings | 8.9 | 8.9 | ~1x |
+| repeated 10x 2000 vars | 10.0 | 9.0 | 1.1x |
