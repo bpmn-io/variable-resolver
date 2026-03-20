@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_perf" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.37.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.1.0">
+  <bpmn:process id="Process_1" isExecutable="true">
+    <bpmn:startEvent id="Start_1">
+      <bpmn:outgoing>Flow_0</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="Flow_0" sourceRef="Start_1" targetRef="Sub_1" />
+    <bpmn:subProcess id="Sub_1">
+      <bpmn:incoming>Flow_0</bpmn:incoming>
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+      <bpmn:extensionElements>
+        <zeebe:ioMapping>
+          <zeebe:output source="=sub1Result" target="sub1Out" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:subProcess id="Sub_2">
+        <bpmn:extensionElements>
+          <zeebe:ioMapping>
+            <zeebe:output source="=sub2Result" target="sub2Out" />
+          </zeebe:ioMapping>
+        </bpmn:extensionElements>
+        <bpmn:subProcess id="Sub_3">
+          <bpmn:extensionElements>
+            <zeebe:ioMapping>
+              <zeebe:output source="=sub3Result" target="sub3Out" />
+            </zeebe:ioMapping>
+          </bpmn:extensionElements>
+          <bpmn:subProcess id="Sub_4">
+            <bpmn:extensionElements>
+              <zeebe:ioMapping>
+                <zeebe:output source="=sub4Result" target="sub4Out" />
+              </zeebe:ioMapping>
+            </bpmn:extensionElements>
+            <bpmn:subProcess id="Sub_5">
+              <bpmn:extensionElements>
+                <zeebe:ioMapping>
+                  <zeebe:output source="=sub5Result" target="sub5Out" />
+                </zeebe:ioMapping>
+              </bpmn:extensionElements>
+              <bpmn:serviceTask id="Task_deep_1">
+                <bpmn:extensionElements>
+                  <zeebe:ioMapping>
+                    <zeebe:input source="=inputA" target="mappedA" />
+                    <zeebe:output source="=resultA" target="outA" />
+                  </zeebe:ioMapping>
+                </bpmn:extensionElements>
+              </bpmn:serviceTask>
+              <bpmn:serviceTask id="Task_deep_2">
+                <bpmn:extensionElements>
+                  <zeebe:ioMapping>
+                    <zeebe:input source="=inputB" target="mappedB" />
+                    <zeebe:output source="=resultB" target="outB" />
+                  </zeebe:ioMapping>
+                </bpmn:extensionElements>
+              </bpmn:serviceTask>
+              <bpmn:serviceTask id="Task_deep_3">
+                <bpmn:extensionElements>
+                  <zeebe:ioMapping>
+                    <zeebe:input source="=inputC" target="mappedC" />
+                    <zeebe:output source="=resultC" target="outC" />
+                  </zeebe:ioMapping>
+                </bpmn:extensionElements>
+              </bpmn:serviceTask>
+            </bpmn:subProcess>
+          </bpmn:subProcess>
+        </bpmn:subProcess>
+      </bpmn:subProcess>
+    </bpmn:subProcess>
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="Sub_1" targetRef="Task_1" />
+    <bpmn:serviceTask id="Task_1">
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+      <bpmn:extensionElements>
+        <zeebe:ioMapping>
+          <zeebe:input source="=sub1Out" target="mapped1" />
+          <zeebe:output source="=mapped1 + 1" target="result1" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Task_1" targetRef="Task_2" />
+    <bpmn:serviceTask id="Task_2">
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+      <bpmn:extensionElements>
+        <zeebe:ioMapping>
+          <zeebe:input source="=result1" target="mapped2" />
+          <zeebe:output source="=mapped2 + 2" target="result2" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_3" sourceRef="Task_2" targetRef="End_1" />
+    <bpmn:endEvent id="End_1">
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+    </bpmn:endEvent>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_1">
+      <bpmndi:BPMNShape id="Start_1_di" bpmnElement="Start_1">
+        <dc:Bounds x="179" y="99" width="36" height="36" />
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
