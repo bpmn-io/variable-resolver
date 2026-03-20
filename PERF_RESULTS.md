@@ -57,3 +57,19 @@ Replaces `variablesToResolve.find()` with Set.has() in resolveReferences.
 | scopeFilter nested 5000 | 48.8 | 44.5 | 1.1x |
 | FEEL nested IO mappings | 8.9 | 8.9 | ~1x |
 | repeated 10x 2000 vars | 10.0 | 9.0 | 1.1x |
+
+## Optimization 4: Skip Promise creation for synchronous providers in _extractor
+
+Avoids creating a Promise per (element, provider) pair when getVariables returns
+synchronously. Only awaits Promise.all when async providers are present.
+
+| Benchmark | Before (ms) | After (ms) | Speedup |
+|---|---|---|---|
+| extractor 50 providers sync | 0.6 | 0.6 | ~1x |
+| extractor 200 providers sync | 1.7 | 1.6 | ~1x |
+| repeated 10x 2000 vars | 9.0 | 8.9 | ~1x |
+
+Note: The extractor benchmarks already show dramatic improvement from baseline
+(11.4 → 1.6ms) due to reduced _parseVariables overhead in opt 1. The sync
+fast-path itself reduces microtask scheduling overhead which mainly shows
+with many elements × many providers in real diagrams.
