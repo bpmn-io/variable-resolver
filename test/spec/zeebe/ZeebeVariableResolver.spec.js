@@ -637,6 +637,28 @@ describe('ZeebeVariableResolver', function() {
     }));
 
 
+    it('should merge many variables from multiple providers efficiently', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const root = elementRegistry.get('Process_1');
+
+      const variables = [];
+      for (let i = 0; i < 50; i++) {
+        variables.push({ name: 'var_' + i, type: 'String', scope: root });
+      }
+
+      createProvider({ variables, variableResolver, origin: 'Process_1' });
+      createProvider({ variables, variableResolver, origin: 'ServiceTask_1' });
+
+      // when
+      const result = await variableResolver.getVariablesForElement(root);
+
+      // then
+      expect(result).to.have.length(50);
+      expect(result[0].origin).to.have.length(2);
+    }));
+
+
     it('should not fail on infinite loop', function() {
 
       // given
