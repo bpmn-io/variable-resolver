@@ -73,3 +73,18 @@ Note: The extractor benchmarks already show dramatic improvement from baseline
 (11.4 → 1.6ms) due to reduced _parseVariables overhead in opt 1. The sync
 fast-path itself reduces microtask scheduling overhead which mainly shows
 with many elements × many providers in real diagrams.
+
+## Summary: Overall Before/After (all optimizations applied)
+
+| Benchmark | Baseline (ms) | Final (ms) | Overall Speedup |
+|---|---|---|---|
+| parseVariables 500 + 50% dupes | 4.4 | 1.1 | 4.0x |
+| parseVariables 2000 + 50% dupes | 50.4 | 3.1 | 16.3x |
+| parseVariables 5000 + 50% dupes | 326.9 | 8.3 | **39.4x** |
+| scopeFilter nested 500 | 8.0 | 6.5 | 1.2x |
+| scopeFilter nested 2000 | 33.3 | 18.8 | 1.8x |
+| scopeFilter nested 5000 | 107.9 | 46.5 | 2.3x |
+| extractor 50 providers sync | 1.3 | 0.6 | 2.2x |
+| extractor 200 providers sync | 11.4 | 1.6 | **7.1x** |
+| FEEL nested IO mappings | 12.0 | 9.4 | 1.3x |
+| repeated 10x 2000 vars | 120.9 | 8.9 | **13.6x** |
