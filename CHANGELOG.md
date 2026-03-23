@@ -6,6 +6,15 @@ All notable changes to [@bpmn-io/variable-resolver](https://github.com/bpmn-io/v
 
 ___Note:__ Yet to be released changes appear here._
 
+## 3.0.0
+
+* `FEAT`: expose both read and written variables. `getVariablesForElement` can be used to retrieve variables for a specific element ([#74](https://github.com/bpmn-io/variable-resolver/pull/74))
+
+### Breaking Changes
+
+* `getVariables` now returns both read and written variables. `read` variables don't have a scope
+* `scope` in `ProcessVariable` is now optional, as read variables don't have a scope
+
 ## 2.0.1
 
 * `DEPS`: update to `@bpmn-io/lezer-feel@2.3.1`
