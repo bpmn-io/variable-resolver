@@ -32,6 +32,7 @@ import subprocessNoOutputMappingXML from 'test/fixtures/zeebe/sub-process.no-out
 import longBrokenExpressionXML from 'test/fixtures/zeebe/long-broken-expression.bpmn';
 import immediatelyBrokenExpressionXML from 'test/fixtures/zeebe/immediately-broken-expression.bpmn';
 import typeResolutionXML from 'test/fixtures/zeebe/type-resolution.bpmn';
+import functionInvocationXML from 'test/fixtures/zeebe/function-invocation.bpmn';
 import usedVariablesXML from 'test/fixtures/zeebe/used-variables.bpmn';
 import usedVariablesScopesXML from 'test/fixtures/zeebe/used-variables.scopes.bpmn';
 import readWriteXML from 'test/fixtures/zeebe/read-write.bpmn';
@@ -2664,6 +2665,75 @@ describe('ZeebeVariableResolver', function() {
       }));
 
     });
+
+  });
+
+
+  describe('function invocation resolution', function() {
+
+    beforeEach(bootstrapModeler(functionInvocationXML, {
+      additionalModules: [
+        ZeebeVariableResolverModule
+      ],
+      moddleExtensions: {
+        zeebe: ZeebeModdle
+      }
+    }));
+
+    it('should show expression for unresolvable function calls', inject(async function(elementRegistry, variableResolver) {
+
+      // given
+      const task = elementRegistry.get('functionInvocationTask');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(task);
+
+      // then
+      expect(variables).to.variableInclude([
+        {
+          name: 'outAbs',
+          type: 'Any',
+          info: '=abs(-22)',
+          scope: 'Process_functionInvocation'
+        },
+        {
+          name: 'outSubstring',
+          type: 'Any',
+          info: '=substring("foobar", 3)',
+          scope: 'Process_functionInvocation'
+        },
+        {
+          name: 'outNow',
+          type: 'Any',
+          info: '=now()',
+          scope: 'Process_functionInvocation'
+        }
+      ]);
+    }));
+
+
+    it('should preserve nested entries in context-defined function results', inject(async function(elementRegistry, variableResolver) {
+
+      // given
+      const task = elementRegistry.get('functionInvocationTask');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(task);
+
+      // then
+      expect(variables).to.variableInclude({
+        name: 'outContextFunc',
+        type: 'Context',
+        scope: 'Process_functionInvocation',
+        entries: [
+          {
+            name: 'nested',
+            type: 'Null',
+            info: 'null'
+          }
+        ]
+      });
+    }));
 
   });
 
