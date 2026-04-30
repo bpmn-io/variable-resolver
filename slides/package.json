@@ -1,0 +1,13 @@
+{
+  "name": "variable-resolver-handover-slides",
+  "private": true,
+  "scripts": {
+    "dev": "slidev slides.md --open",
+    "build": "slidev build slides.md",
+    "export": "slidev export slides.md --format pdf --output handover.pdf"
+  },
+  "dependencies": {
+    "@slidev/cli": "^52.15.0",
+    "slidev-theme-nord": "^0.0.6"
+  }
+}
