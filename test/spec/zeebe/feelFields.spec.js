@@ -232,7 +232,7 @@ describe('FEEL fields - consumed variables', function() {
         const vars = await variableResolver.getVariables();
         const names = (vars['Process_1'] || []).map(v => v.name);
 
-        // then - "StaticName" and "ReceiveMessage" are static strings, not FEEL
+        // then
         expect(names).not.to.include('StaticName');
         expect(names).not.to.include('ReceiveMessage');
       })
@@ -437,30 +437,29 @@ describe('FEEL fields - consumed variables', function() {
 
     beforeEach(bootstrapModeler(inputFilterXML, MODULE_OPTIONS));
 
-    it('should NOT report as consumed a variable provided by input mapping',
+    it('should not report a variable as consumed if provided by input mapping',
       inject(async function(variableResolver) {
 
         // when
         const vars = await variableResolver.getVariables();
 
-        // consumed = variables with no scope (not declared/scoped in model)
         const consumed = (vars['Process_1'] || []).filter(v => !v.scope);
         const names = consumed.map(v => v.name);
 
-        // then - "inputMapped" is resolved by input mapping, must not be consumed
+        // then
         expect(names).not.to.include('inputMapped');
       })
     );
 
 
-    it('should report as consumed a variable NOT provided by any input mapping',
+    it('should report a variable as consumed if not provided by input mapping',
       inject(async function(variableResolver) {
 
         // when
         const vars = await variableResolver.getVariables();
         const consumed = (vars['Process_1'] || []).filter(v => !v.scope);
 
-        // then - "notMappedVar" has no input mapping, must be consumed
+        // then
         const notMappedVar = consumed.find(v => v.name === 'notMappedVar');
         expect(notMappedVar, 'notMappedVar consumed variable').to.exist;
         expect(notMappedVar.usedBy.some(e => e.id === 'Task_no_filter')).to.be.true;
