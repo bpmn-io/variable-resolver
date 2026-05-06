@@ -6,6 +6,8 @@ All notable changes to [@bpmn-io/variable-resolver](https://github.com/bpmn-io/v
 
 ___Note:__ Yet to be released changes appear here._
 
+* `FIX`: reconcile flow element consumed variables with scoped declarations ([#110](https://github.com/bpmn-io/variable-resolver/pull/110))
+
 ## 3.0.1
 
 * `DEPS`: update to `@bpmn-io/lezer-feel@2.3.2` ([#106](https://github.com/bpmn-io/variable-resolver/pull/106))
