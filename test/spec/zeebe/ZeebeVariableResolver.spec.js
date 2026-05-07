@@ -3035,6 +3035,177 @@ describe('ZeebeVariableResolver', function() {
 
   });
 
+
+  describe('variants', function() {
+
+    beforeEach(
+      bootstrapModeler(simpleXML, {
+        additionalModules: [ ZeebeVariableResolverModule ]
+      })
+    );
+
+
+    it('should provide two variants for multi-origin variable', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const root = elementRegistry.get('Process_1');
+
+      createProvider({
+        variables: [ { name: 'myVar', type: 'String', scope: root } ],
+        variableResolver,
+        origin: 'Process_1'
+      });
+      createProvider({
+        variables: [ { name: 'myVar', type: 'Number', scope: root } ],
+        variableResolver,
+        origin: 'ServiceTask_1'
+      });
+
+      // when
+      const result = await variableResolver.getVariablesForElement(root);
+
+      // then
+      expect(result).to.variableEqual([
+        {
+          name: 'myVar',
+          variants: [
+            { origin: [ 'Process_1', 'ServiceTask_1' ] },
+            { origin: [ 'ServiceTask_1' ] }
+          ]
+        }
+      ]);
+    }));
+
+
+    it('should retain type per variant', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const root = elementRegistry.get('Process_1');
+
+      createProvider({
+        variables: [ { name: 'myVar', type: 'String', scope: root } ],
+        variableResolver,
+        origin: 'Process_1'
+      });
+      createProvider({
+        variables: [ { name: 'myVar', type: 'Number', scope: root } ],
+        variableResolver,
+        origin: 'ServiceTask_1'
+      });
+
+      // when
+      const result = await variableResolver.getVariablesForElement(root);
+
+      // then
+      expect(result).to.variableEqual([
+        {
+          name: 'myVar',
+          variants: [
+            { type: 'String' },
+            { type: 'Number' }
+          ]
+        }
+      ]);
+    }));
+
+
+    it('should merge top-level origin for backward compatibility', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const root = elementRegistry.get('Process_1');
+
+      createProvider({
+        variables: [ { name: 'myVar', type: 'String', scope: root } ],
+        variableResolver,
+        origin: 'Process_1'
+      });
+      createProvider({
+        variables: [ { name: 'myVar', type: 'Number', scope: root } ],
+        variableResolver,
+        origin: 'ServiceTask_1'
+      });
+
+      // when
+      const result = await variableResolver.getVariablesForElement(root);
+
+      // then
+      expect(result).to.variableEqual([
+        {
+          name: 'myVar',
+          origin: [ 'Process_1', 'ServiceTask_1' ]
+        }
+      ]);
+    }));
+
+
+    it('should not create variants for single-origin variable', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const root = elementRegistry.get('Process_1');
+
+      createProvider({
+        variables: [ { name: 'myVar', type: 'String', info: '"hello"', scope: root } ],
+        variableResolver,
+        origin: 'Process_1'
+      });
+
+      // when
+      const result = await variableResolver.getVariablesForElement(root);
+
+      // then
+      expect(result).to.variableEqual([
+        {
+          name: 'myVar',
+          type: 'String',
+          variants: null
+        }
+      ]);
+    }));
+
+
+    it('should retain entries per variant', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const root = elementRegistry.get('Process_1');
+
+      createProvider({
+        variables: [ {
+          name: 'myVar',
+          type: 'Context',
+          entries: [ { name: 'a', type: 'String' } ],
+          scope: root
+        } ],
+        variableResolver,
+        origin: 'Process_1'
+      });
+      createProvider({
+        variables: [ {
+          name: 'myVar',
+          type: 'Context',
+          entries: [ { name: 'b', type: 'Number' } ],
+          scope: root
+        } ],
+        variableResolver,
+        origin: 'ServiceTask_1'
+      });
+
+      // when
+      const result = await variableResolver.getVariablesForElement(root);
+
+      // then
+      expect(result).to.variableEqual([
+        {
+          name: 'myVar',
+          variants: [
+            { origin: [ 'Process_1', 'ServiceTask_1' ], entries: [ { name: 'a', type: 'String' }, { name: 'b', type: 'Number' } ] },
+            { origin: [ 'ServiceTask_1' ], entries: [ { name: 'b', type: 'Number' } ] }
+          ]
+        }
+      ]);
+    }));
+
+  });
+
 });
 
 // helpers //////////////////////
