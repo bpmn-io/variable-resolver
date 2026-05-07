@@ -88,6 +88,49 @@ function assertVariableMatches(variable, expectedVariable) {
       expect(variable.usedBy, `variable[name=${name}].usedBy`).not.to.exist;
     }
   }
+
+  if (has(expectedVariable, 'variants')) {
+
+    if (expectedVariable.variants) {
+      expect(variable.variants, `variable[name=${name}].variants`).to.exist;
+      expect(variable.variants.length, `variable[name=${name}].variants.length`).to.eql(expectedVariable.variants.length);
+
+      expectedVariable.variants.forEach((expectedVariant, idx) => {
+        const actualVariant = variable.variants[idx];
+
+        if (has(expectedVariant, 'origin')) {
+          expectedVariant.origin.forEach((expectedId) => {
+            const foundOrigin = actualVariant.origin.find(e => e.id === expectedId);
+            expect(foundOrigin, `variable[name=${name}].variants[${idx}] > origin[id=${expectedId}]`).to.exist;
+          });
+          expect(actualVariant.origin.length, `variable[name=${name}].variants[${idx}].origin.length`).to.eql(expectedVariant.origin.length);
+        }
+
+        if (has(expectedVariant, 'type')) {
+          expect(actualVariant.type, `variable[name=${name}].variants[${idx}].type`).to.eql(expectedVariant.type);
+        }
+
+        if (has(expectedVariant, 'info')) {
+          expect(actualVariant.info, `variable[name=${name}].variants[${idx}].info`).to.eql(expectedVariant.info);
+        }
+
+        if (has(expectedVariant, 'entries')) {
+          expect(actualVariant.entries, `variable[name=${name}].variants[${idx}].entries`).to.variableEqual(expectedVariant.entries);
+        }
+
+        if (has(expectedVariant, 'scope')) {
+          if (expectedVariant.scope) {
+            expect(actualVariant.scope, `variable[name=${name}].variants[${idx}].scope`).to.exist;
+            expect(actualVariant.scope.id, `variable[name=${name}].variants[${idx}].scope.id`).to.eql(expectedVariant.scope);
+          } else {
+            expect(actualVariant.scope, `variable[name=${name}].variants[${idx}].scope`).not.to.exist;
+          }
+        }
+      });
+    } else {
+      expect(variable.variants, `variable[name=${name}].variants`).not.to.exist;
+    }
+  }
 }
 
 /**
