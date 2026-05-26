@@ -1269,6 +1269,22 @@ describe('ZeebeVariableResolver', function() {
 
     }));
 
+
+    it('should not throw on unparsable resultExpression and still return resultVariable', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const task = elementRegistry.get('unparsableExpressionTask');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(task);
+
+      // then
+      expect(variables).to.variableEqual([
+        { name: 'resultVariable', origin: [ 'unparsableExpressionTask' ] },
+      ]);
+
+    }));
+
   });
 
 
