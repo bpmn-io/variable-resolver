@@ -3069,7 +3069,7 @@ describe('ZeebeVariableResolver', function() {
         {
           name: 'myVar',
           variants: [
-            { origin: [ 'Process_1', 'ServiceTask_1' ] },
+            { origin: [ 'Process_1' ] },
             { origin: [ 'ServiceTask_1' ] }
           ]
         }
@@ -3197,7 +3197,7 @@ describe('ZeebeVariableResolver', function() {
         {
           name: 'myVar',
           variants: [
-            { origin: [ 'Process_1', 'ServiceTask_1' ], entries: [ { name: 'a', type: 'String' }, { name: 'b', type: 'Number' } ] },
+            { origin: [ 'Process_1' ], entries: [ { name: 'a', type: 'String' }, { name: 'b', type: 'Number' } ] },
             { origin: [ 'ServiceTask_1' ], entries: [ { name: 'b', type: 'Number' } ] }
           ]
         }
