@@ -28,7 +28,7 @@
     "min-dash": "^5.0.0"
   },
   "devDependencies": {
-    "@bpmn-io/element-template-chooser": "^2.1.0",
+    "@bpmn-io/element-template-chooser": "^3.0.0",
     "@bpmn-io/properties-panel": "^3.39.0",
     "babel-loader": "^10.0.0",
     "babel-plugin-istanbul": "^8.0.0",
