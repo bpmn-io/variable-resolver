@@ -6,6 +6,8 @@ All notable changes to [@bpmn-io/variable-resolver](https://github.com/bpmn-io/v
 
 ___Note:__ Yet to be released changes appear here._
 
+* `FEAT`: preserve variable variants per origin in `mergeVariables`, exposing per-origin `type`, `info`, `detail`, `entries`, and `isList` via a `variants` array on multi-origin variables
+
 ## 3.2.0
 
 * `FEAT`: recognize additional Camunda built-ins ([#121](https://github.com/bpmn-io/variable-resolver/pull/121))
