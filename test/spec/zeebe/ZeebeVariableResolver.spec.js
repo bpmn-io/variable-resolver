@@ -36,6 +36,7 @@ import usedVariablesXML from 'test/fixtures/zeebe/used-variables.bpmn';
 import usedVariablesScopesXML from 'test/fixtures/zeebe/used-variables.scopes.bpmn';
 import readWriteXML from 'test/fixtures/zeebe/read-write.bpmn';
 import readWriteHierarchicalXML from 'test/fixtures/zeebe/read-write.hierarchical.bpmn';
+import readWriteFlowElementXML from 'test/fixtures/zeebe/read-write.flow-element.bpmn';
 import filteringXML from 'test/fixtures/zeebe/filtering.bpmn';
 
 import VariableProvider from 'lib/VariableProvider';
@@ -2889,6 +2890,32 @@ describe('ZeebeVariableResolver', function() {
       expect(variables).to.variableEqual([
         { name: 'application', scope: 'Process_1', origin: [ 'ValidateApprovedTask' ], usedBy: [ 'ValidateApprovedTask' ] },
         { name: 'localApproved', scope: 'ValidateApprovedTask' }
+      ]);
+    }));
+
+  });
+
+
+  describe('used variables - read and written / flow element', function() {
+
+    beforeEach(bootstrapModeler(readWriteFlowElementXML, {
+      additionalModules: [
+        ZeebeVariableResolverModule
+      ],
+      moddleExtensions: {
+        zeebe: ZeebeModdle
+      }
+    }));
+
+
+    it('should reconcile consumed variable from sequence flow with scoped declaration', inject(async function(elementRegistry, variableResolver) {
+
+      // when
+      const allVariables = await variableResolver.getVariables();
+
+      // then
+      expect(allVariables['Process_1']).to.variableEqual([
+        { name: 'reviewOutcome', scope: 'Process_1', origin: [ 'ReviewTask' ], usedBy: [ 'Flow_Approved', 'Flow_Rejected' ] }
       ]);
     }));
 
