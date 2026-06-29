@@ -6,6 +6,11 @@ All notable changes to [@bpmn-io/variable-resolver](https://github.com/bpmn-io/v
 
 ___Note:__ Yet to be released changes appear here._
 
+* `DEPS`: update to `@bpmn-io/feel-analyzer@0.3` ([#121](https://github.com/bpmn-io/variable-resolver/pull/121))
+* `DEPS`: update to `@bpmn-io/lezer-feel@3` ([#121](https://github.com/bpmn-io/variable-resolver/pull/121))
+* `DEPS`: update to `@camunda/feel-builtins@1.2` ([#121](https://github.com/bpmn-io/variable-resolver/pull/121))
+* `DEPS`: update to `@lezer/common@1.5.2` ([#121](https://github.com/bpmn-io/variable-resolver/pull/121))
+
 ## 3.1.0
 
 * `FEAT`: analyze more FEEL expressions
