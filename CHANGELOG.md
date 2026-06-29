@@ -9,7 +9,7 @@ ___Note:__ Yet to be released changes appear here._
 ## 3.1.0
 
 * `FEAT`: analyze more FEEL expressions
-* `FIX`: add graceful handling for unparsable result expressions ([#106](https://github.com/bpmn-io/variable-resolver/issues/113))
+* `FIX`: add graceful handling for unparsable result expressions ([#113](https://github.com/bpmn-io/variable-resolver/issues/113))
 * `DEPS`: update dependency @bpmn-io/lezer-feel to v3
 
 ## 3.0.1
