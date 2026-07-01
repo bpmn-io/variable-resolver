@@ -58,5 +58,8 @@
   },
   "peerDependencies": {
     "bpmn-js": "*"
+  },
+  "allowScripts": {
+    "unrs-resolver@1.12.2": true
   }
 }
