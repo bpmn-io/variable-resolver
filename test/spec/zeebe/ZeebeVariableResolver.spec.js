@@ -3197,7 +3197,7 @@ describe('ZeebeVariableResolver', function() {
         {
           name: 'myVar',
           variants: [
-            { origin: [ 'Process_1' ], entries: [ { name: 'a', type: 'String' }, { name: 'b', type: 'Number' } ] },
+            { origin: [ 'Process_1' ], entries: [ { name: 'a', type: 'String' } ] },
             { origin: [ 'ServiceTask_1' ], entries: [ { name: 'b', type: 'Number' } ] }
           ]
         }

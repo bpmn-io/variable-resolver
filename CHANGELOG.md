@@ -9,6 +9,7 @@ ___Note:__ Yet to be released changes appear here._
 * `FEAT`: preserve variable variants per origin in `mergeVariables`, exposing per-origin `type`, `info`, `detail`, `entries`, and `isList` via a `variants` array on multi-origin variables
 * `FIX`: thread per-iteration origin through FEEL resolution so each FEEL-enriched variable carries a single-element origin, enabling accurate per-origin variant splitting
 * `FIX`: initialize per-origin variant snapshots for multi-origin base variables so FEEL-enriched variants enrich existing slots rather than creating a redundant combined-origin entry
+* `FIX`: deep-copy `entries` in variant snapshots so in-place entry merging no longer leaks entries across per-origin variants
 
 ## 3.2.0
 
