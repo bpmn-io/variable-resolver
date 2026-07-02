@@ -10,6 +10,7 @@ ___Note:__ Yet to be released changes appear here._
 * `FIX`: thread per-iteration origin through FEEL resolution so each FEEL-enriched variable carries a single-element origin, enabling accurate per-origin variant splitting
 * `FIX`: initialize per-origin variant snapshots for multi-origin base variables so FEEL-enriched variants enrich existing slots rather than creating a redundant combined-origin entry
 * `FIX`: deep-copy `entries` in variant snapshots so in-place entry merging no longer leaks entries across per-origin variants
+* `FIX`: replace FEEL shape-union variants with per-origin variants when merging, guaranteeing every exposed variant carries an `origin`
 
 ## 3.2.0
 

@@ -3204,6 +3204,43 @@ describe('ZeebeVariableResolver', function() {
       ]);
     }));
 
+
+    it('should replace shape-union variants with per-origin variants', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const root = elementRegistry.get('Process_1');
+
+      createProvider({
+        variables: [ {
+          name: 'myVar',
+          type: 'String',
+          variants: [ { type: 'String' }, { type: 'Number' } ],
+          scope: root
+        } ],
+        variableResolver,
+        origin: 'Process_1'
+      });
+      createProvider({
+        variables: [ { name: 'myVar', type: 'Number', scope: root } ],
+        variableResolver,
+        origin: 'ServiceTask_1'
+      });
+
+      // when
+      const result = await variableResolver.getVariablesForElement(root);
+
+      // then
+      expect(result).to.variableEqual([
+        {
+          name: 'myVar',
+          variants: [
+            { origin: [ 'Process_1' ] },
+            { origin: [ 'ServiceTask_1' ] }
+          ]
+        }
+      ]);
+    }));
+
   });
 
 });
