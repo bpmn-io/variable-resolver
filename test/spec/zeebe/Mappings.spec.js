@@ -18,6 +18,7 @@ import consumedVariablesXML from 'test/fixtures/zeebe/mappings/input-requirement
 import primitivesXML from 'test/fixtures/zeebe/mappings/primitives.bpmn';
 import mergingXML from 'test/fixtures/zeebe/mappings/merging.bpmn';
 import mergingChildrenXML from 'test/fixtures/zeebe/mappings/merging.children.bpmn';
+import mergingPerElementXML from 'test/fixtures/zeebe/mappings/merging.per-element.bpmn';
 import mergingNullXML from 'test/fixtures/zeebe/mappings/merging.null.bpmn';
 import mergingAnyXML from 'test/fixtures/zeebe/mappings/merging.any.bpmn';
 import mergingAnyExpressionsXML from 'test/fixtures/zeebe/mappings/merging.any-expression.bpmn';
@@ -401,6 +402,142 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
               origin: [ 'Activity_1deugon' ],
               entries: []
             }
+          ]
+        }
+      ]);
+    }));
+
+  });
+
+
+  describe('Merging - variants - result expressions', function() {
+
+    beforeEach(bootstrap(mergingPerElementXML));
+
+
+    it('should split value per writing element', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const root = elementRegistry.get('Process_LoanApproval');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(root.businessObject);
+
+      // then
+      expect(variables).to.variableEqual([
+        {
+          name: 'reviewOutcome',
+          type: 'Boolean|Context|Number|String',
+          scope: 'Process_LoanApproval',
+          origin: [ 'Task_ScoreApplicant', 'Task_FlagManualReview', 'Task_PreApprove', 'Task_CalculateTerm', 'Task_AssessCollateral' ],
+          entries: [
+            {
+              name: 'score',
+              type: 'Context',
+              entries: [
+                { name: 'value', type: 'Number', info: '720' }
+              ]
+            },
+            { name: 'collateralRatio', type: 'Number', info: '2' }
+          ],
+          variants: [
+            {
+              name: 'reviewOutcome',
+              type: 'Context',
+              detail: 'Context',
+              origin: [ 'Task_ScoreApplicant' ],
+              entries: [
+                {
+                  name: 'score',
+                  type: 'Context',
+                  entries: [
+                    { name: 'value', type: 'Number', info: '720' }
+                  ]
+                }
+              ]
+            },
+            { name: 'reviewOutcome', type: 'String', detail: 'String', info: '"manual-review"', origin: [ 'Task_FlagManualReview' ] },
+            { name: 'reviewOutcome', type: 'Boolean', info: 'true', origin: [ 'Task_PreApprove' ] },
+            { name: 'reviewOutcome', type: 'Number', info: '42', origin: [ 'Task_CalculateTerm' ] },
+            {
+              name: 'reviewOutcome',
+              type: 'Context',
+              origin: [ 'Task_AssessCollateral' ],
+              entries: [
+                { name: 'collateralRatio', type: 'Number', info: '2' }
+              ]
+            }
+          ]
+        }
+      ]);
+    }));
+
+  });
+
+
+  describe('Merging - variants - uncertain expressions', function() {
+
+    beforeEach(bootstrap(mergingAnyExpressionsXML));
+
+
+    it('should keep value per writing element', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const root = elementRegistry.get('Process_1');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(root.businessObject);
+
+      // then
+      expect(variables).to.variableEqual([
+        {
+          name: 'variable',
+          type: 'Any',
+          info: '=unknown\n=alsoUnknown',
+          origin: [ 'Task_7', 'Task_8' ],
+          variants: [
+            { name: 'variable', type: 'Any', detail: 'Any', info: '=unknown', origin: [ 'Task_7' ] },
+            { name: 'variable', type: 'Any', detail: 'Any', info: '=alsoUnknown', origin: [ 'Task_8' ] }
+          ]
+        }
+      ]);
+    }));
+
+  });
+
+
+  describe('Merging - variants - pre-merged origins', function() {
+
+    beforeEach(bootstrap(mergingNullXML));
+
+
+    it('should split value per writing element', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const subProcess = elementRegistry.get('SubProcess_1');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(subProcess);
+
+      // then
+      expect(variables).to.variableEqual([
+        {
+          name: 'processVariable',
+          type: 'Null|Number',
+          scope: 'Process_4',
+          origin: [ 'SubProcess_1' ],
+          variants: [
+            { name: 'processVariable', type: 'Null|Number', origin: [ 'SubProcess_1' ] }
+          ]
+        },
+        {
+          name: 'localVariable',
+          type: 'Null|Number',
+          scope: 'SubProcess_1',
+          origin: [ 'SubProcess_1', 'Task_6' ],
+          variants: [
+            { name: 'localVariable', type: 'Null', detail: 'Null', origin: [ 'SubProcess_1' ] },
+            { name: 'localVariable', type: 'Number', detail: 'Number', info: '15', origin: [ 'Task_6' ] }
           ]
         }
       ]);

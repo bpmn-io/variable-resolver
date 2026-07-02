@@ -916,6 +916,39 @@ describe('ZeebeVariableResolver', function() {
     }));
 
 
+    it('should combine contributions of same element', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const root = elementRegistry.get('Process_1');
+
+      createProvider({
+        variables: [ { name: 'foo', type: 'String', scope: root } ],
+        variableResolver,
+        origin: 'ServiceTask_1'
+      });
+      createProvider({
+        variables: [ { name: 'foo', type: 'Number', scope: root } ],
+        variableResolver,
+        origin: 'ServiceTask_1'
+      });
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(root);
+
+      // then
+      expect(variables).to.variableEqual([
+        {
+          name: 'foo',
+          type: 'Number|String',
+          origin: [ 'ServiceTask_1' ],
+          variants: [
+            { name: 'foo', type: 'Number|String', origin: [ 'ServiceTask_1' ] }
+          ]
+        }
+      ]);
+    }));
+
+
     it('should keep variants scoped per variable record', inject(async function(variableResolver, elementRegistry) {
 
       // given

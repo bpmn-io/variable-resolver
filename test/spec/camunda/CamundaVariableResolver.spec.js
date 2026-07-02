@@ -517,6 +517,55 @@ describe('CamundaVariableResolver', function() {
   });
 
 
+  describe('variants', function() {
+
+    beforeEach(
+      bootstrapModeler(simpleXML, {
+        container,
+        additionalModules: [
+          CamundaVariableResolverModule
+        ]
+      })
+    );
+
+
+    it('should expose variants per writing element', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const root = elementRegistry.get('Process_1');
+
+      createProvider({
+        variables: [ { name: 'foo', type: 'String', isList: true, scope: root } ],
+        variableResolver,
+        origin: 'Process_1'
+      });
+      createProvider({
+        variables: [ { name: 'foo', type: 'Number', scope: root } ],
+        variableResolver,
+        origin: 'ServiceTask_1'
+      });
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(root);
+
+      // then
+      expect(variables).to.variableEqual([
+        {
+          name: 'foo',
+          type: 'Number|String',
+          isList: 'optional',
+          origin: [ 'Process_1', 'ServiceTask_1' ],
+          variants: [
+            { name: 'foo', type: 'String', isList: true, origin: [ 'Process_1' ] },
+            { name: 'foo', type: 'Number', isList: false, origin: [ 'ServiceTask_1' ] }
+          ]
+        }
+      ]);
+    }));
+
+  });
+
+
   describe('editor compatibility', function() {
 
     beforeEach(
