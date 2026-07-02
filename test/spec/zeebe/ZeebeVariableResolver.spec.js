@@ -915,6 +915,76 @@ describe('ZeebeVariableResolver', function() {
       ]);
     }));
 
+
+    it('should keep variants scoped per variable record', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const root = elementRegistry.get('Process_1');
+      const task = elementRegistry.get('ServiceTask_1');
+
+      createProvider({
+        variables: [ { name: 'foo', type: 'String', scope: root } ],
+        variableResolver,
+        origin: 'Process_1'
+      });
+      createProvider({
+        variables: [ {
+          name: 'foo',
+          type: 'Context',
+          scope: task,
+          entries: [
+            { name: 'secret', type: 'Number' }
+          ]
+        } ],
+        variableResolver,
+        origin: 'ServiceTask_1'
+      });
+
+      // when
+      const variables = await variableResolver.getProcessVariables(root);
+
+      // then
+      expect(variables).to.variableEqual([
+        {
+          name: 'foo',
+          type: 'String',
+          scope: 'Process_1',
+          origin: [ 'Process_1' ],
+          variants: [
+            {
+              name: 'foo',
+              type: 'String',
+              scope: 'Process_1',
+              origin: [ 'Process_1' ]
+            }
+          ]
+        },
+        {
+          name: 'foo',
+          type: 'Context',
+          scope: 'ServiceTask_1',
+          origin: [ 'ServiceTask_1' ],
+          variants: [
+            {
+              name: 'foo',
+              type: 'Context',
+              scope: 'ServiceTask_1',
+              origin: [ 'ServiceTask_1' ],
+              entries: [
+                { name: 'secret', type: 'Number' }
+              ]
+            }
+          ]
+        }
+      ]);
+
+      const rootRecord = variables.find(v => v.name === 'foo' && v.scope.id === 'Process_1');
+
+      expect(rootRecord.variants).to.have.lengthOf(1);
+      expect(rootRecord.variants[0].entries).not.to.exist;
+      expect(rootRecord.variants[0].scope.id).to.eql('Process_1');
+    }));
+
   });
 
 
