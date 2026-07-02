@@ -355,6 +355,60 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
   });
 
 
+  describe('Merging - variants', function() {
+
+    beforeEach(bootstrap(mergingXML));
+
+
+    it('should split value per writing element', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const root = elementRegistry.get('Participant_2');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(root.businessObject.processRef);
+
+      // then
+      expect(variables).to.variableEqual([
+        {
+          name: 'multipleSources',
+          type: 'Context|String',
+          entries: [
+            { name: 'a' },
+            { name: 'b' }
+          ],
+          variants: [
+            {
+              name: 'multipleSources',
+              type: 'Context',
+              origin: [ 'Activity_1p9raox' ],
+              entries: [
+                { name: 'a', type: 'Null' }
+              ]
+            },
+            {
+              name: 'multipleSources',
+              type: 'Context',
+              origin: [ 'Activity_18bm41l' ],
+              entries: [
+                { name: 'b', type: 'Null' }
+              ]
+            },
+            {
+              name: 'multipleSources',
+              type: 'String',
+              info: '"null"',
+              origin: [ 'Activity_1deugon' ],
+              entries: []
+            }
+          ]
+        }
+      ]);
+    }));
+
+  });
+
+
   describe('Merging - null', function() {
 
     beforeEach(bootstrap(mergingNullXML));
@@ -1021,6 +1075,22 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
       const a = variables.find(v => v.name === 'a');
       expect(a).to.exist;
       expect(a.scope).to.not.exist;
+    }));
+
+
+    it('should not expose variants on consumed variables', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const task = elementRegistry.get('SimpleTask');
+
+      // when
+      const variables = await getReadVariablesForElement(variableResolver, task);
+
+      // then
+      expect(variables).to.variableEqual([
+        { name: 'a', variants: undefined },
+        { name: 'b', variants: undefined }
+      ]);
     }));
 
 

@@ -118,6 +118,23 @@ export const MyExtension = {
 
 By default, `getVariablesForElement` and `getProcessVariables` merge variables with the same name and scope into one - entry structure and types are mixed in the merged representation.
 
+Merged variables additionally expose `variants`, one per writing element. Each variant is shaped like a variable and describes only the value contributed by its single `origin`:
+
+```javascript
+/**
+ * variable = {
+ *   name: 'myVariable',
+ *   type: 'Number|String',
+ *   origin: [ Task_1, Task_2 ],
+ *   variants: [
+ *     { name: 'myVariable', type: 'String', origin: [ Task_1 ], ... },
+ *     { name: 'myVariable', type: 'Number', origin: [ Task_2 ], ... }
+ *   ],
+ *   ...
+ * }
+ */
+```
+
 In some cases, you might want access to the raw data, e.g. to run lint rules to detect potential schema mismatches between providers. For this, you can use `getRawVariables`:
 
 ```javascript
