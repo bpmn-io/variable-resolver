@@ -20,6 +20,7 @@ import mergingXML from 'test/fixtures/zeebe/mappings/merging.bpmn';
 import mergingChildrenXML from 'test/fixtures/zeebe/mappings/merging.children.bpmn';
 import mergingPerElementXML from 'test/fixtures/zeebe/mappings/merging.per-element.bpmn';
 import mergingSameElementXML from 'test/fixtures/zeebe/mappings/merging.same-element.bpmn';
+import mergingSameElementPathsXML from 'test/fixtures/zeebe/mappings/merging.same-element.paths.bpmn';
 import mergingNullXML from 'test/fixtures/zeebe/mappings/merging.null.bpmn';
 import mergingAnyXML from 'test/fixtures/zeebe/mappings/merging.any.bpmn';
 import mergingAnyExpressionsXML from 'test/fixtures/zeebe/mappings/merging.any-expression.bpmn';
@@ -561,6 +562,72 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
                   type: 'Context',
                   entries: [
                     { name: 'zip', type: 'Number', info: '10115' }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]);
+    }));
+
+  });
+
+
+  describe('Merging - variants - same-element path contributions', function() {
+
+    beforeEach(bootstrap(mergingSameElementPathsXML));
+
+
+    it('should combine path-only contributions into a single variant', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const root = elementRegistry.get('Process_Checkout');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(root.businessObject);
+
+      // then
+      expect(variables).to.variableEqual([
+        {
+          name: 'order',
+          type: 'Context',
+          scope: 'Process_Checkout',
+          origin: [ 'Task_CalculateTotals' ],
+          entries: [
+            {
+              name: 'pricing',
+              type: 'Context',
+              entries: [
+                { name: 'net', type: 'Number', info: '456' }
+              ]
+            },
+            {
+              name: 'shipping',
+              type: 'Context',
+              entries: [
+                { name: 'cost', type: 'Number', info: '123' }
+              ]
+            }
+          ],
+          variants: [
+            {
+              name: 'order',
+              type: 'Context',
+              origin: [ 'Task_CalculateTotals' ],
+              entries: [
+                {
+                  name: 'pricing',
+                  type: 'Context',
+                  entries: [
+                    { name: 'net', type: 'Number', info: '456' }
+                  ]
+                },
+                {
+                  name: 'shipping',
+                  type: 'Context',
+                  entries: [
+                    { name: 'cost', type: 'Number', info: '123' }
                   ]
                 }
               ]
