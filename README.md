@@ -125,10 +125,10 @@ Merged variables additionally expose `variants`, one per writing element. Each v
  * variable = {
  *   name: 'myVariable',
  *   type: 'Number|String',
- *   origin: [ Task_1, Task_2 ],
+ *   origin: [ 'Task_1', 'Task_2' ],
  *   variants: [
- *     { name: 'myVariable', type: 'String', origin: [ Task_1 ], ... },
- *     { name: 'myVariable', type: 'Number', origin: [ Task_2 ], ... }
+ *     { name: 'myVariable', type: 'String', origin: [ 'Task_1' ], ... },
+ *     { name: 'myVariable', type: 'Number', origin: [ 'Task_2' ], ... }
  *   ],
  *   ...
  * }
