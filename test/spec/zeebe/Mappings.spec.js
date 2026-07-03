@@ -19,6 +19,7 @@ import primitivesXML from 'test/fixtures/zeebe/mappings/primitives.bpmn';
 import mergingXML from 'test/fixtures/zeebe/mappings/merging.bpmn';
 import mergingChildrenXML from 'test/fixtures/zeebe/mappings/merging.children.bpmn';
 import mergingPerElementXML from 'test/fixtures/zeebe/mappings/merging.per-element.bpmn';
+import mergingSameElementXML from 'test/fixtures/zeebe/mappings/merging.same-element.bpmn';
 import mergingNullXML from 'test/fixtures/zeebe/mappings/merging.null.bpmn';
 import mergingAnyXML from 'test/fixtures/zeebe/mappings/merging.any.bpmn';
 import mergingAnyExpressionsXML from 'test/fixtures/zeebe/mappings/merging.any-expression.bpmn';
@@ -498,6 +499,72 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
           variants: [
             { name: 'variable', type: 'Any', detail: 'Any', info: '=unknown', origin: [ 'Task_7' ] },
             { name: 'variable', type: 'Any', detail: 'Any', info: '=alsoUnknown', origin: [ 'Task_8' ] }
+          ]
+        }
+      ]);
+    }));
+
+  });
+
+
+  describe('Merging - variants - same-element contributions', function() {
+
+    beforeEach(bootstrap(mergingSameElementXML));
+
+
+    it('should combine contributions into a single variant', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const root = elementRegistry.get('Process_CustomerOnboarding');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(root.businessObject);
+
+      // then
+      expect(variables).to.variableEqual([
+        {
+          name: 'customer',
+          type: 'Context',
+          scope: 'Process_CustomerOnboarding',
+          origin: [ 'Task_FetchCustomerProfile' ],
+          entries: [
+            {
+              name: 'rating',
+              type: 'Context',
+              entries: [
+                { name: 'score', type: 'Number', info: '123' }
+              ]
+            },
+            {
+              name: 'address',
+              type: 'Context',
+              entries: [
+                { name: 'zip', type: 'Number', info: '10115' }
+              ]
+            }
+          ],
+          variants: [
+            {
+              name: 'customer',
+              type: 'Context',
+              origin: [ 'Task_FetchCustomerProfile' ],
+              entries: [
+                {
+                  name: 'rating',
+                  type: 'Context',
+                  entries: [
+                    { name: 'score', type: 'Number', info: '123' }
+                  ]
+                },
+                {
+                  name: 'address',
+                  type: 'Context',
+                  entries: [
+                    { name: 'zip', type: 'Number', info: '10115' }
+                  ]
+                }
+              ]
+            }
           ]
         }
       ]);
