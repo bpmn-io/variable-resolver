@@ -15,7 +15,7 @@ function findVariable(variables, expectedVariable) {
       && (!origin || matchesOrigin(v.origin, origin))
   );
 
-  expect(variable, `variable[name=${name}, scope=${scope}]`).to.exist;
+  expect(variable, `variable[name=${name}, scope=${scope}, origin=${origin}]`).to.exist;
 
   return variable;
 }
