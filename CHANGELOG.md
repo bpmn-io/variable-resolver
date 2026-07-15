@@ -6,6 +6,9 @@ All notable changes to [@bpmn-io/variable-resolver](https://github.com/bpmn-io/v
 
 ___Note:__ Yet to be released changes appear here._
 
+* `FEAT`: expose per-writer value `variants` on merged variables ([#123](https://github.com/bpmn-io/variable-resolver/pull/123))
+* `CHORE`: resolve mapped variables per origin ([#123](https://github.com/bpmn-io/variable-resolver/pull/123))
+
 ## 3.2.0
 
 * `FEAT`: recognize additional Camunda built-ins ([#121](https://github.com/bpmn-io/variable-resolver/pull/121))

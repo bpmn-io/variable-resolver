@@ -2,23 +2,32 @@ const { expect } = require('chai');
 const { has } = require('min-dash');
 
 
-function isDefined(value) {
-  return typeof value !== 'undefined';
-}
-
 function findVariable(variables, expectedVariable) {
   const {
     name,
-    scope
+    scope,
+    origin
   } = expectedVariable;
 
   const variable = variables.find(
-    v => (!isDefined(name) || v.name === name) && (!isDefined(scope) || v.scope?.id === scope)
+    v => (!name || v.name === name)
+      && (!scope || v.scope?.id === scope)
+      && (!origin || matchesOrigin(v.origin, origin))
   );
 
-  expect(variable, `variable[name=${name}, scope=${scope}]`).to.exist;
+  expect(variable, `variable[name=${name}, scope=${scope}, origin=${origin}]`).to.exist;
 
   return variable;
+}
+
+function matchesOrigin(origin, expectedOrigin) {
+  if (!origin || origin.length !== expectedOrigin.length) {
+    return false;
+  }
+
+  return expectedOrigin.every(
+    expectedId => origin.some(o => o && o.id === expectedId)
+  );
 }
 
 function assertVariableMatches(variable, expectedVariable) {
@@ -69,6 +78,16 @@ function assertVariableMatches(variable, expectedVariable) {
       expect(variable.origin.length, `variable[name=${name}].origin.length`).to.eql(expectedVariable.origin.length);
     } else {
       expect(variable.origin, `variable[name=${name}].origin`).not.to.exist;
+    }
+  }
+
+  if (has(expectedVariable, 'variants')) {
+
+    if (expectedVariable.variants) {
+      expect(variable.variants, `variable[name=${name}].variants`).to.exist;
+      expect(variable.variants, `variable[name=${name}].variants`).to.variableEqual(expectedVariable.variants);
+    } else {
+      expect(variable.variants, `variable[name=${name}].variants`).not.to.exist;
     }
   }
 

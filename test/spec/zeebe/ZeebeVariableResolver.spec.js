@@ -692,6 +692,335 @@ describe('ZeebeVariableResolver', function() {
   });
 
 
+  describe('variants', function() {
+
+    beforeEach(
+      bootstrapModeler(simpleXML, {
+        additionalModules: [
+          ZeebeVariableResolverModule
+        ]
+      })
+    );
+
+
+    it('should expose per-writer variants', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const root = elementRegistry.get('Process_1');
+
+      createProvider({
+        variables: [ { name: 'foo', type: 'String', scope: root } ],
+        variableResolver,
+        origin: 'Process_1'
+      });
+      createProvider({
+        variables: [ {
+          name: 'foo',
+          type: 'Context',
+          scope: root,
+          entries: [
+            { name: 'bar', type: 'Number' }
+          ]
+        } ],
+        variableResolver,
+        origin: 'ServiceTask_1'
+      });
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(root);
+
+      // then
+      expect(variables).to.variableEqual([
+        {
+          name: 'foo',
+          type: 'Context|String',
+          scope: 'Process_1',
+          origin: [ 'Process_1', 'ServiceTask_1' ],
+          entries: [
+            { name: 'bar', type: 'Number' }
+          ],
+          variants: [
+            {
+              name: 'foo',
+              type: 'String',
+              scope: 'Process_1',
+              origin: [ 'Process_1' ]
+            },
+            {
+              name: 'foo',
+              type: 'Context',
+              scope: 'Process_1',
+              origin: [ 'ServiceTask_1' ],
+              entries: [
+                { name: 'bar', type: 'Number' }
+              ]
+            }
+          ]
+        }
+      ]);
+    }));
+
+
+    it('should not leak entries between variants', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const root = elementRegistry.get('Process_1');
+
+      createProvider({
+        variables: [ { name: 'foo', type: 'String', scope: root } ],
+        variableResolver,
+        origin: 'Process_1'
+      });
+      createProvider({
+        variables: [ {
+          name: 'foo',
+          type: 'Context',
+          scope: root,
+          entries: [
+            { name: 'bar', type: 'Number' }
+          ]
+        } ],
+        variableResolver,
+        origin: 'ServiceTask_1'
+      });
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(root);
+
+      // then
+      const stringVariant = variables[0].variants.find(v => v.origin[0].id === 'Process_1');
+
+      expect(stringVariant.entries).not.to.exist;
+    }));
+
+
+    it('should expose one variant per writer', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const root = elementRegistry.get('Process_1');
+
+      createProvider({
+        variables: [ { name: 'foo', type: 'String', scope: root } ],
+        variableResolver,
+        origin: 'Process_1'
+      });
+      createProvider({
+        variables: [ { name: 'foo', type: 'Number', scope: root } ],
+        variableResolver,
+        origin: 'ServiceTask_1'
+      });
+      createProvider({
+        variables: [ { name: 'foo', type: 'Boolean', scope: root } ],
+        variableResolver,
+        origin: 'ServiceTask_2'
+      });
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(root);
+
+      // then
+      expect(variables).to.variableEqual([
+        {
+          name: 'foo',
+          type: 'Boolean|Number|String',
+          scope: 'Process_1',
+          origin: [ 'Process_1', 'ServiceTask_1', 'ServiceTask_2' ],
+          variants: [
+            { name: 'foo', type: 'String', origin: [ 'Process_1' ] },
+            { name: 'foo', type: 'Number', origin: [ 'ServiceTask_1' ] },
+            { name: 'foo', type: 'Boolean', origin: [ 'ServiceTask_2' ] }
+          ]
+        }
+      ]);
+    }));
+
+
+    it('should expose single variant for single writer', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const root = elementRegistry.get('Process_1');
+
+      createProvider({
+        variables: [ { name: 'foo', type: 'String', scope: root } ],
+        variableResolver,
+        origin: 'Process_1'
+      });
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(root);
+
+      // then
+      expect(variables).to.variableEqual([
+        {
+          name: 'foo',
+          type: 'String',
+          scope: 'Process_1',
+          origin: [ 'Process_1' ],
+          variants: [
+            { name: 'foo', type: 'String', detail: 'String', scope: 'Process_1', origin: [ 'Process_1' ] }
+          ]
+        }
+      ]);
+    }));
+
+
+    it('should split hierarchical variables per writer', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const root = elementRegistry.get('Process_1');
+
+      createProvider({
+        variables: [ { name: 'foo.bar', type: 'String', scope: root } ],
+        variableResolver,
+        origin: 'Process_1'
+      });
+      createProvider({
+        variables: [ { name: 'foo.woop', type: 'String', scope: root } ],
+        variableResolver,
+        origin: 'ServiceTask_1'
+      });
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(root);
+
+      // then
+      expect(variables).to.variableEqual([
+        {
+          name: 'foo',
+          type: 'Context',
+          scope: 'Process_1',
+          entries: [
+            { name: 'bar', type: 'String' },
+            { name: 'woop', type: 'String' }
+          ],
+          variants: [
+            {
+              name: 'foo',
+              type: 'Context',
+              origin: [ 'Process_1' ],
+              entries: [
+                { name: 'bar', type: 'String' }
+              ]
+            },
+            {
+              name: 'foo',
+              type: 'Context',
+              origin: [ 'ServiceTask_1' ],
+              entries: [
+                { name: 'woop', type: 'String' }
+              ]
+            }
+          ]
+        }
+      ]);
+    }));
+
+
+    it('should combine contributions of same element', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const root = elementRegistry.get('Process_1');
+
+      createProvider({
+        variables: [ { name: 'foo', type: 'String', scope: root } ],
+        variableResolver,
+        origin: 'ServiceTask_1'
+      });
+      createProvider({
+        variables: [ { name: 'foo', type: 'Number', scope: root } ],
+        variableResolver,
+        origin: 'ServiceTask_1'
+      });
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(root);
+
+      // then
+      expect(variables).to.variableEqual([
+        {
+          name: 'foo',
+          type: 'Number|String',
+          origin: [ 'ServiceTask_1' ],
+          variants: [
+            { name: 'foo', type: 'Number|String', origin: [ 'ServiceTask_1' ] }
+          ]
+        }
+      ]);
+    }));
+
+
+    it('should keep variants scoped per variable record', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const root = elementRegistry.get('Process_1');
+      const task = elementRegistry.get('ServiceTask_1');
+
+      createProvider({
+        variables: [ { name: 'foo', type: 'String', scope: root } ],
+        variableResolver,
+        origin: 'Process_1'
+      });
+      createProvider({
+        variables: [ {
+          name: 'foo',
+          type: 'Context',
+          scope: task,
+          entries: [
+            { name: 'secret', type: 'Number' }
+          ]
+        } ],
+        variableResolver,
+        origin: 'ServiceTask_1'
+      });
+
+      // when
+      const variables = await variableResolver.getProcessVariables(root);
+
+      // then
+      expect(variables).to.variableEqual([
+        {
+          name: 'foo',
+          type: 'String',
+          scope: 'Process_1',
+          origin: [ 'Process_1' ],
+          variants: [
+            {
+              name: 'foo',
+              type: 'String',
+              scope: 'Process_1',
+              origin: [ 'Process_1' ]
+            }
+          ]
+        },
+        {
+          name: 'foo',
+          type: 'Context',
+          scope: 'ServiceTask_1',
+          origin: [ 'ServiceTask_1' ],
+          variants: [
+            {
+              name: 'foo',
+              type: 'Context',
+              scope: 'ServiceTask_1',
+              origin: [ 'ServiceTask_1' ],
+              entries: [
+                { name: 'secret', type: 'Number' }
+              ]
+            }
+          ]
+        }
+      ]);
+
+      const rootRecord = variables.find(v => v.name === 'foo' && v.scope.id === 'Process_1');
+
+      expect(rootRecord.variants).to.have.lengthOf(1);
+      expect(rootRecord.variants[0].entries).not.to.exist;
+      expect(rootRecord.variants[0].scope.id).to.eql('Process_1');
+    }));
+
+  });
+
+
   describe('hierarchical names', function() {
 
     beforeEach(
@@ -1159,6 +1488,40 @@ describe('ZeebeVariableResolver', function() {
       // own variables
       expect(variables).to.variableEqual([
         { name: 'variable4', origin: [ 'Task_3', 'SubProcess_2' ], scope: 'Process_1' }
+      ]);
+    }));
+
+
+    it('should split pre-merged multi-origin variable per writer', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const root = elementRegistry.get('Process_1');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(root);
+
+      // then
+      expect(variables).to.variableEqual([
+        {
+          name: 'variable4',
+          origin: [ 'Task_3', 'SubProcess_2' ],
+          scope: 'Process_1',
+          variants: [
+            {
+              name: 'variable4',
+              type: 'Number',
+              info: '1',
+              scope: 'Process_1',
+              origin: [ 'Task_3' ]
+            },
+            {
+              name: 'variable4',
+              type: 'Any',
+              scope: 'Process_1',
+              origin: [ 'SubProcess_2' ]
+            }
+          ]
+        }
       ]);
     }));
 

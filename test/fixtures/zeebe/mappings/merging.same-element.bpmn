@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_1f11wk4" targetNamespace="http://bpmn.io/schema/bpmn" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:modeler="http://camunda.org/schema/modeler/1.0" exporter="Camunda Modeler" exporterVersion="5.48.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.9.0">
+  <bpmn:process id="Process_CustomerOnboarding" name="Customer onboarding" isExecutable="true">
+    <bpmn:serviceTask id="Task_FetchCustomerProfile" name="Fetch customer profile">
+      <bpmn:extensionElements>
+        <zeebe:ioMapping>
+          <zeebe:output source="={ address: { zip: 10115 } }" target="customer" />
+          <zeebe:output source="={ score: 123 }" target="customer.rating" />
+        </zeebe:ioMapping>
+        <zeebe:taskDefinition type="fetch-customer-profile" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_17jmw1u</bpmn:incoming>
+    </bpmn:serviceTask>
+    <bpmn:startEvent id="StartEvent_OnboardingRequested" name="Onboarding requested">
+      <bpmn:outgoing>Flow_17jmw1u</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="Flow_17jmw1u" sourceRef="StartEvent_OnboardingRequested" targetRef="Task_FetchCustomerProfile" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_CustomerOnboarding">
+      <bpmndi:BPMNShape id="Task_FetchCustomerProfile_di" bpmnElement="Task_FetchCustomerProfile">
+        <dc:Bounds x="260" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_OnboardingRequested_di" bpmnElement="StartEvent_OnboardingRequested">
+        <dc:Bounds x="152" y="102" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_17jmw1u_di" bpmnElement="Flow_17jmw1u">
+        <di:waypoint x="188" y="120" />
+        <di:waypoint x="260" y="120" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
