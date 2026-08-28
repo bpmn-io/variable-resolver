@@ -2,7 +2,7 @@ import { expect } from 'chai';
 
 import sinon from 'sinon';
 
-import ZeebeModdle from 'zeebe-bpmn-moddle/resources/zeebe';
+import ZeebeModdle from 'zeebe-bpmn-moddle/resources/zeebe.json';
 
 import { getBusinessObject, is } from 'bpmn-js/lib/util/ModelUtil';
 

@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 
-import ZeebeModdle from 'zeebe-bpmn-moddle/resources/zeebe';
+import ZeebeModdle from 'zeebe-bpmn-moddle/resources/zeebe.json';
 
 import { bootstrapModeler, inject } from 'test/TestHelper';
 
