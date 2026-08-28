@@ -13,7 +13,7 @@ To add the variable resolver to you application, add it to your bpmn-js configur
 
 ```javascript
 import BpmnModeler from 'bpmn-js/lib/Modeler';
-import ZeebeModdle from 'zeebe-bpmn-moddle/resources/zeebe';
+import ZeebeModdle from 'zeebe-bpmn-moddle/resources/zeebe.json';
 
 import {
   ZeebeVariableResolverModule,     // For Camunda 8 diagrams

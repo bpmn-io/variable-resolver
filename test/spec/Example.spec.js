@@ -17,7 +17,7 @@ import ElementTemplateChooserModule from '@bpmn-io/element-template-chooser';
 import connectorTemplates from 'test/fixtures/zeebe/connectors.json';
 
 import ZeebeBehaviorsModule from 'camunda-bpmn-js-behaviors/lib/camunda-cloud';
-import ZeebeModdle from 'zeebe-bpmn-moddle/resources/zeebe';
+import ZeebeModdle from 'zeebe-bpmn-moddle/resources/zeebe.json';
 
 import { ZeebeVariableResolverModule } from 'lib/';
 import VariableProvider from 'lib/VariableProvider';

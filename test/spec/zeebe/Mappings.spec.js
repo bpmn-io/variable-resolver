@@ -3,7 +3,7 @@ import sinon from 'sinon';
 
 import TestContainer from 'mocha-test-container-support';
 
-import ZeebeModdle from 'zeebe-bpmn-moddle/resources/zeebe';
+import ZeebeModdle from 'zeebe-bpmn-moddle/resources/zeebe.json';
 
 import { is } from 'bpmn-js/lib/util/ModelUtil';
 import { getInputOutput } from '../../../lib/base/util/ExtensionElementsUtil';
