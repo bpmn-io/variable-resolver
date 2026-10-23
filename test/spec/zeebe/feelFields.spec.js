@@ -12,6 +12,7 @@ import messageXML from 'test/fixtures/zeebe/used-variables.feel-fields.message.b
 import zeebeExtensionsXML from 'test/fixtures/zeebe/used-variables.feel-fields.zeebe-extensions.bpmn';
 import adHocXML from 'test/fixtures/zeebe/used-variables.feel-fields.ad-hoc.bpmn';
 import inputFilterXML from 'test/fixtures/zeebe/used-variables.feel-fields.input-filter.bpmn';
+import pathAfterIndexXML from 'test/fixtures/zeebe/used-variables.feel-fields.path-after-index.bpmn';
 
 const MODULE_OPTIONS = {
   additionalModules: [ ZeebeVariableResolverModule ],
@@ -463,6 +464,42 @@ describe('FEEL fields - consumed variables', function() {
         const notMappedVar = consumed.find(v => v.name === 'notMappedVar');
         expect(notMappedVar, 'notMappedVar consumed variable').to.exist;
         expect(notMappedVar.usedBy.some(e => e.id === 'Task_no_filter')).to.be.true;
+      })
+    );
+
+  });
+
+
+  describe('path expression after index', function() {
+
+    beforeEach(bootstrapModeler(pathAfterIndexXML, MODULE_OPTIONS));
+
+    it('should collect the indexed variable as consumed',
+      inject(async function(variableResolver, elementRegistry) {
+
+        // given
+        const element = elementRegistry.get('Task_index');
+
+        // when
+        const vars = await variableResolver.getVariablesForElement(element);
+
+        // then
+        expect(vars.map(v => v.name)).to.include('items');
+      })
+    );
+
+
+    it('should not collect the property name after the index as consumed',
+      inject(async function(variableResolver, elementRegistry) {
+
+        // given
+        const element = elementRegistry.get('Task_index');
+
+        // when
+        const vars = await variableResolver.getVariablesForElement(element);
+
+        // then
+        expect(vars.map(v => v.name)).not.to.include('price');
       })
     );
 

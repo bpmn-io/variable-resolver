@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:zeebe="http://camunda.org/schema/zeebe/1.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:modeler="http://camunda.org/schema/modeler/1.0"
+  id="Definitions_path_after_index"
+  targetNamespace="http://bpmn.io/schema/bpmn"
+  modeler:executionPlatform="Camunda Cloud">
+  <bpmn:process id="Process_1" isExecutable="true">
+
+    <!-- FEEL path after index - the property name is not a variable -->
+    <bpmn:serviceTask id="Task_index" name="Index Path Task">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="=items[1].price" />
+      </bpmn:extensionElements>
+    </bpmn:serviceTask>
+
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_1">
+      <bpmndi:BPMNShape id="Task_index_di" bpmnElement="Task_index">
+        <dc:Bounds x="200" y="100" width="100" height="80" />
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
