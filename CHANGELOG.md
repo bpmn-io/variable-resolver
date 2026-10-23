@@ -6,6 +6,8 @@ All notable changes to [@bpmn-io/variable-resolver](https://github.com/bpmn-io/v
 
 ___Note:__ Yet to be released changes appear here._
 
+## 3.3.1
+
 * `FIX`: do not report property names after an index access as consumed variables
 * `DEPS`: update to `@bpmn-io/feel-analyzer@0.5`
 
