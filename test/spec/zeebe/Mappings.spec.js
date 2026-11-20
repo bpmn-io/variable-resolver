@@ -26,6 +26,7 @@ import mergingAnyXML from 'test/fixtures/zeebe/mappings/merging.any.bpmn';
 import mergingAnyExpressionsXML from 'test/fixtures/zeebe/mappings/merging.any-expression.bpmn';
 import scopeXML from 'test/fixtures/zeebe/mappings/scope.bpmn';
 import scopeOriginXML from 'test/fixtures/zeebe/mappings/scope.origin.bpmn';
+import scopeShadowingXML from 'test/fixtures/zeebe/mappings/scope.shadowing.bpmn';
 import orderingXML from 'test/fixtures/zeebe/mappings/ordering.bpmn';
 import propagationXML from 'test/fixtures/zeebe/mappings/propagation.bpmn';
 import scriptTaskXML from 'test/fixtures/zeebe/mappings/script-task.bpmn';
@@ -1048,6 +1049,46 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
             { origin: [ 'Task_2' ], type: 'Any', info: '=localVariable' }
           ]
         }
+      ]);
+    }));
+
+  });
+
+
+  describe('Scope - shadowing', function() {
+
+    beforeEach(bootstrap(scopeShadowingXML));
+
+
+    it('should resolve local variables of same name per element', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const root = elementRegistry.get('Process_1');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(root);
+
+      // then
+      expect(filterByName(variables, [ 'output1', 'output2' ])).to.variableEqual([
+        { name: 'output1', type: 'String', info: '"foo"' },
+        { name: 'output2', type: 'Number', info: '1' }
+      ]);
+    }));
+
+
+    it('should resolve local variable from global variable of same name', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const root = elementRegistry.get('Process_1');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(root);
+
+      // then
+      // outputs read the local variable, mapped from the global one
+      expect(filterByName(variables, [ 'output4', 'output5' ])).to.variableEqual([
+        { name: 'output4', type: 'Boolean', info: 'true' },
+        { name: 'output5', type: 'Boolean', info: 'true' }
       ]);
     }));
 
