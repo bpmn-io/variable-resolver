@@ -25,6 +25,7 @@ import mergingNullXML from 'test/fixtures/zeebe/mappings/merging.null.bpmn';
 import mergingAnyXML from 'test/fixtures/zeebe/mappings/merging.any.bpmn';
 import mergingAnyExpressionsXML from 'test/fixtures/zeebe/mappings/merging.any-expression.bpmn';
 import scopeXML from 'test/fixtures/zeebe/mappings/scope.bpmn';
+import orderingXML from 'test/fixtures/zeebe/mappings/ordering.bpmn';
 import propagationXML from 'test/fixtures/zeebe/mappings/propagation.bpmn';
 import scriptTaskXML from 'test/fixtures/zeebe/mappings/script-task.bpmn';
 import scriptTaskEmptyExpressionXML from 'test/fixtures/zeebe/mappings/script-task-empty-expression.bpmn';
@@ -1021,6 +1022,62 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
   });
 
 
+  describe('Ordering', function() {
+
+    beforeEach(bootstrap(orderingXML));
+
+
+    it('should resolve variable after its dependencies', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const root = elementRegistry.get('Process_1');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(root);
+
+      // then
+      expect(filterByName(variables, [ 'A', 'B', 'C' ])).to.variableEqual([
+        { name: 'A', type: 'Number', info: '1' },
+        { name: 'B', type: 'Number', info: '1' },
+        { name: 'C', type: 'Number', info: '1' }
+      ]);
+    }));
+
+
+    it('should resolve variable after all producers of a dependency', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const root = elementRegistry.get('Process_1');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(root);
+
+      // then
+      expect(filterByName(variables, [ 'x', 'y' ])).to.variableEqual([
+        { name: 'x', type: 'Number|String', origin: [ 'Task_X1', 'Task_X2' ] },
+        { name: 'y', type: 'Number|String' }
+      ]);
+    }));
+
+
+    it('should resolve circular dependencies', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const root = elementRegistry.get('Process_1');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(root);
+
+      // then
+      expect(filterByName(variables, [ 'cycleA', 'cycleB' ])).to.variableEqual([
+        { name: 'cycleA', type: 'Any' },
+        { name: 'cycleB', type: 'Any' }
+      ]);
+    }));
+
+  });
+
+
   describe('Propagation', function() {
 
     beforeEach(bootstrap(propagationXML));
@@ -1948,6 +2005,10 @@ async function getReadVariablesForElement(variableResolver, element) {
 
   // Preserve old consumed-only test semantics: consumed variables are unscoped.
   return variables.filter(variable => !variable.scope);
+}
+
+function filterByName(variables, names) {
+  return variables.filter(variable => names.includes(variable.name));
 }
 
 function toVariableFormat(variables) {
