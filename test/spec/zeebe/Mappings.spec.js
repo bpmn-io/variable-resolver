@@ -25,6 +25,7 @@ import mergingNullXML from 'test/fixtures/zeebe/mappings/merging.null.bpmn';
 import mergingAnyXML from 'test/fixtures/zeebe/mappings/merging.any.bpmn';
 import mergingAnyExpressionsXML from 'test/fixtures/zeebe/mappings/merging.any-expression.bpmn';
 import scopeXML from 'test/fixtures/zeebe/mappings/scope.bpmn';
+import scopeOriginXML from 'test/fixtures/zeebe/mappings/scope.origin.bpmn';
 import orderingXML from 'test/fixtures/zeebe/mappings/ordering.bpmn';
 import propagationXML from 'test/fixtures/zeebe/mappings/propagation.bpmn';
 import scriptTaskXML from 'test/fixtures/zeebe/mappings/script-task.bpmn';
@@ -1015,6 +1016,37 @@ describe('ZeebeVariableResolver - Variable Mappings', function() {
           name: 'foo',
           type: 'Number',
           info: '10'
+        }
+      ]);
+    }));
+
+  });
+
+
+  describe('Scope - origin', function() {
+
+    beforeEach(bootstrap(scopeOriginXML));
+
+
+    it('should resolve variable in scope of each origin', inject(async function(variableResolver, elementRegistry) {
+
+      // given
+      const root = elementRegistry.get('Process_1');
+
+      // when
+      const variables = await variableResolver.getVariablesForElement(root);
+
+      // then
+      // local variable of Task_1 is not visible to the output mapping of Task_2
+      expect(variables).to.variableEqual([
+        {
+          name: 'processVariable',
+          type: 'Any|String',
+          scope: 'Process_1',
+          variants: [
+            { origin: [ 'Task_1' ], type: 'String', info: '"foo"' },
+            { origin: [ 'Task_2' ], type: 'Any', info: '=localVariable' }
+          ]
         }
       ]);
     }));
