@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.44.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.8.0">
+  <bpmn:process id="Process_1" isExecutable="true">
+    <bpmn:serviceTask id="Task_Provide" name="Provide">
+      <bpmn:extensionElements>
+        <zeebe:ioMapping>
+          <zeebe:output source="=1" target="order id" />
+          <zeebe:output source="=&#34;open&#34;" target="order" />
+          <zeebe:output source="=10" target="net-amount" />
+          <zeebe:output source="=&#34;ten&#34;" target="amount" />
+          <zeebe:output source="=&#34;Jane&#34;" target="customer&#39;s name" />
+          <zeebe:output source="=&#34;today&#34;" target="date" />
+          <zeebe:output source="={ address: { city: &#34;Berlin&#34; } }" target="invoice" />
+          <zeebe:output source="=&#34;Jane&#34;" target="customer name" />
+          <zeebe:output source="=&#34;yes&#34;" target="then" />
+          <zeebe:output source="=5" target="timeout" />
+          <zeebe:output source="=1" target="a" />
+          <zeebe:output source="=&#34;question&#34;" target="a?b" />
+          <zeebe:output source="=&#34;dot&#34;" target="x·y" />
+          <zeebe:output source="=180" target="größe" />
+          <zeebe:output source="=true" target="naïve" />
+          <zeebe:output source="=&#34;combining&#34;" target="e&#769;x" />
+          <zeebe:output source="=&#34;leading&#34;" target=" foo" />
+          <zeebe:output source="=&#34;trailing&#34;" target="bar&#x1680;" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_Consume" name="Consume">
+      <bpmn:extensionElements>
+        <zeebe:ioMapping>
+          <zeebe:output source="={ id: order id, state: order }" target="multiWord" />
+          <zeebe:output source="={ id: order  id }" target="multiWordSpacing" />
+          <zeebe:output source="={ amount: net-amount }" target="specialCharacters" />
+          <zeebe:output source="={ name: customer&#39;s name, state: order }" target="apostrophe" />
+          <zeebe:output source="={ id: order&#9;id }" target="multiWordTab" />
+          <zeebe:output source="={ amount: net -amount }" target="specialCharactersSpacing" />
+          <zeebe:output source="={ name: customer &#39;s name }" target="apostropheSpacing" />
+          <zeebe:output source="={ day: date }" target="dateTime" />
+          <zeebe:output source="={ time: time(&#34;10:00:00&#34;) }" target="dateTimePrefix" />
+          <zeebe:output source="={ x: then }" target="keyword" />
+          <zeebe:output source="=if then then then else 1" target="keywordPosition" />
+          <zeebe:output source="={ value: a?b }" target="questionMark" />
+          <zeebe:output source="={ a: größe, b: naïve, c: e&#769;x, d: x·y }" target="unicode" />
+          <zeebe:output source="={ a: foo, b: bar }" target="spaceAround" />
+          <zeebe:output source="={ city: invoice.address.city }" target="path" />
+          <zeebe:output source="={ copy: amount, amount: 10 }" target="shadowed" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+    </bpmn:serviceTask>
+    <bpmn:subProcess id="SubProcess_1" name="Sub process">
+      <bpmn:extensionElements>
+        <zeebe:ioMapping>
+          <zeebe:input source="=1" target="customer" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:serviceTask id="Task_Inner" name="Inner">
+        <bpmn:extensionElements>
+          <zeebe:ioMapping>
+            <zeebe:output source="={ name: customer name, id: customer }" target="innerCustomer" />
+          </zeebe:ioMapping>
+        </bpmn:extensionElements>
+      </bpmn:serviceTask>
+    </bpmn:subProcess>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_1">
+      <bpmndi:BPMNShape id="Task_Provide_di" bpmnElement="Task_Provide">
+        <dc:Bounds x="160" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Consume_di" bpmnElement="Task_Consume">
+        <dc:Bounds x="310" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="SubProcess_1_di" bpmnElement="SubProcess_1" isExpanded="true">
+        <dc:Bounds x="160" y="200" width="250" height="160" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Inner_di" bpmnElement="Task_Inner">
+        <dc:Bounds x="235" y="240" width="100" height="80" />
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
