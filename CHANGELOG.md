@@ -6,6 +6,10 @@ All notable changes to [@bpmn-io/variable-resolver](https://github.com/bpmn-io/v
 
 ___Note:__ Yet to be released changes appear here._
 
+* `FEAT`: compute variables once the browser rendered the latest change ([camunda/camunda-modeler#5219](https://github.com/camunda/camunda-modeler/issues/5219))
+  * Variables are computed in a task after the next animation frame. Tests using fake timers need to advance them before awaiting variables, e.g. `await clock.runAllAsync()`
+* `CHORE`: deprecate `parsedVariables` in favor of `getVariables` and `invalidateCache`
+
 ## 3.3.1
 
 * `FIX`: do not report property names after an index access as consumed variables
