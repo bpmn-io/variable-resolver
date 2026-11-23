@@ -6,7 +6,7 @@ import ZeebeModdle from 'zeebe-bpmn-moddle/resources/zeebe.json';
 
 import { getBusinessObject, is } from 'bpmn-js/lib/util/ModelUtil';
 
-import { bootstrapModeler, inject } from 'test/TestHelper';
+import { bootstrapModeler, clearBpmnJS, inject } from 'test/TestHelper';
 
 import { ZeebeVariableResolverModule } from 'lib/';
 
@@ -41,6 +41,7 @@ import filteringXML from 'test/fixtures/zeebe/filtering.bpmn';
 import VariableProvider from 'lib/VariableProvider';
 import { getInputOutput } from '../../../lib/base/util/ExtensionElementsUtil';
 import { mergeEntries } from '../../../lib/base/VariableResolver';
+import { MAX_POSTPONE } from '../../../lib/base/util/CachedValue';
 
 
 describe('ZeebeVariableResolver', function() {
@@ -365,6 +366,532 @@ describe('ZeebeVariableResolver', function() {
       expect(secondSpy).to.have.been.calledOnce;
 
     }));
+
+
+    it('should support deprecated parsedVariables', inject(
+      async function(variableResolver, eventBus) {
+
+        // given
+        const providerSpy = sinon.spy();
+        const parseSpy = sinon.spy();
+
+        variableResolver.registerProvider({
+          getVariables: providerSpy
+        });
+
+        eventBus.on('variableResolver.parseVariables', parseSpy);
+
+        const variables = await variableResolver.getVariables();
+
+        // when
+        const parsedVariables = await variableResolver.parsedVariables.get();
+
+        variableResolver.parsedVariables.invalidate();
+
+        const reparsedVariables = await variableResolver.parsedVariables.get();
+
+        // then
+        expect(parsedVariables).to.equal(variables);
+        expect(reparsedVariables).to.eql(variables);
+
+        expect(providerSpy).to.have.been.calledOnce;
+        expect(parseSpy).to.have.been.calledTwice;
+      }
+    ));
+
+  });
+
+
+  describe('deferred computation', function() {
+
+    beforeEach(
+      bootstrapModeler(simpleXML, {
+        additionalModules: [
+          ZeebeVariableResolverModule
+        ],
+        moddleExtensions: {
+          zeebe: ZeebeModdle
+        }
+      })
+    );
+
+    let provider, parseSpy;
+
+    beforeEach(inject(function(variableResolver, eventBus) {
+      provider = { getVariables: sinon.spy() };
+
+      variableResolver.registerProvider(provider);
+
+      sinon.spy(variableResolver, '_generateRawVariables');
+
+      parseSpy = sinon.spy();
+
+      eventBus.on('variableResolver.parseVariables', parseSpy);
+    }));
+
+
+    it('should not compute on change', inject(
+      async function(variableResolver, eventBus, elementRegistry, modeling) {
+
+        // given
+        let promise;
+
+        eventBus.on('commandStack.changed', () => {
+          promise = variableResolver.getVariablesForElement(
+            elementRegistry.get('ServiceTask_1')
+          );
+        });
+
+        // when
+        modeling.moveElements([ elementRegistry.get('ServiceTask_1') ], { x: 50, y: 0 });
+
+        // then
+        expect(promise).to.exist;
+        expect(variableResolver._generateRawVariables).not.to.have.been.called;
+        expect(provider.getVariables).not.to.have.been.called;
+
+        await flushMicrotasks();
+
+        expect(variableResolver._generateRawVariables).not.to.have.been.called;
+        expect(provider.getVariables).not.to.have.been.called;
+
+        await promise;
+
+        expect(variableResolver._generateRawVariables).to.have.been.calledOnce;
+        expect(provider.getVariables).to.have.been.called;
+        expect(parseSpy).to.have.been.calledOnce;
+      }
+    ));
+
+
+    it('should compute after next frame', inject(
+      async function(variableResolver, eventBus, elementRegistry, modeling) {
+
+        // given
+        const calls = [];
+
+        let promise;
+
+        eventBus.on('commandStack.changed', () => {
+          promise = variableResolver.getVariables();
+        });
+
+        provider.getVariables = () => {
+          calls.push('compute');
+        };
+
+        // when
+        modeling.moveElements([ elementRegistry.get('ServiceTask_1') ], { x: 50, y: 0 });
+
+        requestAnimationFrame(() => {
+          calls.push('frame');
+        });
+
+        await promise;
+
+        // then
+        expect(calls[0]).to.eql('frame');
+        expect(calls).to.include('compute');
+      }
+    ));
+
+
+    it('should compute latest state', inject(
+      async function(variableResolver, eventBus, elementRegistry, modeling, moddle) {
+
+        // given
+        const serviceTask = elementRegistry.get('ServiceTask_1');
+
+        let promise;
+
+        eventBus.once('commandStack.changed', () => {
+          promise = variableResolver.getVariables();
+        });
+
+        modeling.moveElements([ serviceTask ], { x: 50, y: 0 });
+
+        // when
+        modeling.updateProperties(serviceTask, {
+          extensionElements: createOutputMapping(moddle, 'foo')
+        });
+
+        const variables = await promise;
+
+        // then
+        expect(variables.Process_1).to.variableEqual([
+          { name: 'foo', scope: 'Process_1', origin: [ 'ServiceTask_1' ] }
+        ]);
+
+        expect(variableResolver._generateRawVariables).to.have.been.calledOnce;
+        expect(parseSpy).to.have.been.calledOnce;
+      }
+    ));
+
+
+    it('should compute once for multiple changes', inject(
+      async function(variableResolver, eventBus) {
+
+        // given
+        const promises = [];
+
+        // when
+        for (let i = 0; i < 10; i++) {
+          eventBus.fire('commandStack.changed');
+
+          promises.push(variableResolver.getVariables());
+        }
+
+        const results = await Promise.all(promises);
+
+        // then
+        expect(variableResolver._generateRawVariables).to.have.been.calledOnce;
+        expect(parseSpy).to.have.been.calledOnce;
+
+        results.forEach(result => {
+          expect(result).to.equal(results[0]);
+        });
+      }
+    ));
+
+
+    it('should resolve with latest result if changed while computing', inject(
+      async function(variableResolver, eventBus, elementRegistry) {
+
+        // given
+        const root = elementRegistry.get('Process_1');
+
+        let name = 'outdated';
+
+        let started;
+
+        const computationStarted = new Promise(resolve => {
+          started = resolve;
+        });
+
+        provider.getVariables = async element => {
+          if (!is(element, 'bpmn:Process')) {
+            return;
+          }
+
+          const variables = [ { name, scope: root } ];
+
+          started();
+
+          await new Promise(resolve => setTimeout(resolve, 10));
+
+          return variables;
+        };
+
+        const promise = variableResolver.getVariables();
+
+        await computationStarted;
+
+        // when
+        name = 'latest';
+
+        eventBus.fire('variables.changed');
+
+        const variables = await promise;
+
+        // then
+        expect(variables.Process_1).to.have.length(1);
+        expect(variables.Process_1).to.variableEqual([
+          { name: 'latest', scope: 'Process_1' }
+        ]);
+
+        expect(variableResolver._generateRawVariables).to.have.been.calledTwice;
+        expect(parseSpy).to.have.been.calledOnce;
+
+        expect(await variableResolver.getVariables()).to.equal(variables);
+      }
+    ));
+
+
+    it('should not compute after destroy', inject(
+      async function(variableResolver, eventBus) {
+
+        // given
+        eventBus.fire('commandStack.changed');
+
+        const promise = variableResolver.getVariables();
+
+        // when
+        clearBpmnJS();
+
+        // then
+        expect(await promise).to.eql({});
+
+        await nextFrame();
+
+        expect(variableResolver._generateRawVariables).not.to.have.been.called;
+        expect(provider.getVariables).not.to.have.been.called;
+      }
+    ));
+
+
+    it('should resolve in request order', inject(
+      async function(variableResolver, eventBus, elementRegistry) {
+
+        // given
+        const order = [];
+
+        // when
+        eventBus.fire('commandStack.changed');
+
+        const first = variableResolver.getVariablesForElement(
+          elementRegistry.get('ServiceTask_1')
+        ).then(() => order.push('ServiceTask_1'));
+
+        eventBus.fire('commandStack.changed');
+
+        const second = variableResolver.getVariablesForElement(
+          elementRegistry.get('ServiceTask_2')
+        ).then(() => order.push('ServiceTask_2'));
+
+        await Promise.all([ first, second ]);
+
+        // then
+        expect(order).to.eql([ 'ServiceTask_1', 'ServiceTask_2' ]);
+        expect(variableResolver._generateRawVariables).to.have.been.calledOnce;
+        expect(parseSpy).to.have.been.calledOnce;
+      }
+    ));
+
+
+    it('should compute after latest change was painted', inject(
+      async function(variableResolver, eventBus) {
+
+        // given
+        const calls = [];
+
+        provider.getVariables = element => {
+          if (is(element, 'bpmn:Process')) {
+            calls.push('compute');
+          }
+        };
+
+        eventBus.fire('commandStack.changed');
+
+        const promise = variableResolver.getVariables();
+
+        // when
+        requestAnimationFrame(() => {
+          calls.push('frame');
+
+          // changed after the frame, before the computation started
+          eventBus.fire('commandStack.changed');
+
+          variableResolver.getVariables();
+
+          requestAnimationFrame(() => {
+            calls.push('next frame');
+          });
+        });
+
+        await promise;
+
+        // then
+        expect(calls).to.eql([ 'frame', 'next frame', 'compute' ]);
+      }
+    ));
+
+
+    it('should use provider registered while pending', inject(
+      async function(variableResolver, eventBus) {
+
+        // given
+        eventBus.fire('commandStack.changed');
+
+        const promise = variableResolver.getVariables();
+
+        // when
+        variableResolver.registerProvider({
+          getVariables(element) {
+            if (is(element, 'bpmn:Process')) {
+              return [ { name: 'late' } ];
+            }
+          }
+        });
+
+        const variables = await promise;
+
+        // then
+        expect(variables.Process_1).to.variableEqual([
+          { name: 'late', scope: 'Process_1' }
+        ]);
+
+        expect(variableResolver._generateRawVariables).to.have.been.calledOnce;
+      }
+    ));
+
+
+    it('should compute diagram imported while pending', inject(
+      async function(variableResolver, eventBus, bpmnjs, moddle) {
+
+        // given
+        const { rootElement: definitions } = await moddle.fromXML(ioMappingsXML);
+
+        eventBus.fire('commandStack.changed');
+
+        const promise = variableResolver.getVariables();
+
+        // when
+        await bpmnjs.importDefinitions(definitions);
+
+        const variables = await promise;
+
+        // then
+        expect(Object.keys(variables)).to.have.members(
+          definitions.get('rootElements').map(element => element.id)
+        );
+
+        expect(variableResolver._generateRawVariables).to.have.been.calledOnce;
+      }
+    ));
+
+
+    it('should reject if provider fails', inject(
+      async function(variableResolver, eventBus) {
+
+        // given
+        provider.getVariables = () => {
+          throw new Error('failed');
+        };
+
+        eventBus.fire('commandStack.changed');
+
+        // when
+        const error = await variableResolver.getVariables().catch(error => error);
+
+        // then
+        expect(error).to.be.an('error');
+        expect(error.message).to.eql('failed');
+
+        // but when
+        provider.getVariables = () => {};
+
+        eventBus.fire('commandStack.changed');
+
+        // then
+        expect(await variableResolver.getVariables()).to.have.property('Process_1');
+      }
+    ));
+
+
+    it('should settle if provider changes variables while computing', inject(
+      async function(variableResolver, eventBus) {
+
+        // given
+        provider.getVariables = sinon.spy(element => {
+          if (is(element, 'bpmn:Process')) {
+            Promise.resolve().then(() => eventBus.fire('variables.changed'));
+          }
+        });
+
+        // when
+        const variables = await variableResolver.getVariables();
+
+        // then
+        expect(variables).to.have.property('Process_1');
+
+        // computed once more
+        expect(variableResolver._generateRawVariables).to.have.been.calledTwice;
+
+        await nextFrame();
+
+        expect(variableResolver._generateRawVariables).to.have.been.calledTwice;
+      }
+    ));
+
+
+    it('should settle while async provider keeps changing', inject(
+      async function(variableResolver, eventBus) {
+
+        // given
+        provider.getVariables = async element => {
+          if (is(element, 'bpmn:Process')) {
+            await delay(30);
+          }
+        };
+
+        let changes = 0;
+
+        const interval = setInterval(() => {
+          changes++;
+
+          eventBus.fire('commandStack.changed');
+
+          variableResolver.getVariables();
+        }, 20);
+
+        // when
+        try {
+          await Promise.race([
+            variableResolver.getVariables(),
+
+            // starts after at most MAX_POSTPONE, even if frames stall
+            delay(MAX_POSTPONE + 500).then(() => {
+              throw new Error('not settled');
+            })
+          ]);
+        } finally {
+          clearInterval(interval);
+        }
+
+        // then
+        expect(changes).to.be.above(0);
+        expect(variableResolver._generateRawVariables.callCount).to.be.within(1, 3);
+      }
+    ));
+
+
+    it('should recover from lost timers', inject(
+      async function(variableResolver, eventBus) {
+
+        // given
+        const clock = sinon.useFakeTimers();
+
+        let promise;
+
+        try {
+          eventBus.fire('commandStack.changed');
+
+          promise = variableResolver.getVariables();
+        } finally {
+          clock.restore();
+        }
+
+        // when
+        variableResolver.invalidateCache();
+
+        // then
+        expect(await variableResolver.getVariables()).to.have.property('Process_1');
+        expect(await promise).to.have.property('Process_1');
+      }
+    ));
+
+
+    it('should resolve with fake timers', inject(
+      async function(variableResolver, eventBus) {
+
+        // given
+        const clock = sinon.useFakeTimers();
+
+        try {
+          eventBus.fire('commandStack.changed');
+
+          const promise = variableResolver.getVariables();
+
+          // when
+          await clock.runAllAsync();
+
+          // then
+          expect(await promise).to.have.property('Process_1');
+        } finally {
+          clock.restore();
+        }
+      }
+    ));
 
   });
 
@@ -3425,3 +3952,34 @@ const createProvider = function({ variables, variableResolver, origin, delay = 0
     }
   }(variableResolver);
 };
+
+function createOutputMapping(moddle, target) {
+  const output = moddle.create('zeebe:Output', {
+    source: '=1',
+    target
+  });
+
+  const ioMapping = moddle.create('zeebe:IoMapping', {
+    outputParameters: [ output ]
+  });
+
+  return moddle.create('bpmn:ExtensionElements', {
+    values: [ ioMapping ]
+  });
+}
+
+async function flushMicrotasks() {
+  for (let i = 0; i < 10; i++) {
+    await Promise.resolve();
+  }
+}
+
+function nextFrame() {
+  return new Promise(resolve => {
+    requestAnimationFrame(() => setTimeout(resolve, 0));
+  });
+}
+
+function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
