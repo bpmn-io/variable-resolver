@@ -10,6 +10,7 @@ import multiInstanceXML from 'test/fixtures/zeebe/used-variables.feel-fields.mul
 import eventsXML from 'test/fixtures/zeebe/used-variables.feel-fields.events.bpmn';
 import messageXML from 'test/fixtures/zeebe/used-variables.feel-fields.message.bpmn';
 import zeebeExtensionsXML from 'test/fixtures/zeebe/used-variables.feel-fields.zeebe-extensions.bpmn';
+import listenersXML from 'test/fixtures/zeebe/used-variables.feel-fields.listeners.bpmn';
 import adHocXML from 'test/fixtures/zeebe/used-variables.feel-fields.ad-hoc.bpmn';
 import inputFilterXML from 'test/fixtures/zeebe/used-variables.feel-fields.input-filter.bpmn';
 import pathAfterIndexXML from 'test/fixtures/zeebe/used-variables.feel-fields.path-after-index.bpmn';
@@ -334,7 +335,7 @@ describe('FEEL fields - consumed variables', function() {
     );
 
 
-    it('should collect CalledElement processId (Call Activity)',
+    it('should collect CalledElement processId and businessId (Call Activity)',
       inject(async function(variableResolver, elementRegistry) {
 
         // given
@@ -345,13 +346,14 @@ describe('FEEL fields - consumed variables', function() {
 
         // then
         expect(vars).to.variableEqual([
-          { name: 'processIdVar', usedBy: [ 'Task_call' ] }
+          { name: 'processIdVar', usedBy: [ 'Task_call' ] },
+          { name: 'businessIdVar', usedBy: [ 'Task_call' ] }
         ]);
       })
     );
 
 
-    it('should collect CalledDecision decisionId (Business Rule Task)',
+    it('should collect CalledDecision decisionId and versionTag (Business Rule Task)',
       inject(async function(variableResolver, elementRegistry) {
 
         // given
@@ -362,8 +364,58 @@ describe('FEEL fields - consumed variables', function() {
 
         // then
         expect(vars).to.variableEqual([
-          { name: 'decisionIdVar', usedBy: [ 'Task_decision' ] }
+          { name: 'decisionIdVar', usedBy: [ 'Task_decision' ] },
+          { name: 'versionTagVar', usedBy: [ 'Task_decision' ] }
         ]);
+      })
+    );
+
+
+    it('should collect FormDefinition formId',
+      inject(async function(variableResolver, elementRegistry) {
+
+        // given
+        const element = elementRegistry.get('Task_form');
+
+        // when
+        const vars = await variableResolver.getVariablesForElement(element);
+
+        // then
+        expect(vars).to.variableEqual([
+          { name: 'formIdVar', usedBy: [ 'Task_form' ] }
+        ]);
+      })
+    );
+
+
+    it('should collect FormDefinition externalReference',
+      inject(async function(variableResolver, elementRegistry) {
+
+        // given
+        const element = elementRegistry.get('Task_form_external');
+
+        // when
+        const vars = await variableResolver.getVariablesForElement(element);
+
+        // then
+        expect(vars).to.variableEqual([
+          { name: 'externalReferenceVar', usedBy: [ 'Task_form_external' ] }
+        ]);
+      })
+    );
+
+
+    it('should NOT collect static values', inject(
+      async function(variableResolver, elementRegistry) {
+
+        // given
+        const element = elementRegistry.get('Task_static');
+
+        // when
+        const vars = await variableResolver.getVariablesForElement(element);
+
+        // then
+        expect(vars).to.variableEqual([]);
       })
     );
 
@@ -385,7 +437,111 @@ describe('FEEL fields - consumed variables', function() {
           { name: 'followUpDateVar', scope: undefined, origin: undefined, usedBy: [ 'Task_schedule' ] },
           { name: 'priorityVar', scope: undefined, origin: undefined, usedBy: [ 'Task_priority' ] },
           { name: 'processIdVar', scope: undefined, origin: undefined, usedBy: [ 'Task_call' ] },
-          { name: 'decisionIdVar', scope: undefined, origin: undefined, usedBy: [ 'Task_decision' ] }
+          { name: 'businessIdVar', scope: undefined, origin: undefined, usedBy: [ 'Task_call' ] },
+          { name: 'decisionIdVar', scope: undefined, origin: undefined, usedBy: [ 'Task_decision' ] },
+          { name: 'versionTagVar', scope: undefined, origin: undefined, usedBy: [ 'Task_decision' ] },
+          { name: 'formIdVar', scope: undefined, origin: undefined, usedBy: [ 'Task_form' ] },
+          { name: 'externalReferenceVar', scope: undefined, origin: undefined, usedBy: [ 'Task_form_external' ] },
+          { name: 'jobPriorityVar', scope: undefined, origin: undefined, usedBy: [ 'Process_1' ] }
+        ]);
+      })
+    );
+
+  });
+
+
+  describe('listener expressions', function() {
+
+    beforeEach(bootstrapModeler(listenersXML, MODULE_OPTIONS));
+
+    it('should collect type and retries of every execution listener',
+      inject(async function(variableResolver, elementRegistry) {
+
+        // given
+        const element = elementRegistry.get('Task_exec');
+
+        // when
+        const vars = await variableResolver.getVariablesForElement(element);
+
+        // then
+        expect(vars).to.variableEqual([
+          { name: 'startListenerTypeVar', usedBy: [ 'Task_exec' ] },
+          { name: 'startListenerRetriesVar', usedBy: [ 'Task_exec' ] },
+          { name: 'endListenerTypeVar', usedBy: [ 'Task_exec' ] },
+          { name: 'endListenerRetriesVar', usedBy: [ 'Task_exec' ] }
+        ]);
+      })
+    );
+
+
+    it('should collect type and retries of every task listener',
+      inject(async function(variableResolver, elementRegistry) {
+
+        // given
+        const element = elementRegistry.get('Task_user');
+
+        // when
+        const vars = await variableResolver.getVariablesForElement(element);
+
+        // then
+        expect(vars).to.variableEqual([
+          { name: 'creatingListenerTypeVar', usedBy: [ 'Task_user' ] },
+          { name: 'creatingListenerRetriesVar', usedBy: [ 'Task_user' ] },
+          { name: 'completingListenerTypeVar', usedBy: [ 'Task_user' ] }
+        ]);
+      })
+    );
+
+
+    it('should collect sub-process execution listener',
+      inject(async function(variableResolver, elementRegistry) {
+
+        // given
+        const element = elementRegistry.get('SubProcess_1');
+
+        // when
+        const vars = await variableResolver.getVariablesForElement(element);
+
+        // then
+        expect(vars).to.variableEqual([
+          { name: 'subProcessListenerTypeVar', usedBy: [ 'SubProcess_1' ] }
+        ]);
+      })
+    );
+
+
+    it('should NOT collect static listener values',
+      inject(async function(variableResolver, elementRegistry) {
+
+        // given
+        const element = elementRegistry.get('Task_static');
+
+        // when
+        const vars = await variableResolver.getVariablesForElement(element);
+
+        // then
+        expect(vars).to.variableEqual([]);
+      })
+    );
+
+
+    it('should collect process level execution listener',
+      inject(async function(variableResolver) {
+
+        // when
+        const vars = await variableResolver.getVariables();
+
+        // then
+        expect(vars['Process_1']).to.variableEqual([
+          { name: 'processListenerTypeVar', scope: undefined, origin: undefined, usedBy: [ 'Process_1' ] },
+          { name: 'startListenerTypeVar', scope: undefined, origin: undefined, usedBy: [ 'Task_exec' ] },
+          { name: 'startListenerRetriesVar', scope: undefined, origin: undefined, usedBy: [ 'Task_exec' ] },
+          { name: 'endListenerTypeVar', scope: undefined, origin: undefined, usedBy: [ 'Task_exec' ] },
+          { name: 'endListenerRetriesVar', scope: undefined, origin: undefined, usedBy: [ 'Task_exec' ] },
+          { name: 'creatingListenerTypeVar', scope: undefined, origin: undefined, usedBy: [ 'Task_user' ] },
+          { name: 'creatingListenerRetriesVar', scope: undefined, origin: undefined, usedBy: [ 'Task_user' ] },
+          { name: 'completingListenerTypeVar', scope: undefined, origin: undefined, usedBy: [ 'Task_user' ] },
+          { name: 'subProcessListenerTypeVar', scope: undefined, origin: undefined, usedBy: [ 'SubProcess_1' ] }
         ]);
       })
     );

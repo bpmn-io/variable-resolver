@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:zeebe="http://camunda.org/schema/zeebe/1.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:modeler="http://camunda.org/schema/modeler/1.0"
+  id="Definitions_listeners"
+  targetNamespace="http://bpmn.io/schema/bpmn"
+  modeler:executionPlatform="Camunda Cloud">
+  <bpmn:process id="Process_1" isExecutable="true">
+
+    <!-- zeebe:ExecutionListener - process level -->
+    <bpmn:extensionElements>
+      <zeebe:executionListeners>
+        <zeebe:executionListener eventType="start" type="=processListenerTypeVar" />
+      </zeebe:executionListeners>
+    </bpmn:extensionElements>
+
+    <!-- zeebe:ExecutionListener - every listener of the list is analyzed -->
+    <bpmn:serviceTask id="Task_exec" name="Execution Listeners Task">
+      <bpmn:extensionElements>
+        <zeebe:executionListeners>
+          <zeebe:executionListener eventType="start" type="=startListenerTypeVar" retries="=startListenerRetriesVar" />
+          <zeebe:executionListener eventType="end" type="=endListenerTypeVar" retries="=endListenerRetriesVar" />
+        </zeebe:executionListeners>
+      </bpmn:extensionElements>
+    </bpmn:serviceTask>
+
+    <!-- zeebe:TaskListener - every listener of the list is analyzed -->
+    <bpmn:userTask id="Task_user" name="Task Listeners Task">
+      <bpmn:extensionElements>
+        <zeebe:userTask />
+        <zeebe:taskListeners>
+          <zeebe:taskListener eventType="creating" type="=creatingListenerTypeVar" retries="=creatingListenerRetriesVar" />
+          <zeebe:taskListener eventType="completing" type="=completingListenerTypeVar" />
+        </zeebe:taskListeners>
+      </bpmn:extensionElements>
+    </bpmn:userTask>
+
+    <!-- zeebe:ExecutionListener - sub-process level -->
+    <bpmn:subProcess id="SubProcess_1" name="Sub Process">
+      <bpmn:extensionElements>
+        <zeebe:executionListeners>
+          <zeebe:executionListener eventType="start" type="=subProcessListenerTypeVar" />
+        </zeebe:executionListeners>
+      </bpmn:extensionElements>
+    </bpmn:subProcess>
+
+    <!-- static listener values are no FEEL expressions -->
+    <bpmn:serviceTask id="Task_static" name="Static Listener Task">
+      <bpmn:extensionElements>
+        <zeebe:executionListeners>
+          <zeebe:executionListener eventType="start" type="staticListenerType" retries="3" />
+        </zeebe:executionListeners>
+      </bpmn:extensionElements>
+    </bpmn:serviceTask>
+
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_1">
+      <bpmndi:BPMNShape id="Task_exec_di" bpmnElement="Task_exec">
+        <dc:Bounds x="200" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_user_di" bpmnElement="Task_user">
+        <dc:Bounds x="360" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="SubProcess_1_di" bpmnElement="SubProcess_1" isExpanded="true">
+        <dc:Bounds x="200" y="220" width="350" height="200" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_static_di" bpmnElement="Task_static">
+        <dc:Bounds x="620" y="220" width="100" height="80" />
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

@@ -10,6 +10,11 @@
   modeler:executionPlatform="Camunda Cloud">
   <bpmn:process id="Process_1" isExecutable="true">
 
+    <!-- zeebe:JobPriorityDefinition - priority (process level) -->
+    <bpmn:extensionElements>
+      <zeebe:jobPriorityDefinition priority="=jobPriorityVar" />
+    </bpmn:extensionElements>
+
     <!-- zeebe:AssignmentDefinition - assignee, candidateGroups, candidateUsers -->
     <bpmn:userTask id="Task_assign" name="Assignment Task">
       <bpmn:extensionElements>
@@ -43,19 +48,42 @@
       </bpmn:extensionElements>
     </bpmn:userTask>
 
-    <!-- zeebe:CalledElement - processId (Call Activity) -->
+    <!-- zeebe:CalledElement - processId, businessId (Call Activity) -->
     <bpmn:callActivity id="Task_call" name="Call Activity">
       <bpmn:extensionElements>
-        <zeebe:calledElement processId="=processIdVar" />
+        <zeebe:calledElement processId="=processIdVar" businessId="=businessIdVar" />
       </bpmn:extensionElements>
     </bpmn:callActivity>
 
-    <!-- zeebe:CalledDecision - decisionId (Business Rule Task) -->
+    <!-- zeebe:CalledDecision - decisionId, versionTag (Business Rule Task) -->
     <bpmn:businessRuleTask id="Task_decision" name="Business Rule Task">
       <bpmn:extensionElements>
-        <zeebe:calledDecision decisionId="=decisionIdVar" />
+        <zeebe:calledDecision decisionId="=decisionIdVar" versionTag="=versionTagVar" />
       </bpmn:extensionElements>
     </bpmn:businessRuleTask>
+
+    <!-- zeebe:FormDefinition - formId -->
+    <bpmn:userTask id="Task_form" name="Form Task">
+      <bpmn:extensionElements>
+        <zeebe:userTask />
+        <zeebe:formDefinition formId="=formIdVar" />
+      </bpmn:extensionElements>
+    </bpmn:userTask>
+
+    <!-- zeebe:FormDefinition - externalReference -->
+    <bpmn:userTask id="Task_form_external" name="External Form Task">
+      <bpmn:extensionElements>
+        <zeebe:userTask />
+        <zeebe:formDefinition externalReference="=externalReferenceVar" />
+      </bpmn:extensionElements>
+    </bpmn:userTask>
+
+    <!-- static values are no FEEL expressions -->
+    <bpmn:serviceTask id="Task_static" name="Static Task">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="staticType" retries="3" />
+      </bpmn:extensionElements>
+    </bpmn:serviceTask>
 
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
@@ -77,6 +105,15 @@
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Task_decision_di" bpmnElement="Task_decision">
         <dc:Bounds x="360" y="220" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_form_di" bpmnElement="Task_form">
+        <dc:Bounds x="520" y="220" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_form_external_di" bpmnElement="Task_form_external">
+        <dc:Bounds x="680" y="220" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_static_di" bpmnElement="Task_static">
+        <dc:Bounds x="200" y="360" width="100" height="80" />
       </bpmndi:BPMNShape>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
